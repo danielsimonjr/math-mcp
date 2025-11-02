@@ -29,12 +29,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/math-mcp.git"
+    "url": "https://github.com/danielsimonjr/math-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/math-mcp/issues"
+    "url": "https://github.com/danielsimonjr/math-mcp/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/math-mcp#readme",
+  "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",

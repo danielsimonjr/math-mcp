@@ -1,6 +1,6 @@
 # Math MCP Server
 
-[![CI](https://github.com/YOUR_USERNAME/math-mcp/workflows/CI/badge.svg)](https://github.com/YOUR_USERNAME/math-mcp/actions)
+[![CI](https://github.com/danielsimonjr/math-mcp/workflows/CI/badge.svg)](https://github.com/danielsimonjr/math-mcp/actions)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
@@ -66,7 +66,7 @@ unit_conversion("5 inches", "cm")  // "12.7 cm"
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/math-mcp.git
+git clone https://github.com/danielsimonjr/math-mcp.git
 cd math-mcp
 
 # Install dependencies
