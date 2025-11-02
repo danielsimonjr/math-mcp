@@ -1,0 +1,17 @@
+{
+  "name": "mathjs-wasm-modules",
+  "version": "15.0.0-wasm.1",
+  "description": "WebAssembly modules for mathjs-wasm",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "asbuild:debug": "asc assembly/index.ts --target debug --outFile build/debug.wasm --textFile build/debug.wat --sourceMap --debug",
+    "asbuild:release": "asc assembly/index.ts --target release --outFile build/release.wasm --textFile build/release.wat --sourceMap --optimizeLevel 3 --shrinkLevel 2 --converge --noAssert",
+    "asbuild": "npm run asbuild:debug && npm run asbuild:release",
+    "test": "node --experimental-wasm-modules bindings/test.js"
+  },
+  "devDependencies": {
+    "@assemblyscript/loader": "^0.28.9",
+    "assemblyscript": "^0.27.0"
+  }
+}

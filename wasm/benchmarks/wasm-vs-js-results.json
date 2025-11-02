@@ -1,0 +1,192 @@
+{
+  "timestamp": "2025-11-02T01:14:05.398Z",
+  "results": [
+    {
+      "name": "Multiply 3x3",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 224.4648,
+        "avgMs": 0.02244648,
+        "opsPerSec": 44550.41503166643,
+        "iterations": 10000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 45.4768,
+        "avgMs": 0.00454768,
+        "opsPerSec": 219892.34070998838,
+        "iterations": 10000
+      },
+      "speedup": 4.93580902789994
+    },
+    {
+      "name": "Multiply 10x10",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 52.9979,
+        "avgMs": 0.0529979,
+        "opsPerSec": 18868.67215493444,
+        "iterations": 1000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 17.7832,
+        "avgMs": 0.017783200000000002,
+        "opsPerSec": 56232.84898106077,
+        "iterations": 1000
+      },
+      "speedup": 2.9802229070133603
+    },
+    {
+      "name": "Multiply 50x50",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 492.5814,
+        "avgMs": 4.925814,
+        "opsPerSec": 203.01213159896008,
+        "iterations": 100
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 43.4272,
+        "avgMs": 0.434272,
+        "opsPerSec": 2302.7042959251344,
+        "iterations": 100
+      },
+      "speedup": 11.34269305872817
+    },
+    {
+      "name": "Multiply 100x100",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 482.4296,
+        "avgMs": 48.24296,
+        "opsPerSec": 20.728413016116757,
+        "iterations": 10
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 37.2854,
+        "avgMs": 3.72854,
+        "opsPerSec": 268.2014944187269,
+        "iterations": 10
+      },
+      "speedup": 12.938833967182864
+    },
+    {
+      "name": "Determinant 3x3",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 128.7408,
+        "avgMs": 0.012874080000000001,
+        "opsPerSec": 77675.45331394553,
+        "iterations": 10000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 27.2232,
+        "avgMs": 0.00272232,
+        "opsPerSec": 367333.74474712746,
+        "iterations": 10000
+      },
+      "speedup": 4.7290840165741
+    },
+    {
+      "name": "Determinant 10x10",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 138.2858,
+        "avgMs": 0.1382858,
+        "opsPerSec": 7231.400476404664,
+        "iterations": 1000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 10.3857,
+        "avgMs": 0.0103857,
+        "opsPerSec": 96286.2397334797,
+        "iterations": 1000
+      },
+      "speedup": 13.315019690536024
+    },
+    {
+      "name": "Determinant 50x50",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 272.0192,
+        "avgMs": 2.720192,
+        "opsPerSec": 367.6211090981813,
+        "iterations": 100
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 15.6203,
+        "avgMs": 0.156203,
+        "opsPerSec": 6401.925699250334,
+        "iterations": 100
+      },
+      "speedup": 17.414467071695164
+    },
+    {
+      "name": "Transpose 3x3",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 39.2922,
+        "avgMs": 0.00392922,
+        "opsPerSec": 254503.438341452,
+        "iterations": 10000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 24.5415,
+        "avgMs": 0.00245415,
+        "opsPerSec": 407473.0558441823,
+        "iterations": 10000
+      },
+      "speedup": 1.601051280484078
+    },
+    {
+      "name": "Transpose 10x10",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 212.0298,
+        "avgMs": 0.02120298,
+        "opsPerSec": 47163.181779165,
+        "iterations": 10000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 104.219,
+        "avgMs": 0.0104219,
+        "opsPerSec": 95951.79381878545,
+        "iterations": 10000
+      },
+      "speedup": 2.0344639653038312
+    },
+    {
+      "name": "Transpose 100x100",
+      "jsResult": {
+        "name": "JavaScript",
+        "totalMs": 1742.4038,
+        "avgMs": 1.7424038,
+        "opsPerSec": 573.9197768048945,
+        "iterations": 1000
+      },
+      "wasmResult": {
+        "name": "WASM",
+        "totalMs": 803.336,
+        "avgMs": 0.803336,
+        "opsPerSec": 1244.8091458617564,
+        "iterations": 1000
+      },
+      "speedup": 2.1689601860242784
+    }
+  ],
+  "summary": {
+    "multiply": 8.049389740206085,
+    "determinant": 11.819523592935097,
+    "transpose": 1.934825143937396,
+    "overall": 7.3460605171441795,
+    "goalMet": true
+  }
+}

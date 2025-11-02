@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# WASM build artifacts
+wasm/build/*.wasm
+wasm/build/*.wat
+wasm/build/*.js
+wasm/build/*.d.ts
+wasm/bindings/*.cjs
+wasm/bindings/*.d.ts
+
+# Test artifacts
+test/test-results/
+test/coverage/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Debug
+*.map

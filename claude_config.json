@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "math-mcp": {
+      "command": "node",
+      "args": [
+        "C:/mcp-servers/math-mcp/dist/index-wasm.js"
+      ]
+    }
+  }
+}

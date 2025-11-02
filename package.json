@@ -1,0 +1,53 @@
+{
+  "name": "math-mcp",
+  "version": "2.0.0",
+  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster",
+  "main": "dist/index-wasm.js",
+  "scripts": {
+    "test": "node test/integration-test.js",
+    "build": "tsc",
+    "build:wasm": "cd wasm && npx gulp",
+    "build:all": "npm run build && npm run build:wasm",
+    "start": "node dist/index-wasm.js",
+    "dev": "tsc && node dist/index-wasm.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mathjs",
+    "mathematics",
+    "calculator",
+    "wasm",
+    "webassembly",
+    "performance",
+    "statistics",
+    "linear-algebra",
+    "matrix",
+    "calculus"
+  ],
+  "author": "math-mcp contributors",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/math-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/math-mcp/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/math-mcp#readme",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "mathjs": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.9.3"
+  },
+  "bin": {
+    "math-mcp": "./dist/index-wasm.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

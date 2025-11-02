@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-11-02T00:50:02.772Z",
+  "version": "mathjs v15.0.0 (baseline)",
+  "benchmarks": {
+    "multiply_3x3": {
+      "totalMs": 153.6389,
+      "avgMs": 0.01536389,
+      "throughput": 65087.68287198099
+    },
+    "multiply_10x10": {
+      "totalMs": 37.1399,
+      "avgMs": 0.037139899999999997,
+      "throughput": 26925.220584869643
+    },
+    "multiply_50x50": {
+      "totalMs": 579.1839,
+      "avgMs": 5.7918389999999995,
+      "throughput": 172.65673303418828
+    },
+    "multiply_100x100": {
+      "totalMs": 353.3273,
+      "avgMs": 35.33273,
+      "throughput": 28.302370068771932
+    },
+    "det_3x3": {
+      "totalMs": 63.1169,
+      "avgMs": 0.00631169,
+      "throughput": 158436.17161172364
+    },
+    "det_10x10": {
+      "totalMs": 61.5087,
+      "avgMs": 0.0615087,
+      "throughput": 16257.862708852568
+    },
+    "transpose_3x3": {
+      "totalMs": 50.6004,
+      "avgMs": 0.00506004,
+      "throughput": 197626.89623006934
+    },
+    "transpose_10x10": {
+      "totalMs": 165.4468,
+      "avgMs": 0.01654468,
+      "throughput": 60442.38994045216
+    },
+    "transpose_100x100": {
+      "totalMs": 1647.266,
+      "avgMs": 1.6472660000000001,
+      "throughput": 607.0664968499319
+    }
+  }
+}
