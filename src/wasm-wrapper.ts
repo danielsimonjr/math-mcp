@@ -167,6 +167,60 @@ export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
 }
 
 /**
+ * Matrix add with WASM fallback
+ */
+export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][]> {
+  const size = Math.min(a.length, b.length);
+  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_transpose;
+
+  const start = performance.now();
+
+  try {
+    if (useWASM && wasmMatrix) {
+      const result = wasmMatrix.add(a, b);
+      perfCounters.wasmCalls++;
+      perfCounters.wasmTime += performance.now() - start;
+      return result;
+    }
+  } catch (error) {
+    console.error('[WASM] Matrix add failed, falling back to mathjs:', error);
+  }
+
+  // Fallback to mathjs
+  const result = math.add(a, b) as number[][];
+  perfCounters.mathjsCalls++;
+  perfCounters.mathjsTime += performance.now() - start;
+  return result;
+}
+
+/**
+ * Matrix subtract with WASM fallback
+ */
+export async function matrixSubtract(a: number[][], b: number[][]): Promise<number[][]> {
+  const size = Math.min(a.length, b.length);
+  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_transpose;
+
+  const start = performance.now();
+
+  try {
+    if (useWASM && wasmMatrix) {
+      const result = wasmMatrix.subtract(a, b);
+      perfCounters.wasmCalls++;
+      perfCounters.wasmTime += performance.now() - start;
+      return result;
+    }
+  } catch (error) {
+    console.error('[WASM] Matrix subtract failed, falling back to mathjs:', error);
+  }
+
+  // Fallback to mathjs
+  const result = math.subtract(a, b) as number[][];
+  perfCounters.mathjsCalls++;
+  perfCounters.mathjsTime += performance.now() - start;
+  return result;
+}
+
+/**
  * Statistics mean with WASM fallback
  */
 export async function statsMean(data: number[]): Promise<number> {
@@ -336,6 +390,56 @@ export async function statsSum(data: number[]): Promise<number> {
 
   // Fallback to mathjs
   const result = math.sum(data) as number;
+  perfCounters.mathjsCalls++;
+  perfCounters.mathjsTime += performance.now() - start;
+  return result;
+}
+
+/**
+ * Statistics mode with WASM fallback
+ */
+export async function statsMode(data: number[]): Promise<number | number[]> {
+  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const start = performance.now();
+
+  try {
+    if (useWASM && wasmStats) {
+      const result = wasmStats.mode(data);
+      perfCounters.wasmCalls++;
+      perfCounters.wasmTime += performance.now() - start;
+      return result;
+    }
+  } catch (error) {
+    console.error('[WASM] Mode failed, falling back to mathjs:', error);
+  }
+
+  // Fallback to mathjs
+  const result = math.mode(data);
+  perfCounters.mathjsCalls++;
+  perfCounters.mathjsTime += performance.now() - start;
+  return result;
+}
+
+/**
+ * Statistics product with WASM fallback
+ */
+export async function statsProduct(data: number[]): Promise<number> {
+  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const start = performance.now();
+
+  try {
+    if (useWASM && wasmStats) {
+      const result = wasmStats.product(data);
+      perfCounters.wasmCalls++;
+      perfCounters.wasmTime += performance.now() - start;
+      return result;
+    }
+  } catch (error) {
+    console.error('[WASM] Product failed, falling back to mathjs:', error);
+  }
+
+  // Fallback to mathjs
+  const result = math.prod(data) as number;
   perfCounters.mathjsCalls++;
   perfCounters.mathjsTime += performance.now() - start;
   return result;

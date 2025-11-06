@@ -319,3 +319,89 @@ function min(a: i32, b: i32): i32 {
 function abs(x: f64): f64 {
   return x < 0 ? -x : x;
 }
+
+// ============================================================================
+// MATRIX ADD & SUBTRACT
+// ============================================================================
+
+/**
+ * Matrix addition for square matrices
+ * Computes C = A + B where all matrices are n×n
+ *
+ * @param a - Pointer to first matrix (size × size elements)
+ * @param b - Pointer to second matrix (size × size elements)
+ * @param c - Pointer to result matrix (size × size elements)
+ * @param size - Dimension of square matrices
+ */
+export function addSquare(a: usize, b: usize, c: usize, size: i32): void {
+  const matA = changetype<Float64Array>(a);
+  const matB = changetype<Float64Array>(b);
+  const matC = changetype<Float64Array>(c);
+
+  const length = size * size;
+  for (let i = 0; i < length; i++) {
+    unchecked(matC[i] = matA[i] + matB[i]);
+  }
+}
+
+/**
+ * Matrix subtraction for square matrices
+ * Computes C = A - B where all matrices are n×n
+ *
+ * @param a - Pointer to first matrix (size × size elements)
+ * @param b - Pointer to second matrix (size × size elements)
+ * @param c - Pointer to result matrix (size × size elements)
+ * @param size - Dimension of square matrices
+ */
+export function subtractSquare(a: usize, b: usize, c: usize, size: i32): void {
+  const matA = changetype<Float64Array>(a);
+  const matB = changetype<Float64Array>(b);
+  const matC = changetype<Float64Array>(c);
+
+  const length = size * size;
+  for (let i = 0; i < length; i++) {
+    unchecked(matC[i] = matA[i] - matB[i]);
+  }
+}
+
+/**
+ * General matrix addition (non-square matrices)
+ * Computes C = A + B where all matrices are m×n
+ *
+ * @param a - Pointer to first matrix (m × n elements)
+ * @param b - Pointer to second matrix (m × n elements)
+ * @param c - Pointer to result matrix (m × n elements)
+ * @param rows - Number of rows
+ * @param cols - Number of columns
+ */
+export function addGeneral(a: usize, b: usize, c: usize, rows: i32, cols: i32): void {
+  const matA = changetype<Float64Array>(a);
+  const matB = changetype<Float64Array>(b);
+  const matC = changetype<Float64Array>(c);
+
+  const length = rows * cols;
+  for (let i = 0; i < length; i++) {
+    unchecked(matC[i] = matA[i] + matB[i]);
+  }
+}
+
+/**
+ * General matrix subtraction (non-square matrices)
+ * Computes C = A - B where all matrices are m×n
+ *
+ * @param a - Pointer to first matrix (m × n elements)
+ * @param b - Pointer to second matrix (m × n elements)
+ * @param c - Pointer to result matrix (m × n elements)
+ * @param rows - Number of rows
+ * @param cols - Number of columns
+ */
+export function subtractGeneral(a: usize, b: usize, c: usize, rows: i32, cols: i32): void {
+  const matA = changetype<Float64Array>(a);
+  const matB = changetype<Float64Array>(b);
+  const matC = changetype<Float64Array>(c);
+
+  const length = rows * cols;
+  for (let i = 0; i < length; i++) {
+    unchecked(matC[i] = matA[i] - matB[i]);
+  }
+}

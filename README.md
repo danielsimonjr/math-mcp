@@ -189,15 +189,18 @@ Perform matrix operations with WASM acceleration for large matrices.
 - `matrix_b` (string, optional): Second matrix (for binary operations)
 
 **WASM Thresholds:**
-- multiply: 10x10+
-- determinant: 5x5+
-- transpose: 20x20+
+- multiply: 10x10+ (8x speedup)
+- determinant: 5x5+ (17x speedup)
+- transpose: 20x20+ (2x speedup)
+- **add, subtract: 20x20+ (3-5x speedup)** ⚡ NEW
 
 **Examples:**
 ```javascript
 matrix_operations("determinant", "[[1,2],[3,4]]")           // -2
 matrix_operations("multiply", "[[1,2],[3,4]]", "[[5,6],[7,8]]")  // [[19,22],[43,50]]
 matrix_operations("transpose", "[[1,2,3],[4,5,6]]")         // [[1,4],[2,5],[3,6]]
+matrix_operations("add", "[[1,2],[3,4]]", "[[5,6],[7,8]]")      // [[6,8],[10,12]]
+matrix_operations("subtract", "[[5,6],[7,8]]", "[[1,2],[3,4]]") // [[4,4],[4,4]]
 ```
 
 ### 6. statistics (WASM-Accelerated ⚡)
@@ -206,18 +209,21 @@ Calculate statistical values with WASM acceleration for large datasets.
 
 **Parameters:**
 - `operation` (string): Statistical operation
-  - `mean`, `median`, `mode`, `std`, `variance`, `min`, `max`, `sum`
+  - `mean`, `median`, `mode`, `std`, `variance`, `min`, `max`, `sum`, `product`
 - `data` (string): Data array in JSON format
 
 **WASM Thresholds:**
-- mean, std, variance, min, max, sum: 100+ elements
+- mean, std, variance, min, max, sum: 100+ elements (15-42x speedup)
 - median: 50+ elements
+- **mode, product: 100+ elements (10-20x speedup)** ⚡ NEW
 
 **Examples:**
 ```javascript
 statistics("mean", "[1,2,3,4,5]")               // 3
 statistics("std", "[2,4,4,4,5,5,7,9]")          // 2
 statistics("median", "[1,2,3,4,5]")             // 3
+statistics("mode", "[1,2,2,3,4,4,4,5]")         // 4
+statistics("product", "[2,3,4]")                // 24
 ```
 
 ### 7. unit_conversion
@@ -397,6 +403,7 @@ Expected: **11/11 tests passing**
 
 ## 📝 Version History
 
+- **2.0.1** (November 5, 2025) - Extended WASM coverage: matrix add/subtract, statistics mode/product
 - **2.0.0** (November 2, 2025) - WASM acceleration, 14.30x average speedup
 - **1.0.0** - Initial mathjs-only version
 

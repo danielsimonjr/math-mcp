@@ -1,6 +1,6 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster",
   "main": "dist/index-wasm.js",
   "scripts": {

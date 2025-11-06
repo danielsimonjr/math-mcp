@@ -157,3 +157,47 @@ export function productRaw(ptr: usize, length: i32): f64 {
   }
   return product;
 }
+
+// ============================================================================
+// MODE
+// ============================================================================
+
+/**
+ * Calculate mode (most frequent value) in a dataset
+ * If multiple modes exist, returns the smallest one
+ * If all values are unique, returns the smallest value
+ *
+ * @param ptr - Pointer to data array
+ * @param length - Length of array
+ * @returns Mode value
+ */
+export function modeRaw(ptr: usize, length: i32): f64 {
+  if (length === 0) return NaN;
+  if (length === 1) return load<f64>(ptr);
+
+  // Sort the array first (needed to count consecutive values)
+  quicksort(ptr, 0, length - 1);
+
+  let maxCount = 1;
+  let currentCount = 1;
+  let modeValue = load<f64>(ptr);
+  let currentValue = modeValue;
+
+  // Count consecutive equal values
+  for (let i = 1; i < length; i++) {
+    const val = load<f64>(ptr + i * 8);
+
+    if (val === currentValue) {
+      currentCount++;
+      if (currentCount > maxCount) {
+        maxCount = currentCount;
+        modeValue = currentValue;
+      }
+    } else {
+      currentValue = val;
+      currentCount = 1;
+    }
+  }
+
+  return modeValue;
+}

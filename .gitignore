@@ -14,8 +14,9 @@ wasm/build/*.wasm
 wasm/build/*.wat
 wasm/build/*.js
 wasm/build/*.d.ts
-wasm/bindings/*.cjs
-wasm/bindings/*.d.ts
+# Note: bindings are manually maintained, not gitignored
+# wasm/bindings/*.cjs
+# wasm/bindings/*.d.ts
 
 # Test artifacts
 test/test-results/

@@ -273,11 +273,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "add":
             if (!matrix_b) throw new Error("matrix_b required for add");
-            result = math.add(matA, JSON.parse(matrix_b));
+            // Use WASM wrapper for automatic performance optimization
+            result = await wasmWrapper.matrixAdd(matA, JSON.parse(matrix_b));
             break;
           case "subtract":
             if (!matrix_b) throw new Error("matrix_b required for subtract");
-            result = math.subtract(matA, JSON.parse(matrix_b));
+            // Use WASM wrapper for automatic performance optimization
+            result = await wasmWrapper.matrixSubtract(matA, JSON.parse(matrix_b));
             break;
           default:
             throw new Error(`Unknown operation: ${operation}`);
@@ -308,7 +310,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             result = await wasmWrapper.statsMedian(dataArray);
             break;
           case "mode":
-            result = math.mode(dataArray);
+            // Use WASM wrapper for automatic performance optimization
+            result = await wasmWrapper.statsMode(dataArray);
             break;
           case "std":
             // Use WASM wrapper for automatic performance optimization
