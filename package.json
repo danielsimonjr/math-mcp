@@ -1,15 +1,23 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "2.0.1",
-  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster",
+  "version": "2.1.0",
+  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster, with comprehensive input validation and security features",
   "main": "dist/index-wasm.js",
   "scripts": {
     "test": "node test/integration-test.js",
+    "test:unit": "vitest",
+    "test:coverage": "vitest --coverage",
     "build": "tsc",
     "build:wasm": "cd wasm && npx gulp",
     "build:all": "npm run build && npm run build:wasm",
     "start": "node dist/index-wasm.js",
-    "dev": "tsc && node dist/index-wasm.js"
+    "dev": "tsc && node dist/index-wasm.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install"
   },
   "keywords": [
     "mcp",
@@ -42,7 +50,23 @@
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
-    "typescript": "^5.9.3"
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^48.2.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "bin": {
     "math-mcp": "./dist/index-wasm.js"
