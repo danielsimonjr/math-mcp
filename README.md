@@ -31,6 +31,15 @@ For detailed benchmarks, see [CHANGELOG.md](CHANGELOG.md).
 
 ## ✨ Features
 
+### 🔐 Security & Quality (New in v2.1.0)
+
+- **Input Validation:** Comprehensive validation for all inputs
+- **DoS Protection:** Size limits prevent resource exhaustion attacks
+- **Timeout Protection:** 30-second configurable timeout for all operations
+- **Type Safety:** 100% TypeScript with no `any` types
+- **Error Handling:** Custom error types with detailed messages
+- **Enterprise-Grade:** Production-ready code quality standards
+
 ### 7 Mathematical Tools
 
 1. **evaluate** - Evaluate mathematical expressions with variables
@@ -401,8 +410,61 @@ npm test
 
 Expected: **11/11 tests passing**
 
+## 🔧 Configuration (New in v2.1.0)
+
+The server supports several environment variables for customization:
+
+```bash
+# Logging configuration
+LOG_LEVEL=debug|info|warn|error    # Control log verbosity (default: info)
+
+# Performance tuning
+DISABLE_PERF_TRACKING=true         # Disable performance tracking for minimal overhead
+ENABLE_PERF_LOGGING=true           # Enable periodic performance statistics logging
+
+# Security limits (configured in code)
+MAX_MATRIX_SIZE=1000               # Maximum matrix dimension (1000×1000)
+MAX_ARRAY_LENGTH=100000            # Maximum array length for statistics
+MAX_EXPRESSION_LENGTH=10000        # Maximum expression length (characters)
+MAX_NESTING_DEPTH=50               # Maximum parentheses/bracket nesting
+OPERATION_TIMEOUT=30000            # Operation timeout in milliseconds
+```
+
+## 🛠️ Development (New in v2.1.0)
+
+### Code Quality Tools
+
+```bash
+# Linting and formatting
+npm run lint              # Run ESLint on TypeScript files
+npm run lint:fix          # Auto-fix linting issues
+npm run format            # Format code with Prettier
+npm run format:check      # Check code formatting
+npm run type-check        # Run TypeScript type checking
+
+# Testing
+npm run test             # Run integration tests
+npm run test:unit        # Run unit tests (Vitest)
+npm run test:coverage    # Generate test coverage report
+```
+
+### Quality Features
+
+- **ESLint:** TypeScript + JSDoc validation
+- **Prettier:** Consistent code formatting
+- **Husky:** Git hooks for pre-commit quality checks
+- **Vitest:** Modern, fast testing framework
+- **100% JSDoc Coverage:** All public APIs documented
+
 ## 📝 Version History
 
+- **2.1.0** (Latest) - Comprehensive code quality improvements
+  - Custom error types and input validation
+  - Timeout protection and security hardening
+  - Structured logging and performance tracking
+  - ESLint, Prettier, Vitest integration
+  - 100% JSDoc documentation coverage
+  - Eliminated code duplication
 - **2.0.1** (November 5, 2025) - Extended WASM coverage: matrix add/subtract, statistics mode/product
 - **2.0.0** (November 2, 2025) - WASM acceleration, 14.30x average speedup
 - **1.0.0** - Initial mathjs-only version
