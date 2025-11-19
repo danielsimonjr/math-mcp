@@ -33,10 +33,13 @@ import { ValidationError, MathMCPError } from './errors.js';
 import { withTimeout, DEFAULT_OPERATION_TIMEOUT, logger, perfTracker } from './utils.js';
 
 /**
- * Type for WASM wrapper functions (optional, may not be available).
- * This allows the handlers to work with or without WASM acceleration.
+ * Type for acceleration wrapper functions (optional, may not be available).
+ * This allows the handlers to work with intelligent routing through
+ * mathjs → WASM → WebWorkers → WebGPU acceleration layers.
+ *
+ * @since 3.0.0
  */
-export interface WasmWrapper {
+export interface AccelerationWrapper {
   matrixMultiply: (a: number[][], b: number[][]) => Promise<number[][]>;
   matrixDeterminant: (matrix: number[][]) => Promise<number>;
   matrixTranspose: (matrix: number[][]) => Promise<number[][]>;
@@ -51,6 +54,12 @@ export interface WasmWrapper {
   statsMax: (data: number[]) => Promise<number>;
   statsSum: (data: number[]) => Promise<number>;
 }
+
+/**
+ * Legacy alias for backward compatibility.
+ * @deprecated Use AccelerationWrapper instead
+ */
+export type WasmWrapper = AccelerationWrapper;
 
 /**
  * Standard response format for tool handlers.
@@ -350,7 +359,7 @@ export async function handleSolve(args: {
  * @param {string} args.operation - Operation to perform
  * @param {string} args.matrix_a - First matrix (JSON string)
  * @param {string} [args.matrix_b] - Second matrix (JSON string, for binary ops)
- * @param {WasmWrapper} [wasmWrapper] - Optional WASM wrapper for acceleration
+ * @param {AccelerationWrapper} [accelerationWrapper] - Optional acceleration wrapper (mathjs/WASM/Workers/GPU)
  * @returns {Promise<ToolResponse>} The operation result
  *
  * @example
@@ -368,7 +377,7 @@ export async function handleMatrixOperations(
     matrix_a: string;
     matrix_b?: string;
   },
-  wasmWrapper?: WasmWrapper
+  accelerationWrapper?: AccelerationWrapper
 ): Promise<ToolResponse> {
   const startTime = performance.now();
 
@@ -406,10 +415,10 @@ export async function handleMatrixOperations(
 
         validateMatrixCompatibility(matrixA, matrixB, 'multiply');
 
-        // Use WASM if available, otherwise use mathjs
-        result = wasmWrapper
+        // Use acceleration wrapper if available, otherwise use mathjs
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.matrixMultiply(matrixA, matrixB),
+              accelerationWrapper.matrixMultiply(matrixA, matrixB),
               DEFAULT_OPERATION_TIMEOUT,
               'matrix_multiply'
             )
@@ -426,9 +435,9 @@ export async function handleMatrixOperations(
       case 'determinant': {
         validateSquareMatrix(matrixA, 'matrix_a');
 
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.matrixDeterminant(matrixA),
+              accelerationWrapper.matrixDeterminant(matrixA),
               DEFAULT_OPERATION_TIMEOUT,
               'matrix_determinant'
             )
@@ -437,9 +446,9 @@ export async function handleMatrixOperations(
       }
 
       case 'transpose': {
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.matrixTranspose(matrixA),
+              accelerationWrapper.matrixTranspose(matrixA),
               DEFAULT_OPERATION_TIMEOUT,
               'matrix_transpose'
             )
@@ -466,9 +475,9 @@ export async function handleMatrixOperations(
 
         validateMatrixCompatibility(matrixA, matrixB, 'add');
 
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.matrixAdd(matrixA, matrixB),
+              accelerationWrapper.matrixAdd(matrixA, matrixB),
               DEFAULT_OPERATION_TIMEOUT,
               'matrix_add'
             )
@@ -488,9 +497,9 @@ export async function handleMatrixOperations(
 
         validateMatrixCompatibility(matrixA, matrixB, 'subtract');
 
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.matrixSubtract(matrixA, matrixB),
+              accelerationWrapper.matrixSubtract(matrixA, matrixB),
               DEFAULT_OPERATION_TIMEOUT,
               'matrix_subtract'
             )
@@ -533,7 +542,7 @@ export async function handleMatrixOperations(
  * @param {Object} args - Tool arguments
  * @param {string} args.operation - Statistical operation to perform
  * @param {string} args.data - Data array (JSON string)
- * @param {WasmWrapper} [wasmWrapper] - Optional WASM wrapper for acceleration
+ * @param {AccelerationWrapper} [accelerationWrapper] - Optional acceleration wrapper (mathjs/WASM/Workers/GPU)
  * @returns {Promise<ToolResponse>} The calculation result
  *
  * @example
@@ -550,7 +559,7 @@ export async function handleStatistics(
     operation: string;
     data: string;
   },
-  wasmWrapper?: WasmWrapper
+  accelerationWrapper?: AccelerationWrapper
 ): Promise<ToolResponse> {
   const startTime = performance.now();
 
@@ -577,9 +586,9 @@ export async function handleStatistics(
 
     switch (validOperation) {
       case 'mean':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsMean(dataArray),
+              accelerationWrapper.statsMean(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_mean'
             )
@@ -587,9 +596,9 @@ export async function handleStatistics(
         break;
 
       case 'median':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsMedian(dataArray),
+              accelerationWrapper.statsMedian(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_median'
             )
@@ -597,9 +606,9 @@ export async function handleStatistics(
         break;
 
       case 'mode':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsMode(dataArray),
+              accelerationWrapper.statsMode(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_mode'
             )
@@ -607,9 +616,9 @@ export async function handleStatistics(
         break;
 
       case 'std':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsStd(dataArray),
+              accelerationWrapper.statsStd(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_std'
             )
@@ -617,9 +626,9 @@ export async function handleStatistics(
         break;
 
       case 'variance':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsVariance(dataArray),
+              accelerationWrapper.statsVariance(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_variance'
             )
@@ -627,9 +636,9 @@ export async function handleStatistics(
         break;
 
       case 'min':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsMin(dataArray),
+              accelerationWrapper.statsMin(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_min'
             )
@@ -637,9 +646,9 @@ export async function handleStatistics(
         break;
 
       case 'max':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsMax(dataArray),
+              accelerationWrapper.statsMax(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_max'
             )
@@ -647,9 +656,9 @@ export async function handleStatistics(
         break;
 
       case 'sum':
-        result = wasmWrapper
+        result = accelerationWrapper
           ? await withTimeout(
-              wasmWrapper.statsSum(dataArray),
+              accelerationWrapper.statsSum(dataArray),
               DEFAULT_OPERATION_TIMEOUT,
               'stats_sum'
             )
