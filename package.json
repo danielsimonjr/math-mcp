@@ -8,7 +8,7 @@
     "test:unit": "vitest",
     "test:coverage": "vitest --coverage",
     "build": "tsc",
-    "build:wasm": "cd wasm && npx gulp",
+    "build:wasm": "cd wasm && npm run asbuild",
     "build:all": "npm run build && npm run build:wasm",
     "start": "node dist/index-wasm.js",
     "dev": "tsc && node dist/index-wasm.js",
