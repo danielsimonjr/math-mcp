@@ -172,14 +172,14 @@ const TOOLS: Tool[] = [
   {
     name: "statistics",
     description:
-      "Calculate statistical values like mean, median, mode, std (standard deviation), variance, min, max, sum, product. WASM-accelerated for large datasets (100+ elements)",
+      "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product. WASM-accelerated for large datasets (100+ elements)",
     inputSchema: {
       type: "object",
       properties: {
         operation: {
           type: "string",
           enum: ["mean", "median", "mode", "std", "variance", "min", "max", "sum", "product"],
-          description: "Statistical operation to perform",
+          description: "Statistical operation to perform. Note: mode returns an array (single mode: [value], multiple modes: [value1, value2])",
         },
         data: {
           type: "string",

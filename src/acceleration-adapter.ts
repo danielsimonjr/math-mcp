@@ -70,8 +70,10 @@ export class AccelerationAdapter implements AccelerationWrapper {
     return await routedStatsMedian(data);
   }
 
-  async statsMode(data: number[]): Promise<number | number[]> {
-    return await routedStatsMode(data);
+  async statsMode(data: number[]): Promise<number[]> {
+    const result = await routedStatsMode(data);
+    // Normalize to always return an array for consistency
+    return Array.isArray(result) ? result : [result];
   }
 
   async statsStd(data: number[]): Promise<number> {
