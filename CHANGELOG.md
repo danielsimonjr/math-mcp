@@ -66,6 +66,25 @@ Documentation in reverse chronological order (latest first).
 - **Ensures:** Package is complete and tested before publishing
 - **File:** `package.json`
 
+#### Logging Stream Separation (Issue #18)
+- **Fixed logger output streams** for proper separation
+- **ERROR/WARN → stderr:** console.error/console.warn
+- **INFO/DEBUG → stdout:** console.log
+- **Benefits:** Proper stream redirection, follows Unix conventions
+- **File:** `src/utils.ts`
+
+#### Statistics Return Type Consistency (Issue #16)
+- **Mode now always returns array:** `number[]` instead of `number | number[]`
+- **Single mode:** `[value]`, Multiple modes: `[value1, value2, ...]`
+- **Consistent API:** Users always handle mode as array
+- **Files:** `src/tool-handlers.ts`, `src/acceleration-adapter.ts`, `src/index-wasm.ts`
+
+#### JSON Parsing Protection (Issue #13)
+- **Added 20MB size limit** before JSON.parse()
+- **Early rejection** of oversized inputs
+- **Prevents event loop blocking** from huge payloads
+- **File:** `src/validation.ts`
+
 ### 📦 New Scripts
 
 ```json
@@ -87,10 +106,12 @@ Documentation in reverse chronological order (latest first).
 
 ### 📊 Statistics
 
-**Lines of Code Added:** ~1,200 lines
+**Lines of Code Added:** ~1,400 lines
 **New Modules:** 3 (rate-limiter.ts, wasm-integrity.ts, expression-cache.ts)
-**Security Fixes:** 4 high-priority issues
-**Performance Improvements:** 2 (caching, build optimization)
+**Issues Resolved:** 9 total
+- **Security:** 4 high-priority issues (rate limiting, WASM integrity, input sanitization, JSON size limits)
+- **Performance:** 2 improvements (expression caching, JSON early checks)
+- **Code Quality:** 3 improvements (logging streams, type consistency, ESLint config)
 
 ### 🔄 Upgrade Notes
 
