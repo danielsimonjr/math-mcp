@@ -31,6 +31,7 @@ import {
 } from './validation.js';
 import { ValidationError, MathMCPError } from './errors.js';
 import { withTimeout, DEFAULT_OPERATION_TIMEOUT, logger, perfTracker } from './utils.js';
+import { getCachedExpression } from './expression-cache.js';
 
 /**
  * Type for acceleration wrapper functions (optional, may not be available).
@@ -91,9 +92,6 @@ export interface ToolResponse {
  * @throws {ValidationError} If expression contains unsafe operations
  */
 function safeEvaluate(expression: string, scope: Record<string, number>): any {
-  // Parse expression to AST
-  const node = math.parse(expression);
-
   // List of allowed node types (safe mathematical operations)
   const ALLOWED_NODE_TYPES = new Set([
     'ConstantNode',      // Numbers: 42, 3.14
@@ -164,11 +162,23 @@ function safeEvaluate(expression: string, scope: Record<string, number>): any {
     }
   }
 
-  // Validate the entire AST
-  validateNode(node);
+  // Use cached compiled expression if available
+  const compiled = getCachedExpression(
+    expression,
+    () => {
+      // Parse expression to AST
+      const node = math.parse(expression);
 
-  // Compile and evaluate with restricted scope
-  const compiled = node.compile();
+      // Validate the entire AST
+      validateNode(node);
+
+      // Compile and return
+      return node.compile();
+    },
+    scope
+  );
+
+  // Evaluate with scope
   return compiled.evaluate(scope);
 }
 
@@ -412,8 +422,15 @@ export async function handleSolve(args: {
 
     // Rearrange to left - right = 0
     const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-    const node = math.parse(expr);
-    node.compile(); // Validate the expression is compilable
+
+    // Use cached parsed and compiled expression
+    const compiled = getCachedExpression(
+      expr,
+      () => {
+        const node = math.parse(expr);
+        return node.compile(); // Validate the expression is compilable
+      }
+    );
 
     // Try to solve symbolically
     let result: string;
