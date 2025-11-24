@@ -567,7 +567,7 @@ export async function handleStatistics(
     // Validate operation type
     const validOperation = validateEnum(
       args.operation,
-      ['mean', 'median', 'mode', 'std', 'variance', 'min', 'max', 'sum'] as const,
+      ['mean', 'median', 'mode', 'std', 'variance', 'min', 'max', 'sum', 'product'] as const,
       'operation'
     );
 
@@ -663,6 +663,10 @@ export async function handleStatistics(
               'stats_sum'
             )
           : (math.sum(dataArray) as number);
+        break;
+
+      case 'product':
+        result = math.prod(dataArray) as number;
         break;
 
       default:
