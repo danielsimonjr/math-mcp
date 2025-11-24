@@ -5,10 +5,104 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.0.1 - Critical Fixes and Security Hardening - November 2025
+
+**Status:** ✅ Released
+**Focus:** Security fixes, stability improvements, accurate documentation
+
+### 🔒 Security Fixes (CRITICAL)
+
+#### Expression Sandboxing (Issue #6 - HIGH Priority)
+- **Added AST validation** to prevent code injection attacks
+- **Blocks unsafe operations:** function definitions, assignments, imports
+- **Whitelist approach:** Only mathematical operations allowed
+- **Blacklisted functions:** `import`, `evaluate`, `parse`, `compile`, `help`
+- **Recursive validation:** Validates entire expression tree
+- **Attack vectors mitigated:** DoS via infinite loops, code injection, resource exhaustion
+- **File:** `src/tool-handlers.ts` - New `safeEvaluate()` function
+
+### 🐛 Critical Bug Fixes
+
+#### 1. Fixed Non-Functional GPU Implementation (Issue #1)
+- **Reduced GPU module** from 520 lines to 111 lines of stubs
+- **Added clear warnings:** GPU is NOT IMPLEMENTED in Node.js
+- **Maintained interface** for future browser support
+- **Impact:** Removed misleading claims of 10,000x speedups
+- **File:** `src/gpu/webgpu-wrapper.ts`
+
+#### 2. Fixed Version Inconsistency (Issue #2)
+- **Updated package.json** version from 2.1.0 to 3.0.0
+- **Resolved mismatch** between package.json and README claims
+- **File:** `package.json`
+
+#### 3. Added Missing Statistics Operation (Issue #3)
+- **Added 'product'** to statistics enum
+- **Fixed handler** in tool-handlers.ts
+- **Now accessible** via MCP API
+- **Files:** `src/index-wasm.ts`, `src/tool-handlers.ts`
+
+#### 4. Fixed Build Process (Issue #4)
+- **Corrected build:wasm** script (was using non-existent gulp)
+- **Now uses:** `npm run asbuild` in wasm directory
+- **Verified:** dist/ directory created successfully
+- **Verified:** All TypeScript compiles without errors
+- **File:** `package.json`
+
+### 🔧 Stability Improvements
+
+#### Memory Leak Fixes (Issue #7 - HIGH Priority)
+- **Fixed event listener leaks** in worker pool
+- **Added cleanup:** `removeAllListeners()` before worker termination
+- **Applied to 3 code paths:**
+  1. `recycleWorker()` - worker error recovery
+  2. `shutdown()` - graceful pool shutdown
+  3. `startIdleMonitoring()` - idle worker cleanup
+- **Impact:** Prevents memory growth under sustained load
+- **File:** `src/workers/worker-pool.ts`
+
+#### Unhandled Promise Rejection Fixes (Issue #8 - HIGH Priority)
+- **Added .catch() handlers** to async worker operations
+- **Fixed locations:**
+  1. `recycleWorker()` call in error handler
+  2. `createWorker()` call in scheduleNextTask()
+- **Impact:** Prevents Node.js crashes (>=v15 fails on unhandled rejections)
+- **File:** `src/workers/worker-pool.ts`
+
+### 📝 Documentation Corrections
+
+#### Accurate Performance Claims
+- **Removed false GPU claims** (GPU not implemented)
+- **Clarified WASM-only** performance for Node.js
+- **Maintained realistic** 1-42x speedup claims for WASM
+- **Future GPU support** clearly marked as "planned for v4.0"
+
+### ✅ Testing
+
+- **All integration tests passing:** 11/11 (100% success rate)
+- **WASM acceleration working:** 70% of operations use WASM
+- **Type checking:** No TypeScript errors
+- **Build verification:** Complete dist/ output confirmed
+
+### 📦 Upgrade Notes
+
+**From 3.0.0 to 3.0.1:**
+- No breaking changes
+- Enhanced security (expression evaluation)
+- Improved stability (memory leaks fixed)
+- GPU claims corrected (was never functional)
+- All existing functionality preserved
+
+**Action Required:**
+- None - This is a drop-in replacement
+- Benefits: Better security and stability
+
+---
+
 ## Version 3.0.0 - Multi-Tier Acceleration Architecture - November 2025
 
-**Status:** ✅ COMPLETE - Production Ready
+**Status:** ⚠️ DEPRECATED - Use 3.0.1 or later
 **Focus:** WebWorkers, WebGPU, Intelligent Routing, Massive Performance Gains
+**Note:** Contains critical security vulnerabilities and memory leaks. Upgrade to 3.0.1.
 
 ### 🎯 Summary
 
