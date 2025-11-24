@@ -24,6 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
 import { WasmError } from './errors.js';
 import { logger } from './utils.js';
+import { verifyWasmIntegrity, isIntegrityCheckEnabled } from './wasm-integrity.js';
 
 /**
  * Performance thresholds for WASM usage (in matrix dimensions or array length).
@@ -192,6 +193,22 @@ async function initWASM(): Promise<void> {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const wasmPath = join(__dirname, '../wasm');
+    const projectRoot = join(__dirname, '..');
+
+    // Verify WASM integrity before loading (if enabled)
+    if (isIntegrityCheckEnabled()) {
+      logger.debug('Verifying WASM module integrity...');
+
+      const releaseWasmPath = join(wasmPath, 'build/release.wasm');
+      await verifyWasmIntegrity(releaseWasmPath, 'wasm/build/release.wasm');
+
+      const debugWasmPath = join(wasmPath, 'build/debug.wasm');
+      await verifyWasmIntegrity(debugWasmPath, 'wasm/build/debug.wasm');
+
+      logger.info('WASM integrity verification passed');
+    } else {
+      logger.warn('WASM integrity verification DISABLED');
+    }
 
     // Import matrix bindings (convert to file:// URL for ESM)
     const matrixPath = pathToFileURL(join(wasmPath, 'bindings/matrix.cjs')).href;
