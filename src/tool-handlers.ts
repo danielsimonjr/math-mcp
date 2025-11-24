@@ -820,13 +820,60 @@ export async function handleUnitConversion(args: {
   const startTime = performance.now();
 
   try {
-    // Validate inputs
+    // Validate inputs - basic type checking
     if (typeof args.value !== 'string' || args.value.trim().length === 0) {
       throw new ValidationError('value must be a non-empty string');
     }
 
     if (typeof args.target_unit !== 'string' || args.target_unit.trim().length === 0) {
       throw new ValidationError('target_unit must be a non-empty string');
+    }
+
+    // Input sanitization - length limits (prevent DoS via extremely long strings)
+    const MAX_VALUE_LENGTH = 100;
+    const MAX_UNIT_LENGTH = 50;
+
+    if (args.value.length > MAX_VALUE_LENGTH) {
+      throw new ValidationError(
+        `value exceeds maximum length of ${MAX_VALUE_LENGTH} characters`
+      );
+    }
+
+    if (args.target_unit.length > MAX_UNIT_LENGTH) {
+      throw new ValidationError(
+        `target_unit exceeds maximum length of ${MAX_UNIT_LENGTH} characters`
+      );
+    }
+
+    // Input sanitization - format validation (prevent injection attacks)
+    // Allow: numbers, basic units, operators (+, -, *, /, ^), spaces, and common unit characters
+    const ALLOWED_VALUE_PATTERN = /^[0-9\s+\-*/.^a-zA-Z()]+$/;
+    const ALLOWED_UNIT_PATTERN = /^[a-zA-Z0-9\s/^*-]+$/;
+
+    if (!ALLOWED_VALUE_PATTERN.test(args.value)) {
+      throw new ValidationError(
+        'value contains invalid characters. Only numbers, units, and basic operators are allowed.'
+      );
+    }
+
+    if (!ALLOWED_UNIT_PATTERN.test(args.target_unit)) {
+      throw new ValidationError(
+        'target_unit contains invalid characters. Only alphanumeric characters and unit operators are allowed.'
+      );
+    }
+
+    // Additional safety: prevent excessive nesting/complexity
+    const openParens = (args.value.match(/\(/g) || []).length;
+    const closeParens = (args.value.match(/\)/g) || []).length;
+
+    if (openParens !== closeParens) {
+      throw new ValidationError('value has mismatched parentheses');
+    }
+
+    if (openParens > 10) {
+      throw new ValidationError(
+        'value has too many nested expressions (max 10 levels)'
+      );
     }
 
     logger.debug('Unit conversion', {
