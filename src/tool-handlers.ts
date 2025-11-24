@@ -77,11 +77,109 @@ export interface ToolResponse {
 }
 
 /**
+ * Safely evaluates a mathematical expression by validating the AST.
+ *
+ * Security features:
+ * - Parses expression to AST and validates node types
+ * - Blocks function definitions, assignments, and imports
+ * - Only allows mathematical operations and constants
+ * - Uses restricted evaluation scope
+ *
+ * @param {string} expression - The expression to evaluate
+ * @param {Record<string, number>} scope - Variable scope
+ * @returns {any} The evaluation result
+ * @throws {ValidationError} If expression contains unsafe operations
+ */
+function safeEvaluate(expression: string, scope: Record<string, number>): any {
+  // Parse expression to AST
+  const node = math.parse(expression);
+
+  // List of allowed node types (safe mathematical operations)
+  const ALLOWED_NODE_TYPES = new Set([
+    'ConstantNode',      // Numbers: 42, 3.14
+    'SymbolNode',        // Variables: x, y
+    'OperatorNode',      // Operators: +, -, *, /, ^
+    'ParenthesisNode',   // Parentheses: (...)
+    'FunctionNode',      // Math functions: sin(), sqrt(), etc.
+    'ArrayNode',         // Arrays: [1, 2, 3]
+    'AccessorNode',      // Array access: arr[0]
+    'IndexNode',         // Index: [0]
+    'RangeNode',         // Ranges: 1:10
+  ]);
+
+  // Forbidden function names (even though they're FunctionNodes)
+  const FORBIDDEN_FUNCTIONS = new Set([
+    'import',
+    'createUnit',
+    'evaluate',
+    'parse',
+    'compile',
+    'help',
+  ]);
+
+  // Recursively validate AST nodes
+  function validateNode(n: any): void {
+    if (!n || !n.type) {
+      return;
+    }
+
+    // Check if node type is allowed
+    if (!ALLOWED_NODE_TYPES.has(n.type)) {
+      throw new ValidationError(
+        `Unsafe operation detected: ${n.type} is not allowed in expressions`
+      );
+    }
+
+    // Special check for FunctionNode - block dangerous functions
+    if (n.type === 'FunctionNode' && FORBIDDEN_FUNCTIONS.has(n.fn?.name || n.name)) {
+      throw new ValidationError(
+        `Function '${n.fn?.name || n.name}' is not allowed for security reasons`
+      );
+    }
+
+    // Check for assignment operations
+    if (n.type === 'AssignmentNode' || n.type === 'FunctionAssignmentNode') {
+      throw new ValidationError(
+        'Assignment operations are not allowed in expressions'
+      );
+    }
+
+    // Recursively validate child nodes
+    if (n.args && Array.isArray(n.args)) {
+      n.args.forEach(validateNode);
+    }
+    if (n.content) {
+      validateNode(n.content);
+    }
+    if (n.index) {
+      validateNode(n.index);
+    }
+    if (n.items && Array.isArray(n.items)) {
+      n.items.forEach(validateNode);
+    }
+    if (n.blocks && Array.isArray(n.blocks)) {
+      n.blocks.forEach((block: any) => {
+        if (block.node) validateNode(block.node);
+      });
+    }
+  }
+
+  // Validate the entire AST
+  validateNode(node);
+
+  // Compile and evaluate with restricted scope
+  const compiled = node.compile();
+  return compiled.evaluate(scope);
+}
+
+/**
  * Handles the 'evaluate' tool.
  * Evaluates mathematical expressions with optional variables.
  *
  * Security considerations:
  * - Expression length and complexity are validated
+ * - AST is validated to prevent code injection
+ * - No function definitions or assignments allowed
  * - Scope variables are validated and type-checked
  * - Operation has timeout protection
  *
@@ -119,9 +217,9 @@ export async function handleEvaluate(args: {
       hasScope: Object.keys(validatedScope).length > 0,
     });
 
-    // Evaluate with timeout protection
+    // Evaluate with timeout protection and AST validation
     const result = await withTimeout(
-      Promise.resolve(math.evaluate(validatedExpression, validatedScope)),
+      Promise.resolve(safeEvaluate(validatedExpression, validatedScope)),
       DEFAULT_OPERATION_TIMEOUT,
       'evaluate'
     );
