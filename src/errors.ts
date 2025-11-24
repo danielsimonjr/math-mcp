@@ -195,3 +195,42 @@ export class ComplexityError extends ValidationError {
     Object.setPrototypeOf(this, ComplexityError.prototype);
   }
 }
+
+/**
+ * Error thrown when rate limiting is exceeded.
+ * Prevents DoS attacks by rejecting excessive requests.
+ *
+ * @class RateLimitError
+ * @extends MathMCPError
+ *
+ * @example
+ * ```typescript
+ * throw new RateLimitError("Rate limit exceeded: 100 requests per minute");
+ * ```
+ */
+export class RateLimitError extends MathMCPError {
+  /**
+   * The name of the error type
+   * @type {string}
+   */
+  override name = "RateLimitError";
+
+  /**
+   * Rate limiter statistics at time of error
+   * @type {Record<string, unknown> | undefined}
+   */
+  public readonly stats?: Record<string, unknown>;
+
+  /**
+   * Creates a new RateLimitError instance
+   *
+   * @param {string} message - Description of the rate limit violation
+   * @param {Record<string, unknown>} [stats] - Optional rate limiter statistics
+   * @param {ErrorOptions} [options] - Optional error options
+   */
+  constructor(message: string, stats?: Record<string, unknown>, options?: ErrorOptions) {
+    super(message, options);
+    this.stats = stats;
+    Object.setPrototypeOf(this, RateLimitError.prototype);
+  }
+}

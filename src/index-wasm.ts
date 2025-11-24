@@ -56,6 +56,7 @@ import {
 } from "./tool-handlers.js";
 import { logger, getPackageVersion, perfTracker } from "./utils.js";
 import { MathMCPError } from "./errors.js";
+import { globalRateLimiter, withRateLimit } from "./rate-limiter.js";
 
 /**
  * Available mathematical tools exposed by the MCP server.
@@ -259,7 +260,7 @@ function registerHandlers(server: Server): void {
 
   /**
    * Handler for tool execution requests.
-   * Routes requests to appropriate tool handlers with error handling.
+   * Routes requests to appropriate tool handlers with error handling and rate limiting.
    *
    * @param {CallToolRequest} request - The tool call request containing tool name and arguments
    * @returns {Promise<any>} The tool execution result or error
@@ -269,68 +270,71 @@ function registerHandlers(server: Server): void {
 
     logger.info("Tool called", { tool: name });
 
-    try {
-      // Route to appropriate handler based on tool name
-      switch (name) {
-        case "evaluate":
-          return await withErrorHandling(handleEvaluate, args as {
-            expression: string;
-            scope?: object;
-          });
+    // Wrap the entire request in rate limiting
+    return await withRateLimit(globalRateLimiter, async () => {
+      try {
+        // Route to appropriate handler based on tool name
+        switch (name) {
+          case "evaluate":
+            return await withErrorHandling(handleEvaluate, args as {
+              expression: string;
+              scope?: object;
+            });
 
-        case "simplify":
-          return await withErrorHandling(handleSimplify, args as {
-            expression: string;
-            rules?: string[];
-          });
+          case "simplify":
+            return await withErrorHandling(handleSimplify, args as {
+              expression: string;
+              rules?: string[];
+            });
 
-        case "derivative":
-          return await withErrorHandling(handleDerivative, args as {
-            expression: string;
-            variable: string;
-          });
+          case "derivative":
+            return await withErrorHandling(handleDerivative, args as {
+              expression: string;
+              variable: string;
+            });
 
-        case "solve":
-          return await withErrorHandling(handleSolve, args as {
-            equation: string;
-            variable: string;
-          });
+          case "solve":
+            return await withErrorHandling(handleSolve, args as {
+              equation: string;
+              variable: string;
+            });
 
-        case "matrix_operations":
-          return await withErrorHandling(
-            (params) => handleMatrixOperations(params, accelerationAdapter),
-            args as {
-              operation: string;
-              matrix_a: string;
-              matrix_b?: string;
-            }
-          );
+          case "matrix_operations":
+            return await withErrorHandling(
+              (params) => handleMatrixOperations(params, accelerationAdapter),
+              args as {
+                operation: string;
+                matrix_a: string;
+                matrix_b?: string;
+              }
+            );
 
-        case "statistics":
-          return await withErrorHandling(
-            (params) => handleStatistics(params, accelerationAdapter),
-            args as {
-              operation: string;
-              data: string;
-            }
-          );
+          case "statistics":
+            return await withErrorHandling(
+              (params) => handleStatistics(params, accelerationAdapter),
+              args as {
+                operation: string;
+                data: string;
+              }
+            );
 
-        case "unit_conversion":
-          return await withErrorHandling(handleUnitConversion, args as {
-            value: string;
-            target_unit: string;
-          });
+          case "unit_conversion":
+            return await withErrorHandling(handleUnitConversion, args as {
+              value: string;
+              target_unit: string;
+            });
 
-        default:
-          throw new MathMCPError(`Unknown tool: ${name}`);
+          default:
+            throw new MathMCPError(`Unknown tool: ${name}`);
+        }
+      } catch (error) {
+        logger.error("Tool execution failed", {
+          tool: name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
       }
-    } catch (error) {
-      logger.error("Tool execution failed", {
-        tool: name,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    });
   });
 
   logger.info("Request handlers registered");
