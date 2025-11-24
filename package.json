@@ -1,7 +1,7 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "3.0.1",
-  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster, with comprehensive input validation and security features",
+  "version": "3.1.0",
+  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster, with comprehensive input validation, security features, rate limiting, and expression caching",
   "main": "dist/index-wasm.js",
   "scripts": {
     "test": "node test/integration-test.js",
@@ -10,6 +10,11 @@
     "build": "tsc",
     "build:wasm": "cd wasm && npm run asbuild",
     "build:all": "npm run build && npm run build:wasm",
+    "build:verify": "npm run verify:dist && npm run verify:wasm && npm run verify:hashes",
+    "verify:dist": "test -d dist && test -f dist/index-wasm.js || (echo 'Error: dist/ directory missing or incomplete' && exit 1)",
+    "verify:wasm": "test -f wasm/build/release.wasm && test -f wasm/build/debug.wasm || (echo 'Error: WASM modules not built' && exit 1)",
+    "verify:hashes": "test -f wasm-hashes.json || (echo 'Error: wasm-hashes.json missing' && exit 1)",
+    "generate:hashes": "node scripts/generate-wasm-hashes.js",
     "start": "node dist/index-wasm.js",
     "dev": "tsc && node dist/index-wasm.js",
     "lint": "eslint src/**/*.ts",
@@ -17,7 +22,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prepublishOnly": "npm run type-check && npm run build:all && npm run generate:hashes && npm test && npm run build:verify"
   },
   "keywords": [
     "mcp",
