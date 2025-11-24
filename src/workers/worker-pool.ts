@@ -243,8 +243,13 @@ export class WorkerPool {
         metadata.currentTaskId = undefined;
       }
 
-      // Recycle the worker
-      this.recycleWorker(workerId);
+      // Recycle the worker (handle promise rejection)
+      this.recycleWorker(workerId).catch((err) => {
+        logger.error('Failed to recycle worker', {
+          workerId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      });
     });
 
     // Handle worker exit
@@ -323,6 +328,11 @@ export class WorkerPool {
     if (!metadata) {
       return;
     }
+
+    // Remove all event listeners to prevent memory leaks
+    metadata.worker.removeAllListeners('message');
+    metadata.worker.removeAllListeners('error');
+    metadata.worker.removeAllListeners('exit');
 
     // Terminate the worker
     await metadata.worker.terminate();
@@ -407,9 +417,15 @@ export class WorkerPool {
         this.taskQueue.size() > 0 &&
         this.workers.size < this.config.maxWorkers
       ) {
-        this.createWorker().then(() => {
-          this.scheduleNextTask();
-        });
+        this.createWorker()
+          .then(() => {
+            this.scheduleNextTask();
+          })
+          .catch((err) => {
+            logger.error('Failed to create worker during scheduling', {
+              error: err instanceof Error ? err.message : String(err),
+            });
+          });
         break;
       }
 
@@ -465,6 +481,11 @@ export class WorkerPool {
             workerId,
             idleTime: `${idleTime}ms`,
           });
+
+          // Remove event listeners to prevent memory leaks
+          metadata.worker.removeAllListeners('message');
+          metadata.worker.removeAllListeners('error');
+          metadata.worker.removeAllListeners('exit');
 
           metadata.worker.terminate();
           this.workers.delete(workerId);
@@ -547,9 +568,14 @@ export class WorkerPool {
       this.taskQueue.cancelAll('Worker pool shutting down');
     }
 
-    // Terminate all workers
+    // Terminate all workers (clean up event listeners first)
     const terminatePromises: Promise<number>[] = [];
     for (const metadata of this.workers.values()) {
+      // Remove all event listeners to prevent memory leaks
+      metadata.worker.removeAllListeners('message');
+      metadata.worker.removeAllListeners('error');
+      metadata.worker.removeAllListeners('exit');
+
       terminatePromises.push(metadata.worker.terminate());
     }
 
