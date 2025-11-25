@@ -12,6 +12,32 @@ Documentation in reverse chronological order (latest first).
 
 ### 🧪 Testing
 
+#### Comprehensive Unit Tests (Sprint 5 - Task 21 - Parts 1-4)
+- **Created `test/unit/` directory structure** for organized unit testing
+- **130 unit tests added** covering core modules and utilities
+- **Test coverage by module:**
+  - shared/logger.ts: 15 tests (log levels, formatting, streams)
+  - shared/constants.ts: 12 tests (timeout, performance flags)
+  - utils.ts: 39 tests (withTimeout, perfTracker, formatNumber, isPlainObject)
+  - errors.ts: 36 tests (all 7 error classes and hierarchy)
+  - degradation-policy.ts: 28 tests (tier configuration, enablement, logging)
+- **Test frameworks and tools:** Vitest with mocking support
+- **Testing techniques:**
+  - Async/await testing for timeout functionality
+  - Mock spies for console and timer verification
+  - Error inheritance chain validation
+  - Edge case testing (extremes, negatives, zero values)
+  - Environment variable simulation
+- **All tests passing:** 130/130 (100%) in ~2s
+- **Files created:**
+  - test/unit/shared/logger.test.ts
+  - test/unit/shared/constants.test.ts
+  - test/unit/utils.test.ts
+  - test/unit/errors.test.ts
+  - test/unit/degradation-policy.test.ts
+- **Total test count:** 373 tests (130 unit + 232 correctness + 11 integration)
+- **Test success rate:** 100% across all test suites
+
 #### Mathematical Correctness Tests Added (Sprint 4 - Task 16)
 - **Created `test/correctness-tests.js`** with comprehensive mathematical verification
 - **232 test cases:** Known cases, random tests, edge cases
