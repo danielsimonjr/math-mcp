@@ -48,7 +48,7 @@ export interface AccelerationWrapper {
   matrixSubtract: (a: number[][], b: number[][]) => Promise<number[][]>;
   statsMean: (data: number[]) => Promise<number>;
   statsMedian: (data: number[]) => Promise<number>;
-  statsMode: (data: number[]) => Promise<number | number[]>;
+  statsMode: (data: number[]) => Promise<number[]>;
   statsStd: (data: number[]) => Promise<number>;
   statsVariance: (data: number[]) => Promise<number>;
   statsMin: (data: number[]) => Promise<number>;
@@ -721,13 +721,19 @@ export async function handleStatistics(
         break;
 
       case 'mode':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsMode(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_mode'
-            )
-          : math.mode(dataArray);
+        {
+          const modeResult = accelerationWrapper
+            ? await withTimeout(
+                accelerationWrapper.statsMode(dataArray),
+                DEFAULT_OPERATION_TIMEOUT,
+                'stats_mode'
+              )
+            : math.mode(dataArray);
+
+          // Normalize mode to always return an array for consistency
+          // Single mode: [value], Multiple modes: [value1, value2, ...]
+          result = Array.isArray(modeResult) ? modeResult : [modeResult];
+        }
         break;
 
       case 'std':

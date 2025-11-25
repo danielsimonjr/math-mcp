@@ -159,7 +159,7 @@ function formatLogMessage(
 
 /**
  * Simple logger utility with log levels.
- * Uses console.error for all output (as recommended for MCP servers).
+ * Uses appropriate streams: stderr for errors/warnings, stdout for info/debug.
  *
  * @constant
  * @type {Object}
@@ -167,6 +167,7 @@ function formatLogMessage(
 export const logger = {
   /**
    * Logs an error message. Always logged regardless of log level.
+   * Outputs to stderr (console.error).
    *
    * @param {string} message - The error message
    * @param {Record<string, unknown>} [metadata] - Optional metadata
@@ -184,6 +185,7 @@ export const logger = {
 
   /**
    * Logs a warning message.
+   * Outputs to stderr (console.warn).
    *
    * @param {string} message - The warning message
    * @param {Record<string, unknown>} [metadata] - Optional metadata
@@ -195,12 +197,13 @@ export const logger = {
    */
   warn(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.WARN)) {
-      console.error(formatLogMessage(LogLevel.WARN, message, metadata));
+      console.warn(formatLogMessage(LogLevel.WARN, message, metadata));
     }
   },
 
   /**
    * Logs an informational message.
+   * Outputs to stdout (console.log).
    *
    * @param {string} message - The info message
    * @param {Record<string, unknown>} [metadata] - Optional metadata
@@ -212,12 +215,13 @@ export const logger = {
    */
   info(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.INFO)) {
-      console.error(formatLogMessage(LogLevel.INFO, message, metadata));
+      console.log(formatLogMessage(LogLevel.INFO, message, metadata));
     }
   },
 
   /**
    * Logs a debug message. Only logged when LOG_LEVEL=debug.
+   * Outputs to stdout (console.log).
    *
    * @param {string} message - The debug message
    * @param {Record<string, unknown>} [metadata] - Optional metadata
@@ -229,7 +233,7 @@ export const logger = {
    */
   debug(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.DEBUG)) {
-      console.error(formatLogMessage(LogLevel.DEBUG, message, metadata));
+      console.log(formatLogMessage(LogLevel.DEBUG, message, metadata));
     }
   },
 };
