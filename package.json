@@ -17,6 +17,7 @@
     "verify:wasm": "test -f wasm/build/release.wasm && test -f wasm/build/debug.wasm || (echo 'Error: WASM modules not built' && exit 1)",
     "verify:hashes": "test -f wasm-hashes.json || (echo 'Error: wasm-hashes.json missing' && exit 1)",
     "generate:hashes": "node scripts/generate-wasm-hashes.js",
+    "check:deps": "node scripts/check-dependencies.js",
     "start": "node dist/index-wasm.js",
     "dev": "tsc && node dist/index-wasm.js",
     "lint": "eslint src/**/*.ts",
