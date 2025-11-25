@@ -88,10 +88,13 @@ export interface ToolResponse {
  *
  * @param {string} expression - The expression to evaluate
  * @param {Record<string, number>} scope - Variable scope
- * @returns {any} The evaluation result
+ * @returns {number | math.Matrix | math.Complex | math.Fraction | math.BigNumber} The evaluation result
  * @throws {ValidationError} If expression contains unsafe operations
  */
-function safeEvaluate(expression: string, scope: Record<string, number>): any {
+function safeEvaluate(
+  expression: string,
+  scope: Record<string, number>
+): number | math.Matrix | math.Complex | math.Fraction | math.BigNumber {
   // List of allowed node types (safe mathematical operations)
   const ALLOWED_NODE_TYPES = new Set([
     'ConstantNode',      // Numbers: 42, 3.14
@@ -116,6 +119,7 @@ function safeEvaluate(expression: string, scope: Record<string, number>): any {
   ]);
 
   // Recursively validate AST nodes
+  // Note: Using 'any' for internal AST traversal as mathjs MathNode doesn't expose all properties
   function validateNode(n: any): void {
     if (!n || !n.type) {
       return;

@@ -30,8 +30,38 @@ import {
 /**
  * WASM module instances (loaded on worker startup).
  */
-let wasmMatrix: any = null;
-let wasmStats: any = null;
+/**
+ * WASM module interface for matrix operations.
+ * @interface WasmMatrixModule
+ */
+interface WasmMatrixModule {
+  multiply(a: number[][], b: number[][]): number[][];
+  det(matrix: number[][]): number;
+  transpose(matrix: number[][]): number[][];
+  add(a: number[][], b: number[][]): number[][];
+  subtract(a: number[][], b: number[][]): number[][];
+  init(): Promise<void>;
+}
+
+/**
+ * WASM module interface for statistics operations.
+ * @interface WasmStatsModule
+ */
+interface WasmStatsModule {
+  mean(data: number[]): number;
+  median(data: number[]): number;
+  std(data: number[]): number;
+  variance(data: number[]): number;
+  min(data: number[]): number;
+  max(data: number[]): number;
+  sum(data: number[]): number;
+  mode(data: number[]): number | number[];
+  product(data: number[]): number;
+  init(): Promise<void>;
+}
+
+let wasmMatrix: WasmMatrixModule | null = null;
+let wasmStats: WasmStatsModule | null = null;
 let wasmInitialized = false;
 
 /**
@@ -255,7 +285,7 @@ async function processRequest(
   const startTime = Date.now();
 
   try {
-    let result: any;
+    let result: number | number[] | number[][];
 
     // Route to appropriate processor
     if (
