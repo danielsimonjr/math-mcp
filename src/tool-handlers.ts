@@ -431,7 +431,7 @@ export async function handleSolve(args: {
     const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
 
     // Use cached parsed and compiled expression
-    const compiled = getCachedExpression(
+    const _compiled = getCachedExpression(
       expr,
       () => {
         const node = math.parse(expr);

@@ -8,7 +8,6 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import * as math from "mathjs";
-import * as wasmWrapper from "./wasm-wrapper.js";
 
 // Define available tools
 const TOOLS: Tool[] = [
@@ -220,7 +219,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Evaluate as: left - right = 0 and use numeric solver
         const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
         const node = math.parse(expr);
-        const compiled = node.compile();
+        const _compiled = node.compile();
 
         // Try to solve symbolically by rearranging
         let result: string;

@@ -249,7 +249,7 @@ async function processStatsOperation(
       return wasmStats.max(chunk);
 
     case OperationType.STATS_VARIANCE: {
-      const normalization = params?.normalization || 0; // 0 = unbiased (n-1)
+      const _normalization = params?.normalization || 0; // 0 = unbiased (n-1)
       // Note: Current WASM variance uses default normalization
       // Future enhancement: support normalization parameter
       return wasmStats.variance(chunk);

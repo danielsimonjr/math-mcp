@@ -22,7 +22,6 @@
 import * as math from 'mathjs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
-import { WasmError } from './errors.js';
 import { logger } from './utils.js';
 import { verifyWasmIntegrity, isIntegrityCheckEnabled } from './wasm-integrity.js';
 
@@ -270,7 +269,7 @@ async function initWASM(): Promise<void> {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const wasmPath = join(__dirname, '../wasm');
-    const projectRoot = join(__dirname, '..');
+    const _projectRoot = join(__dirname, '..');
 
     // Verify WASM integrity before loading (if enabled)
     if (isIntegrityCheckEnabled()) {

@@ -11,7 +11,7 @@
 
 import { WorkerPool } from './worker-pool.js';
 import { OperationType } from './worker-types.js';
-import { chunkArray, mergeArrayChunks, getOptimalChunkCount } from './chunk-utils.js';
+import { chunkArray, getOptimalChunkCount } from './chunk-utils.js';
 import { logger } from '../utils.js';
 
 /**
@@ -329,12 +329,12 @@ export async function parallelStatsVariance(
   });
 
   // Step 1: Calculate mean in parallel
-  const mean = await parallelStatsMean(data, pool);
+  const _mean = await parallelStatsMean(data, pool);
 
   // Step 2: Calculate sum of squared differences in parallel
   // Note: Current WASM variance doesn't support custom mean input
   // For now, use single-threaded WASM variance
-  // TODO: Enhance WASM variance to support parallel calculation
+  // TODO: Enhance WASM variance to support parallel calculation with mean parameter
 
   // Determine optimal chunk count
   const numChunks = getOptimalChunkCount(

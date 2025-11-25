@@ -12,6 +12,26 @@ Documentation in reverse chronological order (latest first).
 
 ### 🔧 Code Quality Improvements
 
+#### Worker Pool Auto-Scaling (Sprint 3 - Task 12)
+- **Added MIN_WORKERS environment variable** for configurable minimum workers (default: 2)
+- **Support for zero workers:** Set `MIN_WORKERS=0` to scale down to zero during idle periods
+- **On-demand worker creation:** Automatically creates workers when pool is empty
+- **Environment variables added:** MIN_WORKERS, MAX_WORKERS, WORKER_IDLE_TIMEOUT
+- **Resource efficiency:** Workers automatically terminated after idle timeout (default: 60s)
+- **Cost savings:** Reduces memory and CPU usage when not processing tasks
+- **Production ready:** Seamless scaling up/down without service disruption
+- **Files updated:** src/workers/worker-pool.ts, README.md
+
+#### TypeScript Configuration Enhanced (Sprint 3 - Task 11)
+- **Added ES2022 lib** for explicit feature support
+- **Added strict compiler flags:** noImplicitReturns, noFallthroughCasesInSwitch
+- **Cleaned up unused imports:** Removed 10+ unused imports across codebase
+- **Prefixed intentionally unused variables** with underscore (_compiled, _mean, etc.)
+- **Excluded test directory** from TypeScript compilation
+- **Type-check:** Clean (no errors)
+- **Better IntelliSense:** Explicit lib configuration improves IDE support
+- **Files updated:** tsconfig.json, acceleration-router.ts, index.ts, index-wasm.ts, workers/*
+
 #### Dependency Version Pinning Added (Sprint 2 - Task 10)
 - **Removed `^` prefixes** from all dependencies in package.json
 - **Pinned exact versions:** mathjs@15.0.0, @modelcontextprotocol/sdk@1.20.2
