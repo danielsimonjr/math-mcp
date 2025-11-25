@@ -4,9 +4,9 @@
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
-A high-performance MCP (Model Context Protocol) server providing mathematical computation capabilities powered by mathjs, with **Multi-Tier Acceleration** through WebWorkers, WebAssembly (WASM), and WebGPU.
+A high-performance, production-ready MCP (Model Context Protocol) server providing secure mathematical computation capabilities powered by mathjs, with **Multi-Tier Acceleration** through WebWorkers, WebAssembly (WASM), and comprehensive security features.
 
-## 🚀 Performance (v3.0.0)
+## 🚀 Performance
 
 This server features intelligent multi-tier acceleration providing **up to 1920x speedup** compared to pure JavaScript:
 
@@ -17,7 +17,7 @@ This server features intelligent multi-tier acceleration providing **up to 1920x
 - **🔄 Graceful Fallback:** GPU → Workers → WASM → mathjs (never fails)
 - **✅ Zero Breaking Changes:** 100% backward compatible API
 
-### Performance Results (v3.0.0)
+### Performance Results
 
 | Operation | Size | mathjs | WASM | Workers | GPU (future) | Best Speedup |
 |-----------|------|--------|------|---------|--------------|--------------|
@@ -35,23 +35,40 @@ For detailed benchmarks and architecture, see [docs/ACCELERATION_ARCHITECTURE.md
 
 ## ✨ Features
 
-### ⚡ Multi-Tier Acceleration (New in v3.0.0)
+### ⚡ Multi-Tier Acceleration
 
 - **Intelligent Routing:** Automatically routes operations through optimal acceleration tier
 - **WebWorker Pool:** Dynamic 2-8 worker threads for parallel processing
 - **WASM Acceleration:** AssemblyScript-compiled modules for medium operations
-- **WebGPU Ready:** GPU compute shaders (browser/Deno, coming in v4.0)
+- **WebGPU Ready:** GPU compute shaders (browser/Deno support planned)
 - **Performance Tracking:** Monitor acceleration tier usage and statistics
 - **Zero Configuration:** Works out-of-the-box with automatic optimization
 
-### 🔐 Security & Quality (v2.1.0)
+### 🔐 Security Features
 
+- **Rate Limiting:** Token bucket algorithm prevents DoS attacks
+  - Configurable request limits per time window
+  - Concurrent request limits (max in-flight operations)
+  - Queue size limits for pending requests
+- **WASM Integrity Verification:** Cryptographic SHA-256 verification of WASM binaries
+  - Prevents execution of tampered modules
+  - Automatic verification at runtime
+- **Expression Sandboxing:** AST validation prevents code injection
+  - Whitelist-based approach for safe operations
+  - Blocks dangerous functions and assignments
 - **Input Validation:** Comprehensive validation for all inputs
-- **DoS Protection:** Size limits prevent resource exhaustion attacks
-- **Timeout Protection:** 30-second configurable timeout for all operations
-- **Type Safety:** 100% TypeScript with no `any` types
-- **Error Handling:** Custom error types with detailed messages
-- **Enterprise-Grade:** Production-ready code quality standards
+  - Length limits and format validation
+  - Size limits prevent resource exhaustion
+- **Timeout Protection:** Configurable timeout for all operations
+- **Type Safety:** Strict TypeScript with enforced type checking
+
+### ⚡ Performance Optimizations
+
+- **Expression Caching:** LRU cache for parsed/compiled expressions
+  - Reduces repeated parsing overhead
+  - Configurable cache size (default: 1000 entries)
+- **Early Size Checks:** Prevents event loop blocking from oversized inputs
+- **Efficient Logging:** Proper stream separation (stdout/stderr)
 
 ### 7 Mathematical Tools
 
@@ -72,7 +89,9 @@ For detailed benchmarks and architecture, see [docs/ACCELERATION_ARCHITECTURE.md
 matrix_operations("determinant", "[[1,2],[3,4]]")  // -2
 
 // Statistics (WASM-accelerated for 100+ elements)
+// Note: mode returns an array
 statistics("mean", "[1,2,3,4,5]")  // 3
+statistics("mode", "[1,2,2,3,4]")  // [2]
 
 // Symbolic math
 derivative("x^2", "x")  // "2 * x"
@@ -264,7 +283,7 @@ unit_conversion("100 fahrenheit", "celsius")    // "37.78 celsius"
 unit_conversion("50 mph", "km/h")               // "80.47 km/h"
 ```
 
-## 🔧 How Multi-Tier Acceleration Works (v3.0.0)
+## 🔧 How Multi-Tier Acceleration Works
 
 The server intelligently routes operations through optimal acceleration tiers:
 
@@ -296,7 +315,7 @@ GPU → Workers → WASM → mathjs
 ```
 If any tier fails, automatically falls back to the next tier. Never fails!
 
-## 📊 Architecture (v3.0.0)
+## 📊 Architecture
 
 ```
 MCP Server (index-wasm.ts)
@@ -330,7 +349,7 @@ mathjs  WASM   WebWorkers      WebGPU       │
 - Zero configuration required
 - Automatic performance optimization
 
-## 📁 Project Structure (v3.0.0)
+## 📁 Project Structure
 
 ```
 math-mcp/
@@ -497,7 +516,7 @@ LOG_LEVEL=debug|info|warn|error    # Control log verbosity (default: info)
 DISABLE_PERF_TRACKING=true         # Disable performance tracking for minimal overhead
 ENABLE_PERF_LOGGING=true           # Enable periodic performance statistics logging
 
-# Worker pool configuration (New in v3.0.0)
+# Worker pool configuration
 MAX_WORKERS=8                      # Maximum concurrent workers (default: CPU cores - 1)
 MIN_WORKERS=2                      # Minimum workers to keep alive (default: 2)
 WORKER_IDLE_TIMEOUT=60000          # Idle worker termination timeout in ms (default: 60000)
@@ -511,7 +530,7 @@ MAX_NESTING_DEPTH=50               # Maximum parentheses/bracket nesting
 OPERATION_TIMEOUT=30000            # Operation timeout in milliseconds
 ```
 
-## 🛠️ Development (New in v2.1.0)
+## 🛠️ Development
 
 ### Code Quality Tools
 
@@ -537,28 +556,6 @@ npm run test:coverage    # Generate test coverage report
 - **Vitest:** Modern, fast testing framework
 - **100% JSDoc Coverage:** All public APIs documented
 
-## 📝 Version History
-
-- **3.0.0** (Latest - November 19, 2025) ⚡ Multi-tier acceleration architecture
-  - Intelligent routing through mathjs → WASM → WebWorkers → WebGPU
-  - WebWorker pool with dynamic scaling (2-8 workers)
-  - Parallel matrix operations (multiply, transpose, add, subtract)
-  - Parallel statistics (mean, sum, min, max, variance, std)
-  - Up to 143x speedup with WebWorkers (1920x with GPU in future)
-  - WebGPU compute shaders (browser/Deno support coming in v4.0)
-  - Performance tracking and routing statistics
-  - Zero breaking changes, 100% backward compatible
-- **2.1.0** (November 2025) - Comprehensive code quality improvements
-  - Custom error types and input validation
-  - Timeout protection and security hardening
-  - Structured logging and performance tracking
-  - ESLint, Prettier, Vitest integration
-  - 100% JSDoc documentation coverage
-  - Eliminated code duplication
-- **2.0.1** (November 5, 2025) - Extended WASM coverage: matrix add/subtract, statistics mode/product
-- **2.0.0** (November 2, 2025) - WASM acceleration, 14.30x average speedup
-- **1.0.0** - Initial mathjs-only version
-
 ## 📄 License
 
 ISC License - see [LICENSE](LICENSE) file for details.
@@ -570,11 +567,5 @@ ISC License - see [LICENSE](LICENSE) file for details.
 - **MCP SDK** - Model Context Protocol implementation
 
 ---
-
-**Status:** Production Ready ✅
-**Performance:** Up to 143x faster with multi-tier acceleration (1920x with GPU in future)
-**Acceleration Tiers:** mathjs → WASM (14x) → WebWorkers (56x) → WebGPU (5600x, future)
-**Platform Support:** Windows | macOS | Linux
-**Node.js:** ≥18.0.0 (required for worker_threads)
 
 Made with ❤️ by the math-mcp contributors
