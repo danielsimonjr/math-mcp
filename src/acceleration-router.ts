@@ -42,17 +42,10 @@ import {
   parallelMatrixTranspose,
   parallelMatrixAdd,
   parallelMatrixSubtract,
-  PARALLEL_THRESHOLDS,
   shouldUseParallel,
 } from './workers/parallel-matrix.js';
 import {
   parallelStatsMean,
-  parallelStatsSum,
-  parallelStatsMin,
-  parallelStatsMax,
-  parallelStatsVariance,
-  parallelStatsStd,
-  PARALLEL_THRESHOLDS as PARALLEL_STATS_THRESHOLDS,
   shouldUseParallel as shouldUseParallelStats,
 } from './workers/parallel-stats.js';
 import { WorkerPool } from './workers/worker-pool.js';
@@ -60,8 +53,6 @@ import {
   gpuMatrixMultiply,
   gpuStatsMean,
   shouldUseGPU,
-  GPU_THRESHOLDS,
-  gpuInitialized,
 } from './gpu/webgpu-wrapper.js';
 import { logger } from './utils.js';
 

@@ -13,7 +13,6 @@ import { WorkerPool } from './worker-pool.js';
 import { OperationType } from './worker-types.js';
 import {
   chunkMatrixByRows,
-  mergeMatrixRowChunks,
   getOptimalChunkCount,
 } from './chunk-utils.js';
 import { logger } from '../utils.js';
