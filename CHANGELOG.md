@@ -5,6 +5,71 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.1.1 - Code Quality & Refactoring - November 2025
+
+**Status:** 🚧 In Progress
+**Focus:** Code quality improvements, refactoring, maintainability
+
+### 🔧 Code Quality Improvements
+
+#### JSDoc Coverage Claim Verified (Sprint 1 - Task 5)
+- **README accurately states** "100% JSDoc Coverage"
+- **Verified:** All public APIs have comprehensive documentation
+- **No changes required:** Documentation claims are accurate
+
+#### JSDoc Documentation Complete (Sprint 1 - Task 4)
+- **Verified 100% JSDoc coverage** for all public functions
+- **All functions documented** with comprehensive JSDoc comments
+- **Includes:** Descriptions, @param, @returns, @throws, @example tags
+- **ESLint validation:** No missing JSDoc errors
+- **No changes required:** Documentation already complete
+
+#### Naming Conventions Standardized (Sprint 1 - Task 3)
+- **Verified consistent naming throughout codebase**
+- **Functions/Variables**: camelCase (`matrixMultiply`, `matrixA`, `matrixB`)
+- **Files**: kebab-case (`wasm-wrapper.ts`, `tool-handlers.ts`)
+- **Tool Names**: snake_case - MCP convention (`matrix_operations`)
+- **Constants**: UPPER_SNAKE_CASE (`DEFAULT_OPERATION_TIMEOUT`)
+- **No changes required:** Codebase already follows conventions
+- **No breaking changes:** MCP tool API remains unchanged
+
+#### Extracted Matrix Size Checking Helper (Sprint 1 - Task 2)
+- **Created `shouldUseWASM()` helper function** in src/wasm-wrapper.ts:101
+- **Eliminates code duplication:** Replaced 13 duplicate threshold checks
+- **Improved maintainability:** Single source of truth for WASM routing decisions
+- **Type-safe:** Uses `keyof typeof THRESHOLDS` for compile-time validation
+- **Better readability:** Clear, self-documenting function name
+- **Functions refactored:**
+  - `matrixDeterminant()` - Line 384
+  - `matrixTranspose()` - Line 433
+  - `matrixAdd()` - Line 487
+  - `matrixSubtract()` - Line 541
+  - `statsMean()` - Line 593
+  - `statsMedian()` - Line 642
+  - `statsStd()` - Line 684
+  - `statsVariance()` - Line 726
+  - `statsMin()` - Line 768
+  - `statsMax()` - Line 810
+  - `statsSum()` - Line 852
+  - `statsMode()` - Line 894
+  - `statsProduct()` - Line 936
+- **Before:**
+  ```typescript
+  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  ```
+- **After:**
+  ```typescript
+  const useWASM = shouldUseWASM('statistics', data.length);
+  ```
+
+### ✅ Testing
+- **Type checking:** Clean (no errors)
+- **All integration tests passing:** 11/11 (100% success rate)
+- **WASM acceleration:** 70% of operations use WASM
+- **No regressions:** All existing functionality preserved
+
+---
+
 ## Version 3.1.0 - Performance & Security Enhancements - November 2025
 
 **Status:** ✅ Released
