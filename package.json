@@ -5,6 +5,8 @@
   "main": "dist/index-wasm.js",
   "scripts": {
     "test": "node test/integration-test.js",
+    "test:correctness": "node test/correctness-tests.js",
+    "test:all": "npm test && npm run test:correctness",
     "test:unit": "vitest",
     "test:coverage": "vitest --coverage",
     "build": "tsc",

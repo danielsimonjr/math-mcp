@@ -10,6 +10,50 @@ Documentation in reverse chronological order (latest first).
 **Status:** 🚧 In Progress
 **Focus:** Code quality improvements, refactoring, maintainability
 
+### 🧪 Testing
+
+#### Mathematical Correctness Tests Added (Sprint 4 - Task 16)
+- **Created `test/correctness-tests.js`** with comprehensive mathematical verification
+- **232 test cases:** Known cases, random tests, edge cases
+- **Matrix operations:** Multiply, determinant, transpose, add, subtract with 100+ tests
+- **Statistics operations:** Mean, median, variance, std, min, max, sum with 100+ tests
+- **Property-based testing:** 50 random tests per operation type
+- **Edge case coverage:** Large matrices (100×100), small/large values, 10k element arrays
+- **Floating-point tolerance:** Configurable precision (1e-10 default)
+- **Test utilities:** assertClose, assertMatricesClose, assertArraysClose helpers
+- **Random data generation:** Matrices and arrays with configurable ranges
+- **All tests passing:** 232/232 (100%) in ~0.1s
+- **npm scripts added:** `test:correctness`, `test:all`
+- **Files created:** test/correctness-tests.js
+
+### ⚙️ Architecture Improvements
+
+#### Optimized Parallel Matrix Transpose (Sprint 4 - Task 15)
+- **Reduced algorithm complexity from O(n³) to O(n²)** in merge operation
+- **Created `mergeTransposedChunks()` helper function** for efficient chunk merging
+- **Cache-friendly memory access:** Sequential row copying instead of element-by-element
+- **Eliminated triple-nested loop:** Replaced with optimized double-nested loop
+- **Improved memory allocation:** Proper pre-allocation with correct dimensions
+- **Performance gains:** Faster merging for large matrices (200×200+)
+- **Maintained correctness:** All 232 tests passing, no regressions
+- **Code documentation:** Added detailed JSDoc explaining the optimization
+- **Files updated:** src/workers/parallel-matrix.ts
+
+#### Explicit Graceful Degradation Policy (Sprint 4 - Task 18)
+- **Created `src/degradation-policy.ts`** with centralized degradation configuration
+- **AccelerationTier enum:** Unified tier definition (mathjs, wasm, workers, gpu)
+- **Environment variable configuration:** ENABLE_GPU, ENABLE_WORKERS, ENABLE_WASM, NOTIFY_DEGRADATION
+- **DegradationPolicy interface:** Tracks enabled tiers, fallback chain, and notification settings
+- **Tier enablement checks:** All routing functions now respect tier configuration
+- **Improved degradation logging:** Standardized logDegradation() function with operation context
+- **Fallback chain enforcement:** GPU → Workers → WASM → mathjs (configurable)
+- **Default configuration:** WASM and Workers enabled by default, GPU disabled (not implemented)
+- **Configuration description:** getConfigurationDescription() for human-readable status
+- **Integration with acceleration-router:** All routing functions use degradation policy
+- **Documentation updated:** README.md includes new environment variables
+- **Files created:** src/degradation-policy.ts
+- **Files updated:** src/acceleration-router.ts, README.md
+
 ### 📚 Documentation
 
 #### Troubleshooting Guide Added (Sprint 3 - Task 14)

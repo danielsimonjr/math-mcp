@@ -911,6 +911,12 @@ The server supports several environment variables for customization:
 # Logging configuration
 LOG_LEVEL=debug|info|warn|error    # Control log verbosity (default: info)
 
+# Acceleration tier configuration
+ENABLE_GPU=false                   # Enable WebGPU acceleration tier (default: false, not yet implemented)
+ENABLE_WORKERS=true                # Enable WebWorkers acceleration tier (default: true)
+ENABLE_WASM=true                   # Enable WASM acceleration tier (default: true)
+NOTIFY_DEGRADATION=true            # Log when acceleration tier degradation occurs (default: true)
+
 # Performance tuning
 DISABLE_PERF_TRACKING=true         # Disable performance tracking for minimal overhead
 ENABLE_PERF_LOGGING=true           # Enable periodic performance statistics logging
