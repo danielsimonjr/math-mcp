@@ -10,6 +10,22 @@ Documentation in reverse chronological order (latest first).
 **Status:** 🚧 In Progress
 **Focus:** Code quality improvements, refactoring, maintainability
 
+### 🧪 Testing
+
+#### Mathematical Correctness Tests Added (Sprint 4 - Task 16)
+- **Created `test/correctness-tests.js`** with comprehensive mathematical verification
+- **232 test cases:** Known cases, random tests, edge cases
+- **Matrix operations:** Multiply, determinant, transpose, add, subtract with 100+ tests
+- **Statistics operations:** Mean, median, variance, std, min, max, sum with 100+ tests
+- **Property-based testing:** 50 random tests per operation type
+- **Edge case coverage:** Large matrices (100×100), small/large values, 10k element arrays
+- **Floating-point tolerance:** Configurable precision (1e-10 default)
+- **Test utilities:** assertClose, assertMatricesClose, assertArraysClose helpers
+- **Random data generation:** Matrices and arrays with configurable ranges
+- **All tests passing:** 232/232 (100%) in ~0.1s
+- **npm scripts added:** `test:correctness`, `test:all`
+- **Files created:** test/correctness-tests.js
+
 ### 📚 Documentation
 
 #### Troubleshooting Guide Added (Sprint 3 - Task 14)
