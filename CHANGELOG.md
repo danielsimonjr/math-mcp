@@ -26,6 +26,23 @@ Documentation in reverse chronological order (latest first).
 - **npm scripts added:** `test:correctness`, `test:all`
 - **Files created:** test/correctness-tests.js
 
+### ⚙️ Architecture Improvements
+
+#### Explicit Graceful Degradation Policy (Sprint 4 - Task 18)
+- **Created `src/degradation-policy.ts`** with centralized degradation configuration
+- **AccelerationTier enum:** Unified tier definition (mathjs, wasm, workers, gpu)
+- **Environment variable configuration:** ENABLE_GPU, ENABLE_WORKERS, ENABLE_WASM, NOTIFY_DEGRADATION
+- **DegradationPolicy interface:** Tracks enabled tiers, fallback chain, and notification settings
+- **Tier enablement checks:** All routing functions now respect tier configuration
+- **Improved degradation logging:** Standardized logDegradation() function with operation context
+- **Fallback chain enforcement:** GPU → Workers → WASM → mathjs (configurable)
+- **Default configuration:** WASM and Workers enabled by default, GPU disabled (not implemented)
+- **Configuration description:** getConfigurationDescription() for human-readable status
+- **Integration with acceleration-router:** All routing functions use degradation policy
+- **Documentation updated:** README.md includes new environment variables
+- **Files created:** src/degradation-policy.ts
+- **Files updated:** src/acceleration-router.ts, README.md
+
 ### 📚 Documentation
 
 #### Troubleshooting Guide Added (Sprint 3 - Task 14)

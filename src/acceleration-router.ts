@@ -55,6 +55,12 @@ import {
   shouldUseGPU,
 } from './gpu/webgpu-wrapper.js';
 import { logger } from './utils.js';
+import {
+  AccelerationTier,
+  isTierEnabled,
+  logDegradation,
+  getDegradationPolicy,
+} from './degradation-policy.js';
 
 /**
  * Global worker pool instance.
@@ -68,14 +74,9 @@ let workerPool: WorkerPool | null = null;
 let workerPoolInitialized = false;
 
 /**
- * Acceleration tier used for an operation.
+ * Re-export AccelerationTier from degradation-policy for convenience.
  */
-export enum AccelerationTier {
-  MATHJS = 'mathjs',
-  WASM = 'wasm',
-  WORKERS = 'workers',
-  GPU = 'gpu',
-}
+export { AccelerationTier } from './degradation-policy.js';
 
 /**
  * Performance tracking for routing decisions.
@@ -146,21 +147,24 @@ export async function routedMatrixMultiply(
   const size = Math.min(a.length, b.length);
 
   // Try GPU first (very large matrices)
-  if (shouldUseGPU(size, 'matrix_multiply')) {
+  if (isTierEnabled(AccelerationTier.GPU) && shouldUseGPU(size, 'matrix_multiply')) {
     try {
       logger.debug('Routing matrix multiply to GPU', { size });
       const result = await gpuMatrixMultiply(a, b);
       routingStats.gpuUsage++;
       return { result, tier: AccelerationTier.GPU };
     } catch (error) {
-      logger.warn('GPU matrix multiply failed, falling back to workers', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'matrix_multiply',
+        AccelerationTier.GPU,
+        AccelerationTier.WORKERS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
   // Try WebWorkers (large matrices)
-  if (shouldUseParallel(size, 'multiply')) {
+  if (isTierEnabled(AccelerationTier.WORKERS) && shouldUseParallel(size, 'multiply')) {
     const pool = await getWorkerPool();
     if (pool) {
       try {
@@ -169,24 +173,30 @@ export async function routedMatrixMultiply(
         routingStats.workersUsage++;
         return { result, tier: AccelerationTier.WORKERS };
       } catch (error) {
-        logger.warn('Worker matrix multiply failed, falling back to WASM', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logDegradation(
+          'matrix_multiply',
+          AccelerationTier.WORKERS,
+          AccelerationTier.WASM,
+          error instanceof Error ? error : undefined
+        );
       }
     }
   }
 
   // Try WASM (medium matrices)
-  if (size >= WASM_THRESHOLDS.matrix_multiply) {
+  if (isTierEnabled(AccelerationTier.WASM) && size >= WASM_THRESHOLDS.matrix_multiply) {
     try {
       logger.debug('Routing matrix multiply to WASM', { size });
       const result = await wasmMatrixMultiply(a, b);
       routingStats.wasmUsage++;
       return { result, tier: AccelerationTier.WASM };
     } catch (error) {
-      logger.warn('WASM matrix multiply failed, falling back to mathjs', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'matrix_multiply',
+        AccelerationTier.WASM,
+        AccelerationTier.MATHJS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -209,7 +219,7 @@ export async function routedMatrixTranspose(
   const size = matrix.length;
 
   // Try WebWorkers (large matrices)
-  if (shouldUseParallel(size, 'transpose')) {
+  if (isTierEnabled(AccelerationTier.WORKERS) && shouldUseParallel(size, 'transpose')) {
     const pool = await getWorkerPool();
     if (pool) {
       try {
@@ -218,24 +228,30 @@ export async function routedMatrixTranspose(
         routingStats.workersUsage++;
         return { result, tier: AccelerationTier.WORKERS };
       } catch (error) {
-        logger.warn('Worker matrix transpose failed, falling back to WASM', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logDegradation(
+          'matrix_transpose',
+          AccelerationTier.WORKERS,
+          AccelerationTier.WASM,
+          error instanceof Error ? error : undefined
+        );
       }
     }
   }
 
   // Try WASM (medium matrices)
-  if (size >= WASM_THRESHOLDS.matrix_transpose) {
+  if (isTierEnabled(AccelerationTier.WASM) && size >= WASM_THRESHOLDS.matrix_transpose) {
     try {
       logger.debug('Routing matrix transpose to WASM', { size });
       const result = await wasmMatrixTranspose(matrix);
       routingStats.wasmUsage++;
       return { result, tier: AccelerationTier.WASM };
     } catch (error) {
-      logger.warn('WASM matrix transpose failed, falling back to mathjs', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'matrix_transpose',
+        AccelerationTier.WASM,
+        AccelerationTier.MATHJS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -260,7 +276,7 @@ export async function routedMatrixAdd(
   const size = Math.min(a.length, b.length);
 
   // Try WebWorkers (large matrices)
-  if (shouldUseParallel(size, 'add')) {
+  if (isTierEnabled(AccelerationTier.WORKERS) && shouldUseParallel(size, 'add')) {
     const pool = await getWorkerPool();
     if (pool) {
       try {
@@ -269,24 +285,30 @@ export async function routedMatrixAdd(
         routingStats.workersUsage++;
         return { result, tier: AccelerationTier.WORKERS };
       } catch (error) {
-        logger.warn('Worker matrix add failed, falling back to WASM', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logDegradation(
+          'matrix_add',
+          AccelerationTier.WORKERS,
+          AccelerationTier.WASM,
+          error instanceof Error ? error : undefined
+        );
       }
     }
   }
 
   // Try WASM (medium matrices)
-  if (size >= WASM_THRESHOLDS.matrix_transpose) {
+  if (isTierEnabled(AccelerationTier.WASM) && size >= WASM_THRESHOLDS.matrix_transpose) {
     try {
       logger.debug('Routing matrix add to WASM', { size });
       const result = await wasmMatrixAdd(a, b);
       routingStats.wasmUsage++;
       return { result, tier: AccelerationTier.WASM };
     } catch (error) {
-      logger.warn('WASM matrix add failed, falling back to mathjs', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'matrix_add',
+        AccelerationTier.WASM,
+        AccelerationTier.MATHJS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -311,7 +333,7 @@ export async function routedMatrixSubtract(
   const size = Math.min(a.length, b.length);
 
   // Try WebWorkers (large matrices)
-  if (shouldUseParallel(size, 'subtract')) {
+  if (isTierEnabled(AccelerationTier.WORKERS) && shouldUseParallel(size, 'subtract')) {
     const pool = await getWorkerPool();
     if (pool) {
       try {
@@ -320,24 +342,30 @@ export async function routedMatrixSubtract(
         routingStats.workersUsage++;
         return { result, tier: AccelerationTier.WORKERS };
       } catch (error) {
-        logger.warn('Worker matrix subtract failed, falling back to WASM', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logDegradation(
+          'matrix_subtract',
+          AccelerationTier.WORKERS,
+          AccelerationTier.WASM,
+          error instanceof Error ? error : undefined
+        );
       }
     }
   }
 
   // Try WASM (medium matrices)
-  if (size >= WASM_THRESHOLDS.matrix_transpose) {
+  if (isTierEnabled(AccelerationTier.WASM) && size >= WASM_THRESHOLDS.matrix_transpose) {
     try {
       logger.debug('Routing matrix subtract to WASM', { size });
       const result = await wasmMatrixSubtract(a, b);
       routingStats.wasmUsage++;
       return { result, tier: AccelerationTier.WASM };
     } catch (error) {
-      logger.warn('WASM matrix subtract failed, falling back to mathjs', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'matrix_subtract',
+        AccelerationTier.WASM,
+        AccelerationTier.MATHJS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
@@ -360,21 +388,24 @@ export async function routedStatsMean(
   const size = data.length;
 
   // Try GPU first (massive datasets)
-  if (shouldUseGPU(size, 'statistics')) {
+  if (isTierEnabled(AccelerationTier.GPU) && shouldUseGPU(size, 'statistics')) {
     try {
       logger.debug('Routing stats mean to GPU', { size });
       const result = await gpuStatsMean(data);
       routingStats.gpuUsage++;
       return { result, tier: AccelerationTier.GPU };
     } catch (error) {
-      logger.warn('GPU stats mean failed, falling back to workers', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'stats_mean',
+        AccelerationTier.GPU,
+        AccelerationTier.WORKERS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
   // Try WebWorkers (large datasets)
-  if (shouldUseParallelStats(size, 'mean')) {
+  if (isTierEnabled(AccelerationTier.WORKERS) && shouldUseParallelStats(size, 'mean')) {
     const pool = await getWorkerPool();
     if (pool) {
       try {
@@ -383,24 +414,30 @@ export async function routedStatsMean(
         routingStats.workersUsage++;
         return { result, tier: AccelerationTier.WORKERS };
       } catch (error) {
-        logger.warn('Worker stats mean failed, falling back to WASM', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logDegradation(
+          'stats_mean',
+          AccelerationTier.WORKERS,
+          AccelerationTier.WASM,
+          error instanceof Error ? error : undefined
+        );
       }
     }
   }
 
   // Try WASM (medium datasets)
-  if (size >= WASM_THRESHOLDS.statistics) {
+  if (isTierEnabled(AccelerationTier.WASM) && size >= WASM_THRESHOLDS.statistics) {
     try {
       logger.debug('Routing stats mean to WASM', { size });
       const result = await wasmStatsMean(data);
       routingStats.wasmUsage++;
       return { result, tier: AccelerationTier.WASM };
     } catch (error) {
-      logger.warn('WASM stats mean failed, falling back to mathjs', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logDegradation(
+        'stats_mean',
+        AccelerationTier.WASM,
+        AccelerationTier.MATHJS,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 
