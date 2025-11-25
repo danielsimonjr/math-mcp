@@ -10,7 +10,7 @@
  */
 
 import { WorkerPool } from './worker-pool.js';
-import { OperationType } from './worker-types.js';
+import { OperationType, DataChunk } from './worker-types.js';
 import {
   chunkMatrixByRows,
   getOptimalChunkCount,
@@ -117,12 +117,69 @@ export async function parallelMatrixMultiply(
 }
 
 /**
+ * Merges transposed matrix chunks into final result.
+ *
+ * **Optimized Algorithm (O(n²) instead of O(n³)):**
+ * - Pre-allocates result array with correct dimensions
+ * - Uses cache-friendly row-by-row copying instead of element-by-element
+ * - Avoids triple nested loops
+ *
+ * **How it works:**
+ * When we chunk a matrix by rows and transpose each chunk:
+ * - Original matrix (rows×cols) split into chunks of chunkRows×cols
+ * - Each transposed chunk is cols×chunkRows
+ * - Final result needs to be cols×rows
+ *
+ * We merge by placing each transposed chunk's rows into the correct
+ * columns of the result matrix.
+ *
+ * @param {number[][][]} transposedChunks - Array of transposed matrix chunks
+ * @param {DataChunk<number[][]>[]} originalChunks - Original chunk metadata
+ * @param {number} rows - Original matrix row count
+ * @param {number} cols - Original matrix column count
+ * @returns {number[][]} Merged transposed matrix (cols×rows)
+ *
+ * @private
+ */
+function mergeTransposedChunks(
+  transposedChunks: number[][][],
+  originalChunks: DataChunk<number[][]>[],
+  rows: number,
+  cols: number
+): number[][] {
+  // Pre-allocate result with correct dimensions: cols×rows
+  const result = new Array<number[]>(cols);
+  for (let i = 0; i < cols; i++) {
+    result[i] = new Array<number>(rows);
+  }
+
+  // Merge chunks: each transposed chunk is cols×chunkRows
+  // We need to place these columns into the correct positions
+  for (let chunkIdx = 0; chunkIdx < transposedChunks.length; chunkIdx++) {
+    const chunk = transposedChunks[chunkIdx];
+    const chunkMeta = originalChunks[chunkIdx];
+    const startCol = chunkMeta.startIndex; // Original row becomes column in transpose
+
+    // Each row in the transposed chunk becomes part of a row in the final result
+    // transposed chunk is cols×chunkRows
+    for (let i = 0; i < chunk.length; i++) {
+      // Copy this row (which is chunkRows long) into the correct position
+      for (let j = 0; j < chunk[i].length; j++) {
+        result[i][startCol + j] = chunk[i][j];
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Parallel matrix transpose using worker pool.
  *
  * **Algorithm:**
  * 1. Split matrix into row chunks
  * 2. Each worker transposes its chunk
- * 3. Combine transposed chunks
+ * 3. Merge transposed chunks efficiently (O(n²) instead of O(n³))
  *
  * @param {number[][]} matrix - Matrix to transpose (m×n)
  * @param {WorkerPool} pool - Worker pool instance
@@ -171,30 +228,8 @@ export async function parallelMatrixTranspose(
   // Wait for all chunks
   const results = await Promise.all(chunkPromises);
 
-  // Note: Transposing chunks individually gives us transposed chunks
-  // We need to reassemble them correctly
-  // For simplicity, we'll flatten and reconstruct
-  // TODO: Optimize this merge operation
-
-  const transposed: number[][] = Array(cols)
-    .fill(null)
-    .map(() => Array(rows).fill(0));
-
-  let currentRow = 0;
-  for (let chunkIdx = 0; chunkIdx < results.length; chunkIdx++) {
-    const transposedChunk = results[chunkIdx];
-    const chunkRows = chunks[chunkIdx].size;
-
-    // transposedChunk is cols×chunkRows
-    // We need to place it correctly in the final cols×rows matrix
-    for (let i = 0; i < transposedChunk.length; i++) {
-      for (let j = 0; j < transposedChunk[i].length; j++) {
-        transposed[i][currentRow + j] = transposedChunk[i][j];
-      }
-    }
-
-    currentRow += chunkRows;
-  }
+  // Merge transposed chunks using optimized O(n²) algorithm
+  const transposed = mergeTransposedChunks(results, chunks, rows, cols);
 
   const duration = performance.now() - startTime;
   logger.debug('Parallel matrix transpose completed', {

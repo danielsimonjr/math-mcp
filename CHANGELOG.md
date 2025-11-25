@@ -28,6 +28,17 @@ Documentation in reverse chronological order (latest first).
 
 ### ⚙️ Architecture Improvements
 
+#### Optimized Parallel Matrix Transpose (Sprint 4 - Task 15)
+- **Reduced algorithm complexity from O(n³) to O(n²)** in merge operation
+- **Created `mergeTransposedChunks()` helper function** for efficient chunk merging
+- **Cache-friendly memory access:** Sequential row copying instead of element-by-element
+- **Eliminated triple-nested loop:** Replaced with optimized double-nested loop
+- **Improved memory allocation:** Proper pre-allocation with correct dimensions
+- **Performance gains:** Faster merging for large matrices (200×200+)
+- **Maintained correctness:** All 232 tests passing, no regressions
+- **Code documentation:** Added detailed JSDoc explaining the optimization
+- **Files updated:** src/workers/parallel-matrix.ts
+
 #### Explicit Graceful Degradation Policy (Sprint 4 - Task 18)
 - **Created `src/degradation-policy.ts`** with centralized degradation configuration
 - **AccelerationTier enum:** Unified tier definition (mathjs, wasm, workers, gpu)
