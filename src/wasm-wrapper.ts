@@ -74,6 +74,54 @@ export const THRESHOLDS = {
 } as const;
 
 /**
+ * WASM module interface for matrix operations.
+ * @interface WasmMatrixModule
+ * @since 3.1.1
+ */
+interface WasmMatrixModule {
+  /** Multiplies two matrices */
+  multiply(a: number[][], b: number[][]): number[][];
+  /** Calculates matrix determinant */
+  det(matrix: number[][]): number;
+  /** Transposes a matrix */
+  transpose(matrix: number[][]): number[][];
+  /** Adds two matrices element-wise */
+  add(a: number[][], b: number[][]): number[][];
+  /** Subtracts two matrices element-wise */
+  subtract(a: number[][], b: number[][]): number[][];
+  /** Initializes the WASM module */
+  init(): Promise<void>;
+}
+
+/**
+ * WASM module interface for statistics operations.
+ * @interface WasmStatsModule
+ * @since 3.1.1
+ */
+interface WasmStatsModule {
+  /** Calculates mean (average) */
+  mean(data: number[]): number;
+  /** Calculates median */
+  median(data: number[]): number;
+  /** Calculates standard deviation */
+  std(data: number[]): number;
+  /** Calculates variance */
+  variance(data: number[]): number;
+  /** Finds minimum value */
+  min(data: number[]): number;
+  /** Finds maximum value */
+  max(data: number[]): number;
+  /** Calculates sum */
+  sum(data: number[]): number;
+  /** Finds mode (most frequent value) */
+  mode(data: number[]): number | number[];
+  /** Calculates product */
+  product(data: number[]): number;
+  /** Initializes the WASM module */
+  init(): Promise<void>;
+}
+
+/**
  * Checks if WASM should be used for an operation based on input size and threshold.
  *
  * This helper consolidates the common pattern of checking WASM availability and
@@ -106,17 +154,17 @@ function shouldUseWASM(thresholdKey: keyof typeof THRESHOLDS, size: number): boo
  * WASM module instance for matrix operations.
  * Null if not initialized or initialization failed.
  *
- * @type {any | null}
+ * @type {WasmMatrixModule | null}
  */
-let wasmMatrix: any = null;
+let wasmMatrix: WasmMatrixModule | null = null;
 
 /**
  * WASM module instance for statistics operations.
  * Null if not initialized or initialization failed.
  *
- * @type {any | null}
+ * @type {WasmStatsModule | null}
  */
-let wasmStats: any = null;
+let wasmStats: WasmStatsModule | null = null;
 
 /**
  * Flag indicating whether WASM modules have been successfully initialized.
