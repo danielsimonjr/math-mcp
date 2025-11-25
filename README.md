@@ -500,6 +500,232 @@ See [SECURITY.md](SECURITY.md) for security policy and vulnerability reporting.
 
 ## 🐛 Troubleshooting
 
+### Worker Pool Issues
+
+#### Workers Fail to Initialize
+
+**Symptoms:**
+```
+[ERROR] Failed to create worker: Error: worker_threads not available
+[ERROR] WorkerPool not initialized
+```
+
+**Solutions:**
+
+1. **Verify Node.js version:**
+   ```bash
+   node --version  # Must be v18.0.0 or higher
+   ```
+
+2. **Check worker_threads support:**
+   ```javascript
+   // test-workers.js
+   try {
+     const { Worker } = require('worker_threads');
+     console.log('✓ worker_threads available');
+   } catch (err) {
+     console.error('✗ worker_threads not available:', err.message);
+   }
+   ```
+
+3. **Rebuild native modules (if needed):**
+   ```bash
+   npm rebuild
+   npm install
+   ```
+
+4. **Platform-specific issues:**
+   - **Docker:** Ensure Node.js base image is v18+
+   - **WSL/Windows:** May need `--experimental-worker` flag (Node <16)
+   - **Alpine Linux:** Use `node` package, not `nodejs-current`
+
+#### Worker Crashes Repeatedly
+
+**Symptoms:**
+```
+[WARN] Worker exited unexpectedly { workerId: 'worker-0', exitCode: 1 }
+[ERROR] Worker terminated due to reaching memory limit
+```
+
+**Solutions:**
+
+1. **Enable debug logging:**
+   ```bash
+   LOG_LEVEL=debug npm start
+   ```
+
+2. **Increase Node.js memory limit:**
+   ```bash
+   node --max-old-space-size=4096 dist/index-wasm.js
+   ```
+
+3. **Reduce worker count:**
+   ```bash
+   MAX_WORKERS=2 npm start
+   ```
+
+4. **Check for WASM corruption:**
+   ```bash
+   # Rebuild WASM modules
+   cd wasm
+   npm install
+   npx gulp
+   cd ..
+   npm run generate:hashes
+   ```
+
+5. **Monitor worker health:**
+   ```bash
+   ENABLE_PERF_LOGGING=true npm start
+   # Watch for patterns in worker exits
+   ```
+
+#### Operations Timeout
+
+**Symptoms:**
+```
+[ERROR] Operation timed out after 30000ms
+[ERROR] Task queue full, operation rejected
+```
+
+**Solutions:**
+
+1. **Increase operation timeout:**
+   ```bash
+   OPERATION_TIMEOUT=60000 npm start
+   ```
+
+2. **Increase task timeout:**
+   ```bash
+   TASK_TIMEOUT=60000 npm start
+   ```
+
+3. **Check input size (may be too large):**
+   - Maximum matrix size: 1000×1000 (configurable via MAX_MATRIX_SIZE)
+   - Maximum array length: 100,000 (configurable via MAX_ARRAY_LENGTH)
+
+4. **Monitor worker pool status:**
+   ```bash
+   ENABLE_PERF_LOGGING=true npm start
+   # Check for: "Worker pool at capacity"
+   ```
+
+5. **Scale up workers:**
+   ```bash
+   MIN_WORKERS=4 MAX_WORKERS=8 npm start
+   ```
+
+#### Worker Pool Not Scaling
+
+**Symptoms:**
+```
+[DEBUG] Pool empty, creating worker on-demand
+[INFO] WorkerPool initialized successfully { activeWorkers: 0 }
+```
+
+**Solutions:**
+
+1. **Verify MIN_WORKERS configuration:**
+   ```bash
+   # Set MIN_WORKERS=0 for auto-scaling
+   MIN_WORKERS=0 npm start
+
+   # Or keep workers warm
+   MIN_WORKERS=2 npm start
+   ```
+
+2. **Adjust idle timeout:**
+   ```bash
+   # Workers terminate after 60s idle by default
+   WORKER_IDLE_TIMEOUT=120000 npm start  # 2 minutes
+   ```
+
+3. **Monitor scaling behavior:**
+   ```bash
+   LOG_LEVEL=debug npm start
+   # Look for: "Pool empty, creating worker on-demand"
+   # Look for: "Terminating idle worker"
+   ```
+
+### WASM Issues
+
+#### WASM Integrity Verification Fails
+
+**Symptoms:**
+```
+[ERROR] WASM integrity verification failed
+[ERROR] Hash mismatch for wasm/build/release.wasm
+```
+
+**Solutions:**
+
+1. **Rebuild WASM modules:**
+   ```bash
+   cd wasm
+   npm install
+   npx gulp
+   cd ..
+   ```
+
+2. **Regenerate hash manifest:**
+   ```bash
+   npm run generate:hashes
+   ```
+
+3. **Disable integrity checks (development only):**
+   ```bash
+   DISABLE_WASM_INTEGRITY=true npm start
+   ```
+
+4. **Verify file permissions:**
+   ```bash
+   ls -l wasm/build/*.wasm
+   # Should be readable by current user
+   ```
+
+#### WASM Module Not Loading
+
+**Symptoms:**
+```
+[ERROR] Failed to load WASM module
+[WARN] WASM not initialized, falling back to mathjs
+```
+
+**Solutions:**
+
+1. **Check WASM files exist:**
+   ```bash
+   ls wasm/build/
+   # Should contain: release.wasm, debug.wasm
+   ```
+
+2. **Rebuild from scratch:**
+   ```bash
+   cd wasm
+   rm -rf node_modules build
+   npm install
+   npx gulp
+   cd ..
+   ```
+
+3. **Verify AssemblyScript toolchain:**
+   ```bash
+   cd wasm
+   npx asc --version
+   # Should show AssemblyScript compiler version
+   ```
+
+4. **Check Node.js WASM support:**
+   ```javascript
+   // test-wasm.js
+   try {
+     new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+     console.log('✓ WASM supported');
+   } catch (err) {
+     console.error('✗ WASM not supported:', err.message);
+   }
+   ```
+
 ### Acceleration Not Working
 
 Check server startup logs:
@@ -514,25 +740,36 @@ Acceleration Status: 0% ops use acceleration  ← Should increase with usage
    - WASM: 10×10+ matrices, 100+ elements
    - Workers: 100×100+ matrices, 100k+ elements
 
-2. **Worker pool failed to initialize** - Check logs for worker errors:
-   ```bash
-   # Workers require Node.js 18+ with worker_threads support
-   node --version  # Should be v18.0.0 or higher
+2. **WASM not initialized** - Check startup logs:
+   ```
+   [INFO] WASM modules initialized successfully
+   [INFO] WorkerPool initialized successfully { activeWorkers: 2 }
    ```
 
-3. **WASM not initialized** - Rebuild WASM modules:
+3. **Using wrong entry point:**
    ```bash
-   cd wasm
-   npm install
-   npx gulp
+   # ✓ Correct (with acceleration)
+   node dist/index-wasm.js
+
+   # ✗ Wrong (mathjs only)
+   node dist/index.js
    ```
 
 ### Performance Not Improving
 
 1. Verify using `index-wasm.js` not `index.js`
-2. Check input sizes exceed acceleration thresholds
-3. Monitor routing statistics in logs (if `ENABLE_PERF_LOGGING=true`)
+2. Check input sizes exceed acceleration thresholds (see docs/BENCHMARKS.md)
+3. Monitor routing statistics in logs:
+   ```bash
+   ENABLE_PERF_LOGGING=true npm start
+   # Look for: "WASM calls: 70%, mathjs calls: 30%"
+   ```
 4. Ensure worker threads are available (`node --version >= 18`)
+5. Check system resources:
+   ```bash
+   # Monitor CPU/memory during operations
+   top -p $(pgrep -f "node.*index-wasm")
+   ```
 
 ### Integration Tests Failing
 
@@ -541,6 +778,128 @@ npm install
 npm run build:all
 npm test
 ```
+
+**Expected output:**
+```
+✓ All integration tests passed!
+✓ WASM integration working correctly
+Success rate: 100.0%
+```
+
+**Common failures:**
+
+1. **WASM modules not built:**
+   ```bash
+   npm run build:wasm
+   npm run generate:hashes
+   ```
+
+2. **TypeScript compilation errors:**
+   ```bash
+   npm run type-check
+   # Fix any errors before running tests
+   ```
+
+3. **Node.js version too old:**
+   ```bash
+   node --version  # Must be >=18.0.0
+   nvm install 18  # If using nvm
+   ```
+
+### Memory Issues
+
+#### High Memory Usage
+
+**Symptoms:**
+```
+[WARN] Memory usage high: 1.2GB
+[ERROR] JavaScript heap out of memory
+```
+
+**Solutions:**
+
+1. **Scale down workers:**
+   ```bash
+   MIN_WORKERS=0 MAX_WORKERS=2 npm start
+   ```
+
+2. **Enable auto-scaling to zero:**
+   ```bash
+   MIN_WORKERS=0 WORKER_IDLE_TIMEOUT=30000 npm start
+   ```
+
+3. **Increase Node.js heap:**
+   ```bash
+   node --max-old-space-size=2048 dist/index-wasm.js
+   ```
+
+4. **Disable performance tracking:**
+   ```bash
+   DISABLE_PERF_TRACKING=true npm start
+   ```
+
+#### Memory Leaks
+
+**Symptoms:**
+```
+Memory usage increases over time
+Workers not being garbage collected
+```
+
+**Solutions:**
+
+1. **Monitor worker lifecycle:**
+   ```bash
+   LOG_LEVEL=debug npm start
+   # Look for: "Terminating idle worker"
+   # Check: workers.size in logs
+   ```
+
+2. **Force garbage collection (debugging):**
+   ```bash
+   node --expose-gc dist/index-wasm.js
+   ```
+
+3. **Reduce worker idle timeout:**
+   ```bash
+   WORKER_IDLE_TIMEOUT=30000 npm start  # 30 seconds
+   ```
+
+### Getting Help
+
+If you're still experiencing issues:
+
+1. **Enable debug logging:**
+   ```bash
+   LOG_LEVEL=debug npm start 2>&1 | tee debug.log
+   ```
+
+2. **Collect system information:**
+   ```bash
+   node --version
+   npm --version
+   uname -a  # Linux/macOS
+   systeminfo  # Windows
+   ```
+
+3. **Run diagnostic:**
+   ```bash
+   npm run type-check
+   npm test
+   npm run lint
+   ```
+
+4. **Create an issue:**
+   - URL: https://github.com/danielsimonjr/math-mcp/issues
+   - Include: Debug logs, system info, steps to reproduce
+   - Attach: Relevant error messages
+
+### Performance Tuning
+
+For optimal performance, see:
+- **Benchmark documentation:** `docs/BENCHMARKS.md`
+- **Threshold configuration:** `src/wasm-wrapper.ts:39-74`
+- **Worker pool tuning:** Environment variables section above
 
 Expected: **11/11 tests passing**
 
