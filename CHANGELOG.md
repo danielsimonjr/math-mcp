@@ -12,9 +12,9 @@ Documentation in reverse chronological order (latest first).
 
 ### 🧪 Testing
 
-#### Comprehensive Unit Tests (Sprint 5 - Task 21 - Parts 1-5)
+#### Comprehensive Unit Tests (Sprint 5 - Task 21 - Parts 1-7)
 - **Created `test/unit/` directory structure** for organized unit testing
-- **204 unit tests added** covering core modules, utilities, and validation
+- **317 unit tests added** covering core modules, utilities, validation, and workers
 - **Test coverage by module:**
   - shared/logger.ts: 15 tests (log levels, formatting, streams)
   - shared/constants.ts: 12 tests (timeout, performance flags)
@@ -22,6 +22,8 @@ Documentation in reverse chronological order (latest first).
   - errors.ts: 36 tests (all 7 error classes and hierarchy)
   - degradation-policy.ts: 28 tests (tier configuration, enablement, logging)
   - validation.ts: 74 tests (input validation, security boundaries, size limits)
+  - workers/chunk-utils.ts: 50 tests (array chunking, matrix chunking, merging)
+  - workers/task-queue.ts: 63 tests (priority queue, task lifecycle, timeouts)
 - **Validation module testing:**
   - JSON parsing safety and error handling
   - Matrix validation (structure, square, size limits)
@@ -30,7 +32,12 @@ Documentation in reverse chronological order (latest first).
   - Expression validation and complexity limits
   - Variable name validation and security checks
   - Security boundary testing (DoS prevention, resource exhaustion)
-- **Test frameworks and tools:** Vitest with mocking support
+- **Workers module testing:**
+  - Chunk-utils: Array/matrix chunking for parallel processing, optimal chunk count calculation
+  - Task-queue: Priority-based scheduling, task timeout management, worker assignment
+  - Chunk overlap handling for operations requiring sorted/continuous data
+  - Queue size limits and rejection handling with statistics tracking
+- **Test frameworks and tools:** Vitest with mocking support, fake timers for timeout testing
 - **Testing techniques:**
   - Async/await testing for timeout functionality
   - Mock spies for console and timer verification
@@ -39,7 +46,9 @@ Documentation in reverse chronological order (latest first).
   - Environment variable simulation
   - Boundary value testing (at limits, over limits)
   - Security testing (injection prevention, resource limits)
-- **All tests passing:** 204/204 (100%) in ~2s
+  - Fake timers for task timeout verification
+  - Priority ordering and FIFO validation
+- **All tests passing:** 317/317 (100%) in ~2.5s
 - **Files created:**
   - test/unit/shared/logger.test.ts
   - test/unit/shared/constants.test.ts
@@ -47,7 +56,9 @@ Documentation in reverse chronological order (latest first).
   - test/unit/errors.test.ts
   - test/unit/degradation-policy.test.ts
   - test/unit/validation.test.ts
-- **Total test count:** 447 tests (204 unit + 232 correctness + 11 integration)
+  - test/unit/workers/chunk-utils.test.ts
+  - test/unit/workers/task-queue.test.ts
+- **Total test count:** 560 tests (317 unit + 232 correctness + 11 integration)
 - **Test success rate:** 100% across all test suites
 
 #### Mathematical Correctness Tests Added (Sprint 4 - Task 16)
