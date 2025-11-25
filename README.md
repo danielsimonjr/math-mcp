@@ -557,7 +557,9 @@ DISABLE_PERF_TRACKING=true         # Disable performance tracking for minimal ov
 ENABLE_PERF_LOGGING=true           # Enable periodic performance statistics logging
 
 # Worker pool configuration
+MIN_WORKERS=0                      # Minimum workers to keep alive (default: 2, set to 0 for auto-scaling)
 MAX_WORKERS=8                      # Maximum concurrent workers (default: CPU cores - 1)
+WORKER_IDLE_TIMEOUT=60000          # Idle timeout in ms before worker termination (default: 60000)
 MIN_WORKERS=2                      # Minimum workers to keep alive (default: 2)
 WORKER_IDLE_TIMEOUT=60000          # Idle worker termination timeout in ms (default: 60000)
 TASK_TIMEOUT=30000                 # Task timeout in milliseconds (default: 30000)

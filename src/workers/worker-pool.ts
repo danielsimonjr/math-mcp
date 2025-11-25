@@ -35,12 +35,17 @@ import { WasmError } from '../errors.js';
 /**
  * Default worker pool configuration.
  *
+ * Environment variables:
+ * - MIN_WORKERS: Minimum workers to keep alive (default: 2, can be 0 for auto-scaling)
+ * - MAX_WORKERS: Maximum concurrent workers (default: CPU cores - 1)
+ * - WORKER_IDLE_TIMEOUT: Idle timeout in ms before worker termination (default: 60000)
+ *
  * @constant
  */
 const DEFAULT_CONFIG: Required<WorkerPoolConfig> = {
-  maxWorkers: Math.max(2, cpus().length - 1), // Leave one core for main thread
-  minWorkers: 2,
-  workerIdleTimeout: 60000, // 1 minute
+  maxWorkers: parseInt(process.env.MAX_WORKERS || String(Math.max(2, cpus().length - 1)), 10),
+  minWorkers: parseInt(process.env.MIN_WORKERS || '2', 10),
+  workerIdleTimeout: parseInt(process.env.WORKER_IDLE_TIMEOUT || '60000', 10),
   taskTimeout: 30000, // 30 seconds
   maxQueueSize: 1000,
   enablePerformanceTracking: false,
@@ -376,6 +381,12 @@ export class WorkerPool {
 
     if (this.shuttingDown) {
       throw new WasmError('WorkerPool is shutting down. Cannot accept new tasks.');
+    }
+
+    // On-demand worker creation: if pool is empty (minWorkers = 0), create a worker
+    if (this.workers.size === 0 && !this.shuttingDown) {
+      logger.debug('Pool empty, creating worker on-demand');
+      await this.createWorker();
     }
 
     return new Promise<T>((resolve, reject) => {
