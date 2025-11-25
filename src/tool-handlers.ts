@@ -74,7 +74,7 @@ export interface ToolResponse {
     text: string;
   }>;
   /** Whether this response represents an error */
-  isError?: boolean;
+  isError: boolean;
 }
 
 /**
@@ -244,6 +244,7 @@ export async function handleEvaluate(args: {
           text: JSON.stringify({ result: math.format(result) }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -306,6 +307,7 @@ export async function handleSimplify(args: {
           text: JSON.stringify({ result: simplified.toString() }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -368,6 +370,7 @@ export async function handleDerivative(args: {
           text: JSON.stringify({ result: derivative.toString() }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -451,6 +454,7 @@ export async function handleSolve(args: {
           text: JSON.stringify({ result }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -636,6 +640,7 @@ export async function handleMatrixOperations(
           text: JSON.stringify({ result: math.format(result) }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -804,6 +809,7 @@ export async function handleStatistics(
           text: JSON.stringify({ result: math.format(result) }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;
@@ -921,6 +927,7 @@ export async function handleUnitConversion(args: {
           text: JSON.stringify({ result: result.toString() }, null, 2),
         },
       ],
+      isError: false,
     };
   } catch (error) {
     const duration = performance.now() - startTime;

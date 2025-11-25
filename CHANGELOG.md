@@ -12,6 +12,23 @@ Documentation in reverse chronological order (latest first).
 
 ### 🔧 Code Quality Improvements
 
+#### Error Response Consistency Added (Sprint 1 - Task 7)
+- **Made `isError` field required** in ToolResponse interface
+- **All success responses:** `isError: false` (7 handlers updated)
+- **All error responses:** `isError: true` (via withErrorHandling wrapper)
+- **Type safety enforced:** TypeScript compiler validates all responses
+- **Client reliability:** MCP clients can now reliably detect errors
+- **Files updated:** src/tool-handlers.ts
+- **Handlers updated:** evaluate, simplify, derivative, solve, matrix_operations, statistics, unit_conversion
+
+#### Installation Instructions Improved (Sprint 1 - Task 6)
+- **Added prominent Requirements section** before installation steps
+- **Requirements include:** Node.js ≥18.0.0, npm ≥8.0.0, platform info, memory requirements
+- **Platform-specific build notes** for Linux/macOS and Windows
+- **Added comprehensive verification section** with 4 validation steps
+- **Includes expected test output** for user confidence
+- **Better user experience:** New users can verify successful installation
+
 #### JSDoc Coverage Claim Verified (Sprint 1 - Task 5)
 - **README accurately states** "100% JSDoc Coverage"
 - **Verified:** All public APIs have comprehensive documentation
