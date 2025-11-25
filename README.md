@@ -103,6 +103,15 @@ unit_conversion("5 inches", "cm")  // "12.7 cm"
 
 ## 📦 Installation
 
+### Requirements
+
+Before installing, ensure you have:
+
+- **Node.js**: ≥18.0.0 (required for worker_threads and ESM support)
+- **npm**: ≥8.0.0
+- **Platform**: Windows, macOS, or Linux
+- **Memory**: Minimum 2GB RAM (4GB+ recommended for large operations)
+
 ### Quick Start
 
 ```bash
@@ -116,11 +125,42 @@ npm install
 # Build the project
 npm run build
 
-# Build WASM modules
+# Build WASM modules (platform-specific)
+# Linux/macOS:
 cd wasm && npm install && npx gulp && cd ..
+
+# Windows (PowerShell):
+# cd wasm; npm install; npx gulp; cd ..
 
 # Run tests
 npm test
+```
+
+### Verify Installation
+
+After installation, verify everything is working correctly:
+
+```bash
+# 1. Check Node.js version
+node --version  # Should show v18.0.0 or higher
+
+# 2. Verify TypeScript compilation
+npm run type-check  # Should complete without errors
+
+# 3. Run integration tests
+npm test  # Should show "11/11 tests passing"
+
+# 4. Check WASM modules are built
+ls -l wasm/build/*.wasm  # Should see release.wasm and debug.wasm
+# Windows: dir wasm\build\*.wasm
+```
+
+**Expected output from tests:**
+```
+✓ All integration tests passed!
+✓ WASM integration working correctly
+✓ Threshold-based routing working
+Success rate: 100.0%
 ```
 
 ### Integration with Claude Desktop

@@ -74,6 +74,35 @@ export const THRESHOLDS = {
 } as const;
 
 /**
+ * Checks if WASM should be used for an operation based on input size and threshold.
+ *
+ * This helper consolidates the common pattern of checking WASM availability and
+ * comparing input size against the appropriate threshold.
+ *
+ * @param {keyof typeof THRESHOLDS} thresholdKey - The key in THRESHOLDS object (e.g., 'matrix_det', 'statistics')
+ * @param {number} size - The size to check against the threshold (matrix dimension or array length)
+ * @returns {boolean} True if WASM is initialized and size meets threshold, false otherwise
+ *
+ * @example
+ * ```typescript
+ * // For matrix operations
+ * if (shouldUseWASM('matrix_det', getMatrixSize(matrix))) {
+ *   // Use WASM
+ * }
+ *
+ * // For statistics operations
+ * if (shouldUseWASM('statistics', data.length)) {
+ *   // Use WASM
+ * }
+ * ```
+ *
+ * @since 3.1.1
+ */
+function shouldUseWASM(thresholdKey: keyof typeof THRESHOLDS, size: number): boolean {
+  return wasmInitialized && size >= THRESHOLDS[thresholdKey];
+}
+
+/**
  * WASM module instance for matrix operations.
  * Null if not initialized or initialization failed.
  *
@@ -352,7 +381,7 @@ export async function matrixMultiply(a: number[][], b: number[][]): Promise<numb
  */
 export async function matrixDeterminant(matrix: number[][]): Promise<number> {
   const size = getMatrixSize(matrix);
-  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_det && isSquareMatrix(matrix);
+  const useWASM = shouldUseWASM('matrix_det', size) && isSquareMatrix(matrix);
 
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
@@ -401,7 +430,7 @@ export async function matrixDeterminant(matrix: number[][]): Promise<number> {
  */
 export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
   const size = getMatrixSize(matrix);
-  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_transpose;
+  const useWASM = shouldUseWASM('matrix_transpose', size);
 
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
@@ -455,7 +484,7 @@ export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
  */
 export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][]> {
   const size = Math.min(a.length, b.length);
-  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_transpose;
+  const useWASM = shouldUseWASM('matrix_transpose', size);
 
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
@@ -509,7 +538,7 @@ export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][
  */
 export async function matrixSubtract(a: number[][], b: number[][]): Promise<number[][]> {
   const size = Math.min(a.length, b.length);
-  const useWASM = wasmInitialized && size >= THRESHOLDS.matrix_transpose;
+  const useWASM = shouldUseWASM('matrix_transpose', size);
 
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
@@ -561,7 +590,7 @@ export async function matrixSubtract(a: number[][], b: number[][]): Promise<numb
  * ```
  */
 export async function statsMean(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -610,7 +639,7 @@ export async function statsMean(data: number[]): Promise<number> {
  * ```
  */
 export async function statsMedian(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.median;
+  const useWASM = shouldUseWASM('median', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -652,7 +681,7 @@ export async function statsMedian(data: number[]): Promise<number> {
  * ```
  */
 export async function statsStd(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -694,7 +723,7 @@ export async function statsStd(data: number[]): Promise<number> {
  * ```
  */
 export async function statsVariance(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -736,7 +765,7 @@ export async function statsVariance(data: number[]): Promise<number> {
  * ```
  */
 export async function statsMin(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -778,7 +807,7 @@ export async function statsMin(data: number[]): Promise<number> {
  * ```
  */
 export async function statsMax(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -820,7 +849,7 @@ export async function statsMax(data: number[]): Promise<number> {
  * ```
  */
 export async function statsSum(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -862,7 +891,7 @@ export async function statsSum(data: number[]): Promise<number> {
  * ```
  */
 export async function statsMode(data: number[]): Promise<number | number[]> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {
@@ -904,7 +933,7 @@ export async function statsMode(data: number[]): Promise<number | number[]> {
  * ```
  */
 export async function statsProduct(data: number[]): Promise<number> {
-  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  const useWASM = shouldUseWASM('statistics', data.length);
   const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
 
   try {

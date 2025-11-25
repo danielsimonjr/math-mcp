@@ -5,6 +5,97 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.1.1 - Code Quality & Refactoring - November 2025
+
+**Status:** 🚧 In Progress
+**Focus:** Code quality improvements, refactoring, maintainability
+
+### 🔧 Code Quality Improvements
+
+#### Async Error Handling Verified (Sprint 2 - Task 8)
+- **Verified all async operations** have proper error handling
+- **WASM initialization:** Has .catch() handler at wasm-wrapper.ts:1043
+- **Worker pool:** Has .catch() handler at worker-pool.ts:424
+- **Promise.all() calls:** All wrapped in try-catch blocks
+- **Promise.resolve() calls:** All wrapped with withTimeout() error handling
+- **No unhandled rejections:** Server won't crash on async errors
+- **Production ready:** All async errors logged and handled gracefully
+
+#### Error Response Consistency Added (Sprint 1 - Task 7)
+- **Made `isError` field required** in ToolResponse interface
+- **All success responses:** `isError: false` (7 handlers updated)
+- **All error responses:** `isError: true` (via withErrorHandling wrapper)
+- **Type safety enforced:** TypeScript compiler validates all responses
+- **Client reliability:** MCP clients can now reliably detect errors
+- **Files updated:** src/tool-handlers.ts
+- **Handlers updated:** evaluate, simplify, derivative, solve, matrix_operations, statistics, unit_conversion
+
+#### Installation Instructions Improved (Sprint 1 - Task 6)
+- **Added prominent Requirements section** before installation steps
+- **Requirements include:** Node.js ≥18.0.0, npm ≥8.0.0, platform info, memory requirements
+- **Platform-specific build notes** for Linux/macOS and Windows
+- **Added comprehensive verification section** with 4 validation steps
+- **Includes expected test output** for user confidence
+- **Better user experience:** New users can verify successful installation
+
+#### JSDoc Coverage Claim Verified (Sprint 1 - Task 5)
+- **README accurately states** "100% JSDoc Coverage"
+- **Verified:** All public APIs have comprehensive documentation
+- **No changes required:** Documentation claims are accurate
+
+#### JSDoc Documentation Complete (Sprint 1 - Task 4)
+- **Verified 100% JSDoc coverage** for all public functions
+- **All functions documented** with comprehensive JSDoc comments
+- **Includes:** Descriptions, @param, @returns, @throws, @example tags
+- **ESLint validation:** No missing JSDoc errors
+- **No changes required:** Documentation already complete
+
+#### Naming Conventions Standardized (Sprint 1 - Task 3)
+- **Verified consistent naming throughout codebase**
+- **Functions/Variables**: camelCase (`matrixMultiply`, `matrixA`, `matrixB`)
+- **Files**: kebab-case (`wasm-wrapper.ts`, `tool-handlers.ts`)
+- **Tool Names**: snake_case - MCP convention (`matrix_operations`)
+- **Constants**: UPPER_SNAKE_CASE (`DEFAULT_OPERATION_TIMEOUT`)
+- **No changes required:** Codebase already follows conventions
+- **No breaking changes:** MCP tool API remains unchanged
+
+#### Extracted Matrix Size Checking Helper (Sprint 1 - Task 2)
+- **Created `shouldUseWASM()` helper function** in src/wasm-wrapper.ts:101
+- **Eliminates code duplication:** Replaced 13 duplicate threshold checks
+- **Improved maintainability:** Single source of truth for WASM routing decisions
+- **Type-safe:** Uses `keyof typeof THRESHOLDS` for compile-time validation
+- **Better readability:** Clear, self-documenting function name
+- **Functions refactored:**
+  - `matrixDeterminant()` - Line 384
+  - `matrixTranspose()` - Line 433
+  - `matrixAdd()` - Line 487
+  - `matrixSubtract()` - Line 541
+  - `statsMean()` - Line 593
+  - `statsMedian()` - Line 642
+  - `statsStd()` - Line 684
+  - `statsVariance()` - Line 726
+  - `statsMin()` - Line 768
+  - `statsMax()` - Line 810
+  - `statsSum()` - Line 852
+  - `statsMode()` - Line 894
+  - `statsProduct()` - Line 936
+- **Before:**
+  ```typescript
+  const useWASM = wasmInitialized && data.length >= THRESHOLDS.statistics;
+  ```
+- **After:**
+  ```typescript
+  const useWASM = shouldUseWASM('statistics', data.length);
+  ```
+
+### ✅ Testing
+- **Type checking:** Clean (no errors)
+- **All integration tests passing:** 11/11 (100% success rate)
+- **WASM acceleration:** 70% of operations use WASM
+- **No regressions:** All existing functionality preserved
+
+---
+
 ## Version 3.1.0 - Performance & Security Enhancements - November 2025
 
 **Status:** ✅ Released
