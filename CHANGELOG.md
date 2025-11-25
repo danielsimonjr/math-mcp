@@ -28,17 +28,24 @@ Documentation in reverse chronological order (latest first).
 
 ### ⚙️ Architecture Improvements
 
-#### Module Dependencies Refactoring (Sprint 4 - Task 17 - In Progress)
+#### Module Dependencies Refactoring (Sprint 4 - Task 17)
 - **Created `src/shared/` directory** for Layer 1 modules with no internal dependencies
 - **Extracted logger to `src/shared/logger.ts`:** Centralized logging system (Layer 1)
 - **Created `src/shared/constants.ts`:** Shared application constants (Layer 1)
-- **Layered architecture:** Clear dependency hierarchy (Layer 1 → Layer 2 → Layer 3)
+- **Layered architecture:** 5-layer dependency hierarchy enforced
+  - Layer 1: shared/* (no dependencies)
+  - Layer 2: utils, errors, validation, degradation-policy
+  - Layer 3: wasm-wrapper, workers/*, gpu/*
+  - Layer 4: acceleration-router, acceleration-adapter
+  - Layer 5: tool-handlers, index*
+- **Created dependency validation script:** `scripts/check-dependencies.js`
+- **Added npm script:** `npm run check:deps` validates architecture
+- **Zero dependency violations:** All 23 files comply with layered structure
 - **Backwards compatibility:** utils.ts re-exports from shared modules
 - **Eliminated circular dependencies:** Logger no longer depends on other internal modules
 - **Clean separation of concerns:** Foundation modules isolated from business logic
-- **Files created:** src/shared/logger.ts, src/shared/constants.ts
-- **Files updated:** src/utils.ts, src/degradation-policy.ts
-- **Next steps:** Continue extracting shared types, add dependency validation
+- **Files created:** src/shared/logger.ts, src/shared/constants.ts, scripts/check-dependencies.js
+- **Files updated:** src/utils.ts, src/degradation-policy.ts, package.json
 
 #### Optimized Parallel Matrix Transpose (Sprint 4 - Task 15)
 - **Reduced algorithm complexity from O(n³) to O(n²)** in merge operation
