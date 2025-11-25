@@ -10,6 +10,31 @@ Documentation in reverse chronological order (latest first).
 **Status:** 🚧 In Progress
 **Focus:** Code quality improvements, refactoring, maintainability
 
+### 📚 Documentation
+
+#### Troubleshooting Guide Added (Sprint 3 - Task 14)
+- **Comprehensive worker pool troubleshooting** with symptoms and solutions
+- **Worker initialization failures:** Node.js version, worker_threads support, platform-specific issues
+- **Worker crashes:** Memory limits, debug logging, WASM corruption checks
+- **Operation timeouts:** Timeout configuration, input size limits, worker scaling
+- **WASM issues:** Integrity verification, module loading, AssemblyScript toolchain
+- **Memory management:** High memory usage, memory leaks, auto-scaling solutions
+- **Getting help section:** Debug logging, system info collection, issue reporting
+- **Performance tuning:** Links to benchmarks, threshold configuration, environment variables
+- **Files updated:** README.md (comprehensive 400+ line troubleshooting section)
+
+#### Benchmark Documentation Created (Sprint 3 - Task 13)
+- **Created `docs/BENCHMARKS.md`** with comprehensive performance data
+- **Methodology documented:** Test environment, parameters, reproducibility steps
+- **Matrix operations benchmarks:** Multiply (8-14x), Determinant (14-17x), Transpose (2x)
+- **Statistics benchmarks:** Mean (15x), Median (4x), Std (30x), Min/Max (42x), Variance (35x)
+- **Threshold rationale:** Explanation of why each threshold is set
+- **Overhead analysis:** WASM initialization, worker pool, routing decisions
+- **Reproducibility guide:** Steps to run benchmarks locally, custom benchmark code
+- **Architecture impact:** Tier distribution, memory usage, scaling recommendations
+- **Key takeaways:** WASM handles 70% operations, min/max fastest at 42x speedup
+- **Files created:** docs/BENCHMARKS.md (450+ lines)
+
 ### 🔧 Code Quality Improvements
 
 #### Worker Pool Auto-Scaling (Sprint 3 - Task 12)
