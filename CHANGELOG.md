@@ -12,9 +12,9 @@ Documentation in reverse chronological order (latest first).
 
 ### 🧪 Testing
 
-#### Comprehensive Unit Tests (Sprint 5 - Task 21 - Parts 1-8)
+#### Comprehensive Unit Tests (Sprint 5 - Task 21 - Parts 1-9)
 - **Created `test/unit/` directory structure** for organized unit testing
-- **368 unit tests added** covering core modules, utilities, validation, workers, and caching
+- **418 unit tests added** covering core modules, utilities, validation, workers, caching, and rate limiting
 - **Test coverage by module:**
   - shared/logger.ts: 15 tests (log levels, formatting, streams)
   - shared/constants.ts: 12 tests (timeout, performance flags)
@@ -25,6 +25,7 @@ Documentation in reverse chronological order (latest first).
   - workers/chunk-utils.ts: 50 tests (array chunking, matrix chunking, merging)
   - workers/task-queue.ts: 63 tests (priority queue, task lifecycle, timeouts)
   - expression-cache.ts: 51 tests (LRU cache, eviction policy, cache statistics)
+  - rate-limiter.ts: 50 tests (token bucket, concurrent limits, queue management)
 - **Validation module testing:**
   - JSON parsing safety and error handling
   - Matrix validation (structure, square, size limits)
@@ -44,7 +45,13 @@ Documentation in reverse chronological order (latest first).
   - Timestamp-based LRU ordering with fake timers
   - Scope key generation and sorting for consistent cache keys
   - Support for various value types (strings, numbers, objects, arrays)
-- **Test frameworks and tools:** Vitest with mocking support, fake timers for timeout/LRU testing
+- **Rate limiter module testing:**
+  - Token bucket algorithm with time-based refill
+  - Concurrent request limits and tracking
+  - Queue size limits and management
+  - Request lifecycle (allow → start → end)
+  - RateLimitError with statistics on limit exceeded
+- **Test frameworks and tools:** Vitest with mocking support, fake timers for timeout/LRU/rate-limit testing
 - **Testing techniques:**
   - Async/await testing for timeout functionality
   - Mock spies for console and timer verification
@@ -55,7 +62,7 @@ Documentation in reverse chronological order (latest first).
   - Security testing (injection prevention, resource limits)
   - Fake timers for task timeout and LRU timestamp verification
   - Priority ordering and FIFO validation
-- **All tests passing:** 368/368 (100%) in ~2.5s
+- **All tests passing:** 418/418 (100%) in ~2.5s
 - **Files created:**
   - test/unit/shared/logger.test.ts
   - test/unit/shared/constants.test.ts
@@ -66,7 +73,8 @@ Documentation in reverse chronological order (latest first).
   - test/unit/workers/chunk-utils.test.ts
   - test/unit/workers/task-queue.test.ts
   - test/unit/expression-cache.test.ts
-- **Total test count:** 611 tests (368 unit + 232 correctness + 11 integration)
+  - test/unit/rate-limiter.test.ts
+- **Total test count:** 661 tests (418 unit + 232 correctness + 11 integration)
 - **Test success rate:** 100% across all test suites
 
 #### Mathematical Correctness Tests Added (Sprint 4 - Task 16)
