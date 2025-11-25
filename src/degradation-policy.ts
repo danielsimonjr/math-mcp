@@ -1,6 +1,6 @@
 /**
  * @file degradation-policy.ts
- * @description Graceful degradation policy for acceleration tiers
+ * @description Graceful degradation policy for acceleration tiers (Layer 2)
  *
  * This module defines the policy for falling back from higher-performance
  * acceleration tiers to lower tiers when failures occur or tiers are unavailable.
@@ -10,11 +10,13 @@
  *
  * Each tier can be enabled/disabled via environment variables.
  *
+ * **Dependency Layer:** 2 (Depends on Layer 1: shared/logger)
+ *
  * @module degradation-policy
  * @since 3.1.1
  */
 
-import { logger } from './utils.js';
+import { logger } from './shared/logger.js';
 
 /**
  * Acceleration tiers for mathematical operations.
