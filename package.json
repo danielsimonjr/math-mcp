@@ -9,6 +9,7 @@
     "test:all": "npm test && npm run test:correctness",
     "test:unit": "vitest",
     "test:coverage": "vitest --coverage",
+    "test:security": "vitest run test/security/",
     "build": "tsc",
     "build:wasm": "cd wasm && npm run asbuild",
     "build:all": "npm run build && npm run build:wasm",

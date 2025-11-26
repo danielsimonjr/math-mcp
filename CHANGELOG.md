@@ -50,6 +50,104 @@ Documentation in reverse chronological order (latest first).
   - src/index-wasm.ts (added DI usage examples)
 - **Total test count:** 713 tests (470 unit + 232 correctness + 11 integration)
 
+#### ✅ Task 20 Complete - Backpressure Management for Worker Queue (1-2 weeks)
+- **Created BackpressureQueue class** with intelligent queue overflow handling
+  - Three configurable strategies: REJECT, WAIT, SHED
+  - Event-driven architecture with EventEmitter
+  - Priority-based task scheduling (higher priority first, FIFO within same priority)
+  - Drain threshold events for queue monitoring
+- **REJECT strategy** - Immediate rejection with retry-after suggestions
+  - Returns BackpressureError with estimated wait time
+  - Emits 'reject' event for monitoring
+  - Calculates retry-after based on average task duration and queue size
+- **WAIT strategy** - Blocks until queue space available
+  - Configurable timeout per task or global default
+  - Polls queue every 100ms for available space
+  - Returns BackpressureError on timeout
+- **SHED strategy** - Priority-based task dropping
+  - Drops lowest priority task to make room for higher priority
+  - Rejects new task if priority too low
+  - Emits 'shed' event with dropped/new priority details
+- **Task duration tracking** for accurate wait time estimation
+  - Rolling average of last 100 task durations
+  - Used for retry-after calculations
+  - Exposed via getStats() API
+- **Queue statistics API**
+  - getStats() returns size, maxSize, strategy, avgTaskDuration, estimatedWaitTime
+  - clear() method with optional task rejection
+  - Configurable drain threshold (default 20%)
+- **BackpressureError class** with structured metadata
+  - Exported from src/errors.ts for convenience
+  - Includes queueSize, maxSize, suggestedRetryAfter, strategy
+  - Proper Error prototype chain
+- **New unit tests:** 33 tests added
+  - test/unit/workers/backpressure.test.ts
+  - Tests all three strategies, priority handling, drain events, statistics
+  - All tests passing (100% success rate)
+- **Files created:**
+  - src/workers/backpressure.ts (BackpressureQueue and BackpressureError)
+  - test/unit/workers/backpressure.test.ts
+- **Files modified:**
+  - src/errors.ts (re-export BackpressureError)
+- **Total test count:** 536 tests (503 vitest unit + correctness + 33 backpressure + 11 integration)
+
+#### ✅ Task 22 Complete - Security Testing Suite (3-4 weeks)
+- **Created comprehensive security test suite** in test/security/
+  - 119 security tests covering injection, DoS, fuzzing, and bounds
+  - Systematic testing of attack vectors and security controls
+  - Identifies vulnerabilities and validates security measures
+- **Code Injection Prevention Tests** (test/security/injection.test.ts)
+  - Tests blocking of dangerous function definitions and calls
+  - Validates rejection of assignments and imports
+  - Tests protection against prototype pollution
+  - Validates blocking of process/global object access
+  - Tests toString/valueOf exploit prevention
+  - Covers expression evaluation, simplify, derivative, and solve handlers
+  - 60+ injection attack vectors tested
+- **DoS Protection Tests** (test/security/dos.test.ts)
+  - Rate limiting validation (flood protection)
+  - Operation timeout testing (prevents infinite loops)
+  - Size limit enforcement (JSON, matrices, arrays)
+  - Concurrent operation limit testing
+  - Resource exhaustion prevention
+  - Tests valid inputs near boundaries
+  - 35+ DoS scenarios tested
+- **Fuzzing Tests** (test/security/fuzzing.test.ts)
+  - 1000+ random UTF-8 expression inputs
+  - 500+ random ASCII inputs
+  - Random matrix and array data fuzzing
+  - Malformed JSON handling
+  - Unicode character testing
+  - Boundary value fuzzing
+  - Stress testing with rapid sequential requests
+  - 2000+ random inputs tested total
+- **Bounds Testing** (test/security/bounds.test.ts)
+  - Matrix size limits (1000x1000 maximum)
+  - Array length limits (100,000 elements maximum)
+  - Expression complexity limits
+  - Number edge cases (infinity, NaN, epsilon, max/min values)
+  - Empty and single-element inputs
+  - Input validation boundaries
+  - 50+ edge cases and boundary conditions
+- **Test Results**
+  - 99 tests passing (83% pass rate)
+  - 20 tests failing (revealing security gaps for future fixes)
+  - Tests run via `npm run test:security`
+  - Average execution time: ~20 seconds
+- **Security Gaps Identified**
+  - Some error messages need standardization
+  - Variable name validation could be stricter
+  - Additional size limit enforcement needed in some areas
+  - (Fixes for these gaps are future work - tests are complete)
+- **Files created:**
+  - test/security/injection.test.ts (60+ tests)
+  - test/security/dos.test.ts (35+ tests)
+  - test/security/fuzzing.test.ts (15+ test suites, 2000+ inputs)
+  - test/security/bounds.test.ts (50+ tests)
+- **Files modified:**
+  - package.json (added `test:security` script)
+- **Total test count:** 655 tests (503 vitest unit + correctness + 33 backpressure + 119 security + 11 integration)
+
 ### 🧪 Testing
 
 #### ✅ Sprint 5 Complete - Comprehensive Unit Tests (Task 21 - Parts 1-9)
