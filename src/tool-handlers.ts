@@ -20,6 +20,7 @@ import * as math from 'mathjs';
 import {
   validateExpression,
   validateScope,
+  validateVariableName,
   validateMatrix,
   validateSquareMatrix,
   validateMatrixSize,
@@ -350,7 +351,7 @@ export async function handleDerivative(args: {
   try {
     // Validate expression and variable
     const validatedExpression = validateExpression(args.expression, 'expression');
-    const validatedVariable = validateExpression(args.variable, 'variable');
+    const validatedVariable = validateVariableName(args.variable, 'variable');
 
     logger.debug('Computing derivative', {
       expression: validatedExpression,
@@ -414,7 +415,7 @@ export async function handleSolve(args: {
   try {
     // Validate inputs
     const validatedEquation = validateExpression(args.equation, 'equation');
-    const validatedVariable = validateExpression(args.variable, 'variable');
+    const validatedVariable = validateVariableName(args.variable, 'variable');
 
     // Parse equation into left and right sides
     const parts = validatedEquation.split('=');

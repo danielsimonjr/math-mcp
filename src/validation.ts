@@ -461,6 +461,23 @@ export function validateVariableName(variableName: string, context: string): str
     );
   }
 
+  // Block dangerous/reserved names that could be used for prototype pollution
+  const FORBIDDEN_NAMES = new Set([
+    '__proto__',
+    'constructor',
+    'prototype',
+    'process',
+    'global',
+    'require',
+    'import',
+    'eval',
+    'Function',
+  ]);
+
+  if (FORBIDDEN_NAMES.has(trimmed)) {
+    throw new ValidationError(`${context} '${trimmed}' is not allowed for security reasons`);
+  }
+
   // Must start with letter or underscore
   if (!/^[a-zA-Z_]/.test(trimmed)) {
     throw new ValidationError(`${context} must start with a letter or underscore`);
