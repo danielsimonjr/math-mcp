@@ -63,16 +63,30 @@ interface WasmStatsModule {
 }
 
 // ============================================================================
-// WASM Module State
+// WASM Module State (Lazy Loading)
 // ============================================================================
 
 let wasmMatrix: WasmMatrixModule | null = null;
 let wasmStats: WasmStatsModule | null = null;
 let wasmInitialized = false;
+let wasmInitPromise: Promise<void> | null = null;
 
 // ============================================================================
-// WASM Initialization
+// WASM Initialization (Lazy Loading)
 // ============================================================================
+
+/**
+ * Ensures WASM modules are initialized before first use.
+ * Uses lazy loading pattern - only initializes when actually needed.
+ * Thread-safe: multiple concurrent calls will wait for the same promise.
+ */
+export async function ensureWasmInitialized(): Promise<void> {
+  if (wasmInitialized) return;
+  if (!wasmInitPromise) {
+    wasmInitPromise = initWASM();
+  }
+  await wasmInitPromise;
+}
 
 /** Initializes WASM modules with integrity verification. */
 async function initWASM(): Promise<void> {
@@ -143,6 +157,7 @@ const areBothSquare = (a: number[][], b: number[][]): boolean => isSquareMatrix(
 
 /** Matrix multiply with auto WASM/mathjs routing. */
 export async function matrixMultiply(a: number[][], b: number[][]): Promise<number[][]> {
+  await ensureWasmInitialized();
   const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
     name: 'matrix multiply',
     threshold: THRESHOLDS.matrix_multiply,
@@ -156,6 +171,7 @@ export async function matrixMultiply(a: number[][], b: number[][]): Promise<numb
 
 /** Matrix determinant with auto WASM/mathjs routing. */
 export async function matrixDeterminant(matrix: number[][]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[][], number> = {
     name: 'matrix determinant',
     threshold: THRESHOLDS.matrix_det,
@@ -169,6 +185,7 @@ export async function matrixDeterminant(matrix: number[][]): Promise<number> {
 
 /** Matrix transpose with auto WASM/mathjs routing. */
 export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[][], number[][]> = {
     name: 'matrix transpose',
     threshold: THRESHOLDS.matrix_transpose,
@@ -181,6 +198,7 @@ export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
 
 /** Matrix add with auto WASM/mathjs routing. */
 export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][]> {
+  await ensureWasmInitialized();
   const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
     name: 'matrix add',
     threshold: THRESHOLDS.matrix_transpose,
@@ -193,6 +211,7 @@ export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][
 
 /** Matrix subtract with auto WASM/mathjs routing. */
 export async function matrixSubtract(a: number[][], b: number[][]): Promise<number[][]> {
+  await ensureWasmInitialized();
   const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
     name: 'matrix subtract',
     threshold: THRESHOLDS.matrix_transpose,
@@ -209,6 +228,7 @@ export async function matrixSubtract(a: number[][], b: number[][]): Promise<numb
 
 /** Statistical mean with auto WASM/mathjs routing. */
 export async function statsMean(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats mean',
     threshold: THRESHOLDS.statistics,
@@ -221,6 +241,7 @@ export async function statsMean(data: number[]): Promise<number> {
 
 /** Statistical median with auto WASM/mathjs routing. */
 export async function statsMedian(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats median',
     threshold: THRESHOLDS.median,
@@ -233,6 +254,7 @@ export async function statsMedian(data: number[]): Promise<number> {
 
 /** Statistical standard deviation with auto WASM/mathjs routing. */
 export async function statsStd(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats std',
     threshold: THRESHOLDS.statistics,
@@ -248,6 +270,7 @@ export async function statsStd(data: number[]): Promise<number> {
 
 /** Statistical variance with auto WASM/mathjs routing. */
 export async function statsVariance(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats variance',
     threshold: THRESHOLDS.statistics,
@@ -263,6 +286,7 @@ export async function statsVariance(data: number[]): Promise<number> {
 
 /** Statistical minimum with auto WASM/mathjs routing. */
 export async function statsMin(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats min',
     threshold: THRESHOLDS.statistics,
@@ -275,6 +299,7 @@ export async function statsMin(data: number[]): Promise<number> {
 
 /** Statistical maximum with auto WASM/mathjs routing. */
 export async function statsMax(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats max',
     threshold: THRESHOLDS.statistics,
@@ -287,6 +312,7 @@ export async function statsMax(data: number[]): Promise<number> {
 
 /** Statistical sum with auto WASM/mathjs routing. */
 export async function statsSum(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats sum',
     threshold: THRESHOLDS.statistics,
@@ -299,6 +325,7 @@ export async function statsSum(data: number[]): Promise<number> {
 
 /** Statistical mode with auto WASM/mathjs routing. */
 export async function statsMode(data: number[]): Promise<number | number[]> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number | number[]> = {
     name: 'stats mode',
     threshold: THRESHOLDS.statistics,
@@ -311,6 +338,7 @@ export async function statsMode(data: number[]): Promise<number | number[]> {
 
 /** Statistical product with auto WASM/mathjs routing. */
 export async function statsProduct(data: number[]): Promise<number> {
+  await ensureWasmInitialized();
   const config: UnaryOperationConfig<number[], number> = {
     name: 'stats product',
     threshold: THRESHOLDS.statistics,
@@ -353,9 +381,5 @@ export function resetPerfCounters(): void {
 // Export initialization status
 export { wasmInitialized };
 
-// Initialize WASM on module load
-initWASM().catch((err) => {
-  logger.error('Failed to initialize WASM', {
-    error: err instanceof Error ? err.message : String(err),
-  });
-});
+// Note: WASM is lazily initialized on first operation via ensureWasmInitialized()
+// For explicit eager initialization, call: ensureWasmInitialized()

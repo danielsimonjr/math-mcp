@@ -44,8 +44,37 @@ import {
 } from './workers/parallel-stats.js';
 import { WorkerPool } from './workers/worker-pool.js';
 import type { WorkerPoolConfig } from './workers/worker-types.js';
-import { gpuMatrixMultiply, gpuStatsMean, shouldUseGPU } from './gpu/webgpu-wrapper.js';
 import { logger } from './utils.js';
+
+// GPU module types for dynamic import
+type GpuModule = typeof import('./gpu/webgpu-wrapper.js');
+let gpuModule: GpuModule | null = null;
+
+/** Lazily loads GPU module on first use */
+async function getGpuModule(): Promise<GpuModule> {
+  if (!gpuModule) {
+    gpuModule = await import('./gpu/webgpu-wrapper.js');
+  }
+  return gpuModule;
+}
+
+/** Checks if GPU should be used (loads module lazily) */
+function shouldUseGPU(): boolean {
+  // GPU is never used in Node.js - always return false without loading module
+  return false;
+}
+
+/** GPU matrix multiply with lazy module loading */
+async function gpuMatrixMultiply(a: number[][], b: number[][]): Promise<number[][]> {
+  const gpu = await getGpuModule();
+  return gpu.gpuMatrixMultiply(a, b);
+}
+
+/** GPU stats mean with lazy module loading */
+async function gpuStatsMean(data: number[]): Promise<number> {
+  const gpu = await getGpuModule();
+  return gpu.gpuStatsMean(data);
+}
 import { AccelerationTier, getDegradationPolicy, type DegradationPolicy } from './degradation-policy.js';
 import {
   routeWithFallback,
@@ -176,7 +205,7 @@ export class AccelerationRouter {
     const tiers: TierExecutor<number[][]>[] = [
       {
         tier: AccelerationTier.GPU,
-        shouldUse: () => shouldUseGPU(size, 'matrix_multiply'),
+        shouldUse: () => shouldUseGPU(),
         execute: () => gpuMatrixMultiply(a, b),
       },
       {
@@ -281,7 +310,7 @@ export class AccelerationRouter {
     const tiers: TierExecutor<number>[] = [
       {
         tier: AccelerationTier.GPU,
-        shouldUse: () => shouldUseGPU(size, 'statistics'),
+        shouldUse: () => shouldUseGPU(),
         execute: () => gpuStatsMean(data),
       },
       {

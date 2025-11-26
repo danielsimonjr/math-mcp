@@ -43,12 +43,11 @@ async function asyncTest(name, fn) {
   }
 }
 
-// Wait for WASM initialization
-await new Promise(resolve => setTimeout(resolve, 1000));
-
+// Initialize WASM (lazy loading - triggers on demand)
 console.log('--- WASM Initialization ---');
-const initStats = wasmWrapper.getPerfStats();
-test('WASM should be initialized', () => {
+await asyncTest('WASM should be initialized', async () => {
+  await wasmWrapper.ensureWasmInitialized();
+  const initStats = wasmWrapper.getPerfStats();
   if (!initStats.wasmInitialized) {
     throw new Error('WASM not initialized');
   }
