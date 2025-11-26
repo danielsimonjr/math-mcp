@@ -26,6 +26,10 @@ test/coverage/
 # IDE
 .vscode/
 .idea/
+
+# Claude Code
+.claude/
+.mcp.json
 *.swp
 *.swo
 *~
