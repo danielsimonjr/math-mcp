@@ -226,7 +226,10 @@ Replace verbose per-function JSDoc with:
 
 ---
 
-## Sprint 2: Acceleration Router Optimization (5-7 days)
+## Sprint 2: Acceleration Router Optimization ✅ COMPLETED
+
+**Completed:** November 26, 2025
+**Actual Results:** 785 → 366 lines (53% reduction, exceeded 55% target)
 
 ### Goal
 Reduce `acceleration-router.ts` from 785 to ~350 lines.
@@ -698,6 +701,6 @@ This plan supersedes and incorporates relevant items from:
 
 ---
 
-**Document Version:** 2.1
+**Document Version:** 2.2
 **Last Updated:** November 26, 2025
-**Status:** SPRINT 1 COMPLETE - Sprint 2 ready for implementation
+**Status:** SPRINTS 1-2 COMPLETE - Sprint 3 ready for implementation

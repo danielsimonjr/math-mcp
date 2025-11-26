@@ -5,13 +5,13 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
-## Version 3.3.0 - Context/Token Optimization Sprint 1 - November 2025
+## Version 3.3.0 - Context/Token Optimization Sprints 1-2 - November 2025
 
 **Status:** ✅ Complete
 **Focus:** Reduce context/token usage through code refactoring
 **Builds on:** v3.2.2
 
-### ♻️ Refactoring - WASM Wrapper Optimization
+### ♻️ Sprint 1: WASM Wrapper Optimization
 
 **Code Reduction:**
 - **wasm-wrapper.ts:** 1,097 → 361 lines (**67% reduction**)
@@ -39,10 +39,33 @@ Documentation in reverse chronological order (latest first).
    - Module-level documentation provides comprehensive overview
    - Reduced documentation overhead by ~200 lines
 
+### ♻️ Sprint 2: Acceleration Router Optimization
+
+**Code Reduction:**
+- **acceleration-router.ts:** 785 → 366 lines (**53% reduction**)
+- **New routing-utils.ts:** 100 lines (generic routing)
+- **New acceleration-router-compat.ts:** 100 lines (backward compat)
+
+**Architecture Improvements:**
+1. **Generic Routing Utility**
+   - Created `routing-utils.ts` with reusable `routeWithFallback` function
+   - Handles tier selection, fallback chain, and statistics tracking
+   - Eliminates duplicate routing logic across 5 operations
+
+2. **Isolated Backward Compatibility**
+   - Moved deprecated functions to `acceleration-router-compat.ts`
+   - Main router now focused on core functionality
+   - Clear deprecation path for migration
+
+3. **Simplified Stats Operations**
+   - Direct delegation to WASM wrapper for non-routed operations
+   - Reduced method boilerplate
+
 ### 🧹 Cleanup
 
 - Removed `src/index.ts.bak` backup file (11KB)
 - Streamlined imports and type definitions
+- Consolidated re-exports for backward compatibility
 
 ### 📊 Impact
 
@@ -50,7 +73,10 @@ Documentation in reverse chronological order (latest first).
 |--------|--------|-------|--------|
 | wasm-wrapper.ts | 1,097 lines | 361 lines | -67% |
 | Total WASM code | 1,097 lines | 580 lines | -47% |
+| acceleration-router.ts | 785 lines | 366 lines | -53% |
+| Total Router code | 785 lines | 566 lines | -28% |
 | Backup files | 1 | 0 | Removed |
+| **Combined Total** | **1,882 lines** | **1,146 lines** | **-39%** |
 
 ### ✅ Verification
 
