@@ -2,21 +2,11 @@
  * @file wasm-wrapper.ts
  * @description WASM wrapper with automatic fallback to mathjs
  *
- * This module provides a transparent layer that automatically routes operations
- * to either WASM (for large inputs) or mathjs (for small inputs or when WASM is unavailable).
- *
- * **Architecture:**
- * - Threshold-based routing: Operations above certain sizes use WASM for performance
- * - Graceful fallback: If WASM fails or is unavailable, automatically uses mathjs
- * - Performance tracking: Monitors WASM vs mathjs usage and timing
- *
- * **Performance Benefits:**
- * - Matrix operations: Up to 17x faster for large matrices
- * - Statistical operations: Up to 42x faster for large datasets
- * - Zero overhead: Small operations use mathjs directly
+ * Provides transparent routing to WASM (large inputs) or mathjs (small inputs).
+ * Performance: Matrix ops up to 17x faster, stats up to 42x faster for large data.
  *
  * @module wasm-wrapper
- * @since 2.0.0
+ * @since 2.0.0 (refactored 3.3.0)
  */
 
 import * as math from 'mathjs';
@@ -24,238 +14,67 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
 import { logger } from './utils.js';
 import { verifyWasmIntegrity, isIntegrityCheckEnabled } from './wasm-integrity.js';
+import {
+  executeUnaryOp,
+  executeBinaryOp,
+  getPerfStats as getExecutorPerfStats,
+  resetPerfCounters as resetExecutorPerfCounters,
+  type UnaryOperationConfig,
+  type BinaryOperationConfig,
+} from './wasm-executor.js';
 
-/**
- * Performance thresholds for WASM usage (in matrix dimensions or array length).
- *
- * These thresholds are determined through benchmarking to balance:
- * - WASM initialization overhead (favors mathjs for small operations)
- * - WASM performance gains (favors WASM for large operations)
- *
- * @constant
- * @type {Readonly<Record<string, number>>}
- */
+// ============================================================================
+// Thresholds
+// ============================================================================
+
+/** Performance thresholds for WASM usage (benchmarked values). */
 export const THRESHOLDS = {
-  /**
-   * Use WASM for matrix multiply when matrices are >= 10x10
-   * Benchmark shows ~8x speedup at this size
-   * @type {number}
-   */
-  matrix_multiply: 10,
-
-  /**
-   * Use WASM for matrix determinant when matrices are >= 5x5
-   * Benchmark shows ~17x speedup at this size
-   * @type {number}
-   */
-  matrix_det: 5,
-
-  /**
-   * Use WASM for matrix transpose when matrices are >= 20x20
-   * Benchmark shows ~2x speedup at this size
-   * @type {number}
-   */
-  matrix_transpose: 20,
-
-  /**
-   * Use WASM for statistics operations when arrays have >= 100 elements
-   * Benchmark shows 15-42x speedup at this size
-   * @type {number}
-   */
-  statistics: 100,
-
-  /**
-   * Use WASM for median when arrays have >= 50 elements
-   * Lower threshold due to sorting overhead in WASM
-   * @type {number}
-   */
-  median: 50,
+  matrix_multiply: 10,  // 8x speedup at 10x10
+  matrix_det: 5,        // 17x speedup at 5x5
+  matrix_transpose: 20, // 2x speedup at 20x20
+  statistics: 100,      // 15-42x speedup at 100+ elements
+  median: 50,           // Lower threshold due to sorting
 } as const;
 
-/**
- * WASM module interface for matrix operations.
- * @interface WasmMatrixModule
- * @since 3.1.1
- */
+// ============================================================================
+// WASM Module Interfaces
+// ============================================================================
+
 interface WasmMatrixModule {
-  /** Multiplies two matrices */
   multiply(a: number[][], b: number[][]): number[][];
-  /** Calculates matrix determinant */
   det(matrix: number[][]): number;
-  /** Transposes a matrix */
   transpose(matrix: number[][]): number[][];
-  /** Adds two matrices element-wise */
   add(a: number[][], b: number[][]): number[][];
-  /** Subtracts two matrices element-wise */
   subtract(a: number[][], b: number[][]): number[][];
-  /** Initializes the WASM module */
   init(): Promise<void>;
 }
 
-/**
- * WASM module interface for statistics operations.
- * @interface WasmStatsModule
- * @since 3.1.1
- */
 interface WasmStatsModule {
-  /** Calculates mean (average) */
   mean(data: number[]): number;
-  /** Calculates median */
   median(data: number[]): number;
-  /** Calculates standard deviation */
   std(data: number[]): number;
-  /** Calculates variance */
   variance(data: number[]): number;
-  /** Finds minimum value */
   min(data: number[]): number;
-  /** Finds maximum value */
   max(data: number[]): number;
-  /** Calculates sum */
   sum(data: number[]): number;
-  /** Finds mode (most frequent value) */
   mode(data: number[]): number | number[];
-  /** Calculates product */
   product(data: number[]): number;
-  /** Initializes the WASM module */
   init(): Promise<void>;
 }
 
-/**
- * Checks if WASM should be used for an operation based on input size and threshold.
- *
- * This helper consolidates the common pattern of checking WASM availability and
- * comparing input size against the appropriate threshold.
- *
- * @param {keyof typeof THRESHOLDS} thresholdKey - The key in THRESHOLDS object (e.g., 'matrix_det', 'statistics')
- * @param {number} size - The size to check against the threshold (matrix dimension or array length)
- * @returns {boolean} True if WASM is initialized and size meets threshold, false otherwise
- *
- * @example
- * ```typescript
- * // For matrix operations
- * if (shouldUseWASM('matrix_det', getMatrixSize(matrix))) {
- *   // Use WASM
- * }
- *
- * // For statistics operations
- * if (shouldUseWASM('statistics', data.length)) {
- *   // Use WASM
- * }
- * ```
- *
- * @since 3.1.1
- */
-function shouldUseWASM(thresholdKey: keyof typeof THRESHOLDS, size: number): boolean {
-  return wasmInitialized && size >= THRESHOLDS[thresholdKey];
-}
+// ============================================================================
+// WASM Module State
+// ============================================================================
 
-/**
- * WASM module instance for matrix operations.
- * Null if not initialized or initialization failed.
- *
- * @type {WasmMatrixModule | null}
- */
 let wasmMatrix: WasmMatrixModule | null = null;
-
-/**
- * WASM module instance for statistics operations.
- * Null if not initialized or initialization failed.
- *
- * @type {WasmStatsModule | null}
- */
 let wasmStats: WasmStatsModule | null = null;
-
-/**
- * Flag indicating whether WASM modules have been successfully initialized.
- *
- * @type {boolean}
- */
 let wasmInitialized = false;
 
-/**
- * Performance counters for monitoring WASM vs mathjs usage.
- *
- * @interface PerfCounters
- */
-interface PerfCounters {
-  /** Number of operations routed to WASM */
-  wasmCalls: number;
-  /** Number of operations routed to mathjs */
-  mathjsCalls: number;
-  /** Total time spent in WASM operations (ms) */
-  wasmTime: number;
-  /** Total time spent in mathjs operations (ms) */
-  mathjsTime: number;
-}
+// ============================================================================
+// WASM Initialization
+// ============================================================================
 
-/**
- * Global performance counters.
- *
- * @type {PerfCounters}
- */
-const perfCounters: PerfCounters = {
-  wasmCalls: 0,
-  mathjsCalls: 0,
-  wasmTime: 0,
-  mathjsTime: 0,
-};
-
-/**
- * Whether performance tracking is enabled.
- * Can be disabled via DISABLE_PERF_TRACKING environment variable for production.
- *
- * @constant
- * @type {boolean}
- */
-const PERF_TRACKING_ENABLED = process.env.DISABLE_PERF_TRACKING !== 'true';
-
-/**
- * Records performance metrics for an operation.
- *
- * @param {'wasm' | 'mathjs'} type - Which implementation was used
- * @param {number} duration - Duration in milliseconds
- *
- * @example
- * ```typescript
- * const start = performance.now();
- * const result = await wasmMatrix.multiply(a, b);
- * recordPerf('wasm', performance.now() - start);
- * ```
- */
-function recordPerf(type: 'wasm' | 'mathjs', duration: number): void {
-  if (!PERF_TRACKING_ENABLED) return;
-
-  if (type === 'wasm') {
-    perfCounters.wasmCalls++;
-    perfCounters.wasmTime += duration;
-  } else {
-    perfCounters.mathjsCalls++;
-    perfCounters.mathjsTime += duration;
-  }
-}
-
-/**
- * Initializes WASM modules for matrix and statistics operations.
- *
- * This function:
- * 1. Locates the WASM bindings in the wasm folder
- * 2. Dynamically imports matrix and statistics bindings
- * 3. Calls init() on each binding to load the WASM module
- * 4. Sets wasmInitialized flag on success
- *
- * If initialization fails, logs error and sets wasmInitialized = false.
- * The wrapper will automatically fall back to mathjs for all operations.
- *
- * @returns {Promise<void>} Resolves when initialization completes (success or failure)
- *
- * @example
- * ```typescript
- * await initWASM();
- * if (wasmInitialized) {
- *   console.log('WASM ready for use');
- * }
- * ```
- */
+/** Initializes WASM modules with integrity verification. */
 async function initWASM(): Promise<void> {
   if (wasmInitialized) {
     logger.debug('WASM already initialized');
@@ -265,40 +84,31 @@ async function initWASM(): Promise<void> {
   try {
     logger.info('Initializing WASM modules...');
 
-    // Get the directory of this module
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const wasmPath = join(__dirname, '../wasm');
-    const _projectRoot = join(__dirname, '..');
 
-    // Verify WASM integrity before loading (if enabled)
+    // Verify WASM integrity if enabled
     if (isIntegrityCheckEnabled()) {
       logger.debug('Verifying WASM module integrity...');
-
-      const releaseWasmPath = join(wasmPath, 'build/release.wasm');
-      await verifyWasmIntegrity(releaseWasmPath, 'wasm/build/release.wasm');
-
-      const debugWasmPath = join(wasmPath, 'build/debug.wasm');
-      await verifyWasmIntegrity(debugWasmPath, 'wasm/build/debug.wasm');
-
+      await verifyWasmIntegrity(join(wasmPath, 'build/release.wasm'), 'wasm/build/release.wasm');
+      await verifyWasmIntegrity(join(wasmPath, 'build/debug.wasm'), 'wasm/build/debug.wasm');
       logger.info('WASM integrity verification passed');
     } else {
       logger.warn('WASM integrity verification DISABLED');
     }
 
-    // Import matrix bindings (convert to file:// URL for ESM)
+    // Load matrix bindings
     const matrixPath = pathToFileURL(join(wasmPath, 'bindings/matrix.cjs')).href;
     logger.debug('Loading matrix bindings', { path: matrixPath });
-
     const matrixBindings = await import(matrixPath);
     await matrixBindings.init();
     wasmMatrix = matrixBindings;
     logger.debug('Matrix bindings loaded successfully');
 
-    // Import statistics bindings (convert to file:// URL for ESM)
+    // Load statistics bindings
     const statsPath = pathToFileURL(join(wasmPath, 'bindings/statistics.cjs')).href;
     logger.debug('Loading statistics bindings', { path: statsPath });
-
     const statsBindings = await import(statsPath);
     await statsBindings.init();
     wasmStats = statsBindings;
@@ -310,7 +120,6 @@ async function initWASM(): Promise<void> {
     wasmInitialized = false;
     wasmMatrix = null;
     wasmStats = null;
-
     logger.warn('WASM initialization failed, will use mathjs fallback', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -318,773 +127,231 @@ async function initWASM(): Promise<void> {
   }
 }
 
-/**
- * Gets the size (number of rows) of a matrix.
- *
- * @param {number[][]} matrix - The matrix to measure
- * @returns {number} The number of rows in the matrix
- *
- * @example
- * ```typescript
- * getMatrixSize([[1,2],[3,4]]); // Returns: 2
- * ```
- */
-function getMatrixSize(matrix: number[][]): number {
-  return matrix.length;
-}
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
-/**
- * Checks if a matrix is square (rows === columns).
- *
- * @param {number[][]} matrix - The matrix to check
- * @returns {boolean} True if the matrix is square
- *
- * @example
- * ```typescript
- * isSquareMatrix([[1,2],[3,4]]);    // Returns: true
- * isSquareMatrix([[1,2,3],[4,5,6]]); // Returns: false
- * ```
- */
-function isSquareMatrix(matrix: number[][]): boolean {
-  return matrix.length > 0 && matrix.length === matrix[0].length;
-}
+const getMatrixSize = (m: number[][]): number => m.length;
+const getArrayLength = (arr: number[]): number => arr.length;
+const getBinaryMatrixSize = (a: number[][], b: number[][]): number => Math.min(a.length, b.length);
+const isSquareMatrix = (m: number[][]): boolean => m.length > 0 && m.length === m[0].length;
+const areBothSquare = (a: number[][], b: number[][]): boolean => isSquareMatrix(a) && isSquareMatrix(b);
 
-/**
- * Multiplies two matrices with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND both matrices are square AND size >= 10x10: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[][]} a - First matrix (m×n)
- * @param {number[][]} b - Second matrix (n×p)
- * @returns {Promise<number[][]>} Result matrix (m×p)
- *
- * @example
- * ```typescript
- * const a = [[1,2],[3,4]];
- * const b = [[5,6],[7,8]];
- * const result = await matrixMultiply(a, b);
- * // Returns: [[19,22],[43,50]]
- * ```
- */
+// ============================================================================
+// Matrix Operations
+// ============================================================================
+
+/** Matrix multiply with auto WASM/mathjs routing. */
 export async function matrixMultiply(a: number[][], b: number[][]): Promise<number[][]> {
-  const size = Math.min(a.length, b.length);
-  const useWASM =
-    wasmInitialized &&
-    size >= THRESHOLDS.matrix_multiply &&
-    isSquareMatrix(a) &&
-    isSquareMatrix(b);
-
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmMatrix) {
-      logger.debug('Using WASM for matrix multiply', {
-        size: `${a.length}×${a[0].length}`,
-      });
-
-      const result = wasmMatrix.multiply(a, b);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM matrix multiply failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for matrix multiply', {
-    size: `${a.length}×${a[0].length}`,
-  });
-
-  const result = math.multiply(a, b) as number[][];
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
+    name: 'matrix multiply',
+    threshold: THRESHOLDS.matrix_multiply,
+    getSize: getBinaryMatrixSize,
+    wasmFn: (x, y) => wasmMatrix!.multiply(x, y),
+    mathjsFn: (x, y) => math.multiply(x, y) as number[][],
+    extraCheck: areBothSquare,
+  };
+  return executeBinaryOp(config, a, b, wasmInitialized && wasmMatrix !== null);
 }
 
-/**
- * Calculates matrix determinant with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND matrix is square AND size >= 5x5: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[][]} matrix - Square matrix
- * @returns {Promise<number>} The determinant value
- *
- * @example
- * ```typescript
- * const result = await matrixDeterminant([[1,2],[3,4]]);
- * // Returns: -2
- * ```
- */
+/** Matrix determinant with auto WASM/mathjs routing. */
 export async function matrixDeterminant(matrix: number[][]): Promise<number> {
-  const size = getMatrixSize(matrix);
-  const useWASM = shouldUseWASM('matrix_det', size) && isSquareMatrix(matrix);
-
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmMatrix) {
-      logger.debug('Using WASM for matrix determinant', { size: `${size}×${size}` });
-
-      const result = wasmMatrix.det(matrix);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM determinant failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for matrix determinant', { size: `${size}×${size}` });
-
-  const result = math.det(matrix) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[][], number> = {
+    name: 'matrix determinant',
+    threshold: THRESHOLDS.matrix_det,
+    getSize: getMatrixSize,
+    wasmFn: (m) => wasmMatrix!.det(m),
+    mathjsFn: (m) => math.det(m) as number,
+    extraCheck: isSquareMatrix,
+  };
+  return executeUnaryOp(config, matrix, wasmInitialized && wasmMatrix !== null);
 }
 
-/**
- * Transposes a matrix with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND size >= 20x20: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[][]} matrix - Input matrix (m×n)
- * @returns {Promise<number[][]>} Transposed matrix (n×m)
- *
- * @example
- * ```typescript
- * const result = await matrixTranspose([[1,2,3],[4,5,6]]);
- * // Returns: [[1,4],[2,5],[3,6]]
- * ```
- */
+/** Matrix transpose with auto WASM/mathjs routing. */
 export async function matrixTranspose(matrix: number[][]): Promise<number[][]> {
-  const size = getMatrixSize(matrix);
-  const useWASM = shouldUseWASM('matrix_transpose', size);
-
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmMatrix) {
-      logger.debug('Using WASM for matrix transpose', {
-        size: `${matrix.length}×${matrix[0].length}`,
-      });
-
-      const result = wasmMatrix.transpose(matrix);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM transpose failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for matrix transpose', {
-    size: `${matrix.length}×${matrix[0].length}`,
-  });
-
-  const result = math.transpose(matrix) as number[][];
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[][], number[][]> = {
+    name: 'matrix transpose',
+    threshold: THRESHOLDS.matrix_transpose,
+    getSize: getMatrixSize,
+    wasmFn: (m) => wasmMatrix!.transpose(m),
+    mathjsFn: (m) => math.transpose(m) as number[][],
+  };
+  return executeUnaryOp(config, matrix, wasmInitialized && wasmMatrix !== null);
 }
 
-/**
- * Adds two matrices element-wise with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND size >= 20x20: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[][]} a - First matrix
- * @param {number[][]} b - Second matrix (must have same dimensions as a)
- * @returns {Promise<number[][]>} Result matrix
- *
- * @example
- * ```typescript
- * const result = await matrixAdd([[1,2],[3,4]], [[5,6],[7,8]]);
- * // Returns: [[6,8],[10,12]]
- * ```
- */
+/** Matrix add with auto WASM/mathjs routing. */
 export async function matrixAdd(a: number[][], b: number[][]): Promise<number[][]> {
-  const size = Math.min(a.length, b.length);
-  const useWASM = shouldUseWASM('matrix_transpose', size);
-
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmMatrix) {
-      logger.debug('Using WASM for matrix add', {
-        size: `${a.length}×${a[0].length}`,
-      });
-
-      const result = wasmMatrix.add(a, b);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM matrix add failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for matrix add', {
-    size: `${a.length}×${a[0].length}`,
-  });
-
-  const result = math.add(a, b) as number[][];
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
+    name: 'matrix add',
+    threshold: THRESHOLDS.matrix_transpose,
+    getSize: getBinaryMatrixSize,
+    wasmFn: (x, y) => wasmMatrix!.add(x, y),
+    mathjsFn: (x, y) => math.add(x, y) as number[][],
+  };
+  return executeBinaryOp(config, a, b, wasmInitialized && wasmMatrix !== null);
 }
 
-/**
- * Subtracts two matrices element-wise with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND size >= 20x20: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[][]} a - First matrix
- * @param {number[][]} b - Second matrix (must have same dimensions as a)
- * @returns {Promise<number[][]>} Result matrix
- *
- * @example
- * ```typescript
- * const result = await matrixSubtract([[5,6],[7,8]], [[1,2],[3,4]]);
- * // Returns: [[4,4],[4,4]]
- * ```
- */
+/** Matrix subtract with auto WASM/mathjs routing. */
 export async function matrixSubtract(a: number[][], b: number[][]): Promise<number[][]> {
-  const size = Math.min(a.length, b.length);
-  const useWASM = shouldUseWASM('matrix_transpose', size);
-
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmMatrix) {
-      logger.debug('Using WASM for matrix subtract', {
-        size: `${a.length}×${a[0].length}`,
-      });
-
-      const result = wasmMatrix.subtract(a, b);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM matrix subtract failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for matrix subtract', {
-    size: `${a.length}×${a[0].length}`,
-  });
-
-  const result = math.subtract(a, b) as number[][];
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: BinaryOperationConfig<number[][], number[][], number[][]> = {
+    name: 'matrix subtract',
+    threshold: THRESHOLDS.matrix_transpose,
+    getSize: getBinaryMatrixSize,
+    wasmFn: (x, y) => wasmMatrix!.subtract(x, y),
+    mathjsFn: (x, y) => math.subtract(x, y) as number[][],
+  };
+  return executeBinaryOp(config, a, b, wasmInitialized && wasmMatrix !== null);
 }
 
-/**
- * Calculates the mean (average) of an array with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND array length >= 100: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The mean value
- *
- * @example
- * ```typescript
- * const result = await statsMean([1,2,3,4,5]);
- * // Returns: 3
- * ```
- */
+// ============================================================================
+// Statistics Operations
+// ============================================================================
+
+/** Statistical mean with auto WASM/mathjs routing. */
 export async function statsMean(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats mean', { length: data.length });
-
-      const result = wasmStats.mean(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM mean failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats mean', { length: data.length });
-
-  const result = math.mean(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats mean',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.mean(d),
+    mathjsFn: (d) => math.mean(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Calculates the median of an array with automatic WASM/mathjs routing.
- *
- * **Routing logic:**
- * - If WASM is initialized AND array length >= 50: use WASM
- * - Otherwise: use mathjs
- * - If WASM fails: fall back to mathjs
- *
- * Note: Lower threshold (50 vs 100) due to sorting overhead in WASM.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The median value
- *
- * @example
- * ```typescript
- * const result = await statsMedian([1,2,3,4,5]);
- * // Returns: 3
- * ```
- */
+/** Statistical median with auto WASM/mathjs routing. */
 export async function statsMedian(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('median', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats median', { length: data.length });
-
-      const result = wasmStats.median(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM median failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats median', { length: data.length });
-
-  const result = math.median(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats median',
+    threshold: THRESHOLDS.median,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.median(d),
+    mathjsFn: (d) => math.median(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Calculates standard deviation with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The standard deviation
- *
- * @example
- * ```typescript
- * const result = await statsStd([2,4,4,4,5,5,7,9]);
- * // Returns: ~2
- * ```
- */
+/** Statistical standard deviation with auto WASM/mathjs routing. */
 export async function statsStd(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats std', { length: data.length });
-
-      const result = wasmStats.std(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM std failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats std', { length: data.length });
-
-  const result = math.std(data);
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return typeof result === 'number' ? result : Number(result);
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats std',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.std(d),
+    mathjsFn: (d) => {
+      const result = math.std(data);
+      return typeof result === 'number' ? result : Number(result);
+    },
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Calculates variance with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The variance
- *
- * @example
- * ```typescript
- * const result = await statsVariance([1,2,3,4,5]);
- * // Returns: 2.5 (sample variance)
- * ```
- */
+/** Statistical variance with auto WASM/mathjs routing. */
 export async function statsVariance(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats variance', { length: data.length });
-
-      const result = wasmStats.variance(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM variance failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats variance', { length: data.length });
-
-  const result = math.variance(data);
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return typeof result === 'number' ? result : Number(result);
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats variance',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.variance(d),
+    mathjsFn: (d) => {
+      const result = math.variance(data);
+      return typeof result === 'number' ? result : Number(result);
+    },
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Finds minimum value with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The minimum value
- *
- * @example
- * ```typescript
- * const result = await statsMin([3,1,4,1,5]);
- * // Returns: 1
- * ```
- */
+/** Statistical minimum with auto WASM/mathjs routing. */
 export async function statsMin(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats min', { length: data.length });
-
-      const result = wasmStats.min(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM min failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats min', { length: data.length });
-
-  const result = math.min(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats min',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.min(d),
+    mathjsFn: (d) => math.min(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Finds maximum value with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The maximum value
- *
- * @example
- * ```typescript
- * const result = await statsMax([3,1,4,1,5]);
- * // Returns: 5
- * ```
- */
+/** Statistical maximum with auto WASM/mathjs routing. */
 export async function statsMax(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats max', { length: data.length });
-
-      const result = wasmStats.max(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM max failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats max', { length: data.length });
-
-  const result = math.max(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats max',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.max(d),
+    mathjsFn: (d) => math.max(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Calculates sum with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The sum
- *
- * @example
- * ```typescript
- * const result = await statsSum([1,2,3,4,5]);
- * // Returns: 15
- * ```
- */
+/** Statistical sum with auto WASM/mathjs routing. */
 export async function statsSum(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats sum', { length: data.length });
-
-      const result = wasmStats.sum(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM sum failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats sum', { length: data.length });
-
-  const result = math.sum(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats sum',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.sum(d),
+    mathjsFn: (d) => math.sum(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Finds mode (most frequent value) with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number | number[]>} The mode value(s)
- *
- * @example
- * ```typescript
- * const result = await statsMode([1,2,2,3,4,4,4,5]);
- * // Returns: 4
- * ```
- */
+/** Statistical mode with auto WASM/mathjs routing. */
 export async function statsMode(data: number[]): Promise<number | number[]> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats mode', { length: data.length });
-
-      const result = wasmStats.mode(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM mode failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats mode', { length: data.length });
-
-  const result = math.mode(data);
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number | number[]> = {
+    name: 'stats mode',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.mode(d),
+    mathjsFn: (d) => math.mode(d),
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Calculates product with automatic WASM/mathjs routing.
- *
- * @param {number[]} data - Array of numbers
- * @returns {Promise<number>} The product of all numbers
- *
- * @example
- * ```typescript
- * const result = await statsProduct([2,3,4]);
- * // Returns: 24
- * ```
- */
+/** Statistical product with auto WASM/mathjs routing. */
 export async function statsProduct(data: number[]): Promise<number> {
-  const useWASM = shouldUseWASM('statistics', data.length);
-  const start = PERF_TRACKING_ENABLED ? performance.now() : 0;
-
-  try {
-    if (useWASM && wasmStats) {
-      logger.debug('Using WASM for stats product', { length: data.length });
-
-      const result = wasmStats.product(data);
-      if (PERF_TRACKING_ENABLED) {
-        recordPerf('wasm', performance.now() - start);
-      }
-      return result;
-    }
-  } catch (error) {
-    logger.error('WASM product failed, falling back to mathjs', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  // Fallback to mathjs
-  logger.debug('Using mathjs for stats product', { length: data.length });
-
-  const result = math.prod(data) as number;
-  if (PERF_TRACKING_ENABLED) {
-    recordPerf('mathjs', performance.now() - start);
-  }
-  return result;
+  const config: UnaryOperationConfig<number[], number> = {
+    name: 'stats product',
+    threshold: THRESHOLDS.statistics,
+    getSize: getArrayLength,
+    wasmFn: (d) => wasmStats!.product(d),
+    mathjsFn: (d) => math.prod(d) as number,
+  };
+  return executeUnaryOp(config, data, wasmInitialized && wasmStats !== null);
 }
 
-/**
- * Performance statistics for monitoring WASM vs mathjs usage.
- *
- * @interface PerfStats
- */
+// ============================================================================
+// Performance Statistics
+// ============================================================================
+
+/** Performance statistics interface. */
 export interface PerfStats {
-  /** Number of operations routed to WASM */
   wasmCalls: number;
-  /** Number of operations routed to mathjs */
   mathjsCalls: number;
-  /** Total number of operations */
   totalCalls: number;
-  /** Percentage of operations using WASM */
   wasmPercentage: string;
-  /** Average time per WASM operation */
   avgWasmTime: string;
-  /** Average time per mathjs operation */
   avgMathjsTime: string;
-  /** Whether WASM is initialized */
   wasmInitialized: boolean;
 }
 
-/**
- * Gets current performance statistics.
- *
- * Returns metrics about WASM vs mathjs usage including:
- * - Call counts
- * - Average execution times
- * - Percentage breakdown
- *
- * @returns {PerfStats} Performance statistics object
- *
- * @example
- * ```typescript
- * const stats = getPerfStats();
- * console.log(`WASM usage: ${stats.wasmPercentage}`);
- * console.log(`Average WASM time: ${stats.avgWasmTime}`);
- * ```
- */
+/** Gets current performance statistics. */
 export function getPerfStats(): PerfStats {
-  const totalCalls = perfCounters.wasmCalls + perfCounters.mathjsCalls;
-  const wasmPct = totalCalls > 0 ? (perfCounters.wasmCalls / totalCalls) * 100 : 0;
-  const avgWasmTime =
-    perfCounters.wasmCalls > 0 ? perfCounters.wasmTime / perfCounters.wasmCalls : 0;
-  const avgMathjsTime =
-    perfCounters.mathjsCalls > 0 ? perfCounters.mathjsTime / perfCounters.mathjsCalls : 0;
-
+  const stats = getExecutorPerfStats();
   return {
-    wasmCalls: perfCounters.wasmCalls,
-    mathjsCalls: perfCounters.mathjsCalls,
-    totalCalls,
-    wasmPercentage: wasmPct.toFixed(1) + '%',
-    avgWasmTime: avgWasmTime.toFixed(3) + 'ms',
-    avgMathjsTime: avgMathjsTime.toFixed(3) + 'ms',
+    ...stats,
     wasmInitialized,
   };
 }
 
-/**
- * Resets performance counters.
- * Useful for benchmarking or periodic monitoring.
- *
- * @example
- * ```typescript
- * resetPerfCounters();
- * // ... run operations ...
- * const stats = getPerfStats(); // Stats for operations since reset
- * ```
- */
+/** Resets performance counters. */
 export function resetPerfCounters(): void {
-  perfCounters.wasmCalls = 0;
-  perfCounters.mathjsCalls = 0;
-  perfCounters.wasmTime = 0;
-  perfCounters.mathjsTime = 0;
-  logger.debug('Performance counters reset');
+  resetExecutorPerfCounters();
 }
+
+// Export initialization status
+export { wasmInitialized };
 
 // Initialize WASM on module load
 initWASM().catch((err) => {
@@ -1092,6 +359,3 @@ initWASM().catch((err) => {
     error: err instanceof Error ? err.message : String(err),
   });
 });
-
-// Export initialization status
-export { wasmInitialized };

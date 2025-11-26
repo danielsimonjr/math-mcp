@@ -5,6 +5,75 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.3.0 - Context/Token Optimization Sprint 1 - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Reduce context/token usage through code refactoring
+**Builds on:** v3.2.2
+
+### ♻️ Refactoring - WASM Wrapper Optimization
+
+**Code Reduction:**
+- **wasm-wrapper.ts:** 1,097 → 361 lines (**67% reduction**)
+- **New wasm-executor.ts:** 219 lines (generic executor)
+- **Net savings:** 517 lines (47% overall reduction)
+
+**Architecture Improvements:**
+1. **Generic Operation Executor Pattern**
+   - Created `wasm-executor.ts` with reusable `executeUnaryOp` and `executeBinaryOp` functions
+   - Handles threshold checking, performance tracking, error handling, and fallback consistently
+   - Eliminates 35-40 lines of boilerplate per operation
+
+2. **Consolidated Matrix Operations**
+   - All 5 matrix operations now use the generic executor
+   - Removed duplicate routing logic
+   - Consistent error handling and logging
+
+3. **Consolidated Statistics Operations**
+   - All 10 statistics operations now use the generic executor
+   - Unified threshold checking
+   - Consistent performance tracking
+
+4. **Streamlined Documentation**
+   - Replaced verbose per-function JSDoc with concise single-line comments
+   - Module-level documentation provides comprehensive overview
+   - Reduced documentation overhead by ~200 lines
+
+### 🧹 Cleanup
+
+- Removed `src/index.ts.bak` backup file (11KB)
+- Streamlined imports and type definitions
+
+### 📊 Impact
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| wasm-wrapper.ts | 1,097 lines | 361 lines | -67% |
+| Total WASM code | 1,097 lines | 580 lines | -47% |
+| Backup files | 1 | 0 | Removed |
+
+### ✅ Verification
+
+- All 11 integration tests passing
+- WASM acceleration working (70% of operations using WASM)
+- No performance regression
+- Full backward compatibility maintained
+
+---
+
+## Version 3.2.2 - Windows WASM Hash Path Fix - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Fix Windows path separator issue in WASM hash generation
+
+### 🐛 Bug Fixes
+
+- Fixed WASM hash path generation to use forward slashes on all platforms
+- Windows was generating `wasm\\build\\release.wasm` instead of `wasm/build/release.wasm`
+- Ensures consistent hash keys across all operating systems
+
+---
+
 ## Version 3.2.1 - Security Test Completion & Bug Fixes - November 2025
 
 **Status:** ✅ Complete - Production Ready
