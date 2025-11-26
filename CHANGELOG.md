@@ -148,6 +148,62 @@ Documentation in reverse chronological order (latest first).
   - package.json (added `test:security` script)
 - **Total test count:** 655 tests (503 vitest unit + correctness + 33 backpressure + 119 security + 11 integration)
 
+#### ✅ Task 23 Complete - Telemetry & Observability (4-6 weeks)
+- **Created comprehensive telemetry system** with Prometheus metrics and health checks
+  - Production-ready monitoring and observability
+  - Metrics export for Prometheus/Grafana
+  - Health check endpoints for load balancers and Kubernetes
+  - HTTP telemetry server (port 9090, configurable)
+- **Prometheus Metrics** (src/telemetry/metrics.ts)
+  - Operation duration histograms (6 buckets: 1ms to 30s)
+  - Operation counters by tier (mathjs, wasm, worker) and status
+  - Queue size gauges (task, rate_limit, backpressure)
+  - Worker pool metrics (total, idle, busy)
+  - Rate limit hit counters
+  - Cache hit/miss counters with size gauges
+  - Error counters by type and operation
+  - Backpressure event counters by strategy (REJECT, WAIT, SHED)
+  - Input size histograms (matrix, array, expression)
+  - WASM module state gauges
+  - Default Node.js metrics (CPU, memory, event loop, etc.)
+- **Health Checks** (src/health.ts)
+  - GET /health - Overall health status (healthy/degraded/unhealthy)
+  - GET /health/live - Liveness probe (always true)
+  - GET /health/ready - Readiness probe (based on health)
+  - Component-level checks: WASM, rate limiter, memory
+  - Detailed status information with timestamps
+  - Uptime tracking
+- **Telemetry HTTP Server** (src/telemetry/server.ts)
+  - Standalone HTTP server for telemetry endpoints
+  - GET /metrics - Prometheus-formatted metrics
+  - GET / - Service information and endpoint list
+  - CORS support for cross-origin access
+  - Configurable port (default 9090, env: TELEMETRY_PORT)
+  - Enable/disable via ENABLE_TELEMETRY=true env var
+  - Proper error handling and logging
+- **Helper Functions**
+  - recordOperation(operation, tier, duration, status)
+  - recordError(errorType, operation)
+  - updateQueueSize(type, size)
+  - updateWorkerMetrics(total, idle, busy)
+  - recordCacheOperation(type, hit, size?)
+  - recordRateLimitHit()
+  - recordBackpressureEvent(strategy, action)
+  - recordInputSize(type, size)
+- **New unit tests:** 66 tests added
+  - test/unit/telemetry/metrics.test.ts (36 tests)
+  - test/unit/health.test.ts (30 tests)
+  - All tests passing (100% success rate)
+- **Files created:**
+  - src/telemetry/metrics.ts (440 lines, 15+ metrics)
+  - src/telemetry/server.ts (280 lines, HTTP server)
+  - src/health.ts (290 lines, health checks)
+  - test/unit/telemetry/metrics.test.ts (36 tests)
+  - test/unit/health.test.ts (30 tests)
+- **Dependencies added:**
+  - prom-client (Prometheus client library)
+- **Total test count:** 721 tests (569 vitest unit + correctness + 33 backpressure + 119 security + 11 integration)
+
 ### 🧪 Testing
 
 #### ✅ Sprint 5 Complete - Comprehensive Unit Tests (Task 21 - Parts 1-9)
