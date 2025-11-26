@@ -5,6 +5,64 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.4.0 - Lazy Loading & Performance Optimization - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Lazy loading for faster startup, reduced memory usage
+**Builds on:** v3.3.0
+
+### ⚡ Sprint 4: Lazy Loading Implementation
+
+**Goal:** Implement lazy initialization for faster startup and reduced memory usage in serverless environments.
+
+#### Task 4.1: Lazy WASM Module Loading
+- **Changed WASM initialization from eager to lazy loading**
+- WASM modules only initialize on first operation (not at import time)
+- Added `ensureWasmInitialized()` function for explicit initialization
+- Thread-safe: multiple concurrent calls wait for same initialization promise
+- **Benefits:**
+  - Faster initial load time
+  - Reduced memory usage when WASM not needed
+  - Better for serverless/edge environments
+
+#### Task 4.2: Lazy Worker Pool Initialization
+- Worker pool already uses lazy initialization via `initialize()` method
+- Pool only created when explicitly requested
+- Supports dependency injection for testing
+
+#### Task 4.3: Dynamic GPU Module Import
+- Changed GPU module from static to dynamic import
+- GPU module only loaded if GPU tier is selected (never in Node.js)
+- Reduces initial bundle parsing time
+- Created lazy wrapper functions for GPU operations
+
+### 🧹 Code Quality
+- Updated integration tests to use `ensureWasmInitialized()`
+- Removed 1-second initialization delay from tests
+- Tests now run faster with explicit lazy initialization
+
+### ✅ Verification
+
+```bash
+# Type checking
+$ npm run type-check
+✓ Clean compilation (no errors)
+
+# Integration tests
+$ npm test
+✓ 11/11 tests passing (100%)
+✓ WASM acceleration working (70% of operations)
+```
+
+### 📦 Upgrade Notes
+
+**From 3.3.0 to 3.4.0:**
+- **No breaking changes** - Drop-in replacement
+- **Faster startup** - WASM loads on first use, not at import
+- **Smaller memory footprint** - GPU module loaded only when needed
+
+---
+
 ## Version 3.3.0 - Context/Token Optimization Sprints 1-3 - November 2025
 
 **Status:** ✅ Complete
