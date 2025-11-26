@@ -5,6 +5,123 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.3.0 - Context/Token Optimization Sprints 1-3 - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Reduce context/token usage through code refactoring
+**Builds on:** v3.2.2
+
+### ♻️ Sprint 1: WASM Wrapper Optimization
+
+**Code Reduction:**
+- **wasm-wrapper.ts:** 1,097 → 361 lines (**67% reduction**)
+- **New wasm-executor.ts:** 219 lines (generic executor)
+- **Net savings:** 517 lines (47% overall reduction)
+
+**Architecture Improvements:**
+1. **Generic Operation Executor Pattern**
+   - Created `wasm-executor.ts` with reusable `executeUnaryOp` and `executeBinaryOp` functions
+   - Handles threshold checking, performance tracking, error handling, and fallback consistently
+   - Eliminates 35-40 lines of boilerplate per operation
+
+2. **Consolidated Matrix Operations**
+   - All 5 matrix operations now use the generic executor
+   - Removed duplicate routing logic
+   - Consistent error handling and logging
+
+3. **Consolidated Statistics Operations**
+   - All 10 statistics operations now use the generic executor
+   - Unified threshold checking
+   - Consistent performance tracking
+
+4. **Streamlined Documentation**
+   - Replaced verbose per-function JSDoc with concise single-line comments
+   - Module-level documentation provides comprehensive overview
+   - Reduced documentation overhead by ~200 lines
+
+### ♻️ Sprint 2: Acceleration Router Optimization
+
+**Code Reduction:**
+- **acceleration-router.ts:** 785 → 366 lines (**53% reduction**)
+- **New routing-utils.ts:** 100 lines (generic routing)
+- **New acceleration-router-compat.ts:** 100 lines (backward compat)
+
+**Architecture Improvements:**
+1. **Generic Routing Utility**
+   - Created `routing-utils.ts` with reusable `routeWithFallback` function
+   - Handles tier selection, fallback chain, and statistics tracking
+   - Eliminates duplicate routing logic across 5 operations
+
+2. **Isolated Backward Compatibility**
+   - Moved deprecated functions to `acceleration-router-compat.ts`
+   - Main router now focused on core functionality
+   - Clear deprecation path for migration
+
+3. **Simplified Stats Operations**
+   - Direct delegation to WASM wrapper for non-routed operations
+   - Reduced method boilerplate
+
+### ♻️ Sprint 3: Tool Handlers Optimization
+
+**Code Reduction:**
+- **tool-handlers.ts:** 995 → 389 lines (**61% reduction**)
+- **New handler-utils.ts:** 86 lines (shared utilities)
+
+**Architecture Improvements:**
+1. **Handler Execution Pattern**
+   - Created `executeHandler` utility for consistent timing, logging, error handling
+   - Eliminated repetitive try/catch/performance tracking blocks
+
+2. **Operation Maps**
+   - Replaced 200+ line switch statements with operation registry objects
+   - `matrixOps` and `statsOps` maps for cleaner routing
+   - Each operation is now a single concise function
+
+3. **Response Helpers**
+   - `successResponse` and `errorResponse` utilities
+   - Consistent JSON formatting
+
+### 🧹 Cleanup
+
+- Removed `src/index.ts.bak` backup file (11KB)
+- Streamlined imports and type definitions
+- Consolidated re-exports for backward compatibility
+
+### 📊 Impact
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| wasm-wrapper.ts | 1,097 lines | 361 lines | -67% |
+| Total WASM code | 1,097 lines | 580 lines | -47% |
+| acceleration-router.ts | 785 lines | 366 lines | -53% |
+| Total Router code | 785 lines | 566 lines | -28% |
+| tool-handlers.ts | 995 lines | 389 lines | -61% |
+| Total Handler code | 995 lines | 475 lines | -52% |
+| Backup files | 1 | 0 | Removed |
+| **Combined Total** | **2,877 lines** | **1,621 lines** | **-44%** |
+
+### ✅ Verification
+
+- All 11 integration tests passing
+- WASM acceleration working (70% of operations using WASM)
+- No performance regression
+- Full backward compatibility maintained
+
+---
+
+## Version 3.2.2 - Windows WASM Hash Path Fix - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Fix Windows path separator issue in WASM hash generation
+
+### 🐛 Bug Fixes
+
+- Fixed WASM hash path generation to use forward slashes on all platforms
+- Windows was generating `wasm\\build\\release.wasm` instead of `wasm/build/release.wasm`
+- Ensures consistent hash keys across all operating systems
+
+---
+
 ## Version 3.2.1 - Security Test Completion & Bug Fixes - November 2025
 
 **Status:** ✅ Complete - Production Ready

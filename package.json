@@ -1,6 +1,6 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster, with comprehensive input validation, security features, rate limiting, and expression caching",
   "main": "dist/index-wasm.js",
   "scripts": {
