@@ -234,3 +234,11 @@ export class RateLimitError extends MathMCPError {
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
+
+/**
+ * Re-export BackpressureError from backpressure module for convenience.
+ * The actual implementation is in src/workers/backpressure.ts.
+ *
+ * @since 3.2.0
+ */
+export { BackpressureError } from './workers/backpressure.js';

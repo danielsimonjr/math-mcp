@@ -50,6 +50,47 @@ Documentation in reverse chronological order (latest first).
   - src/index-wasm.ts (added DI usage examples)
 - **Total test count:** 713 tests (470 unit + 232 correctness + 11 integration)
 
+#### ✅ Task 20 Complete - Backpressure Management for Worker Queue (1-2 weeks)
+- **Created BackpressureQueue class** with intelligent queue overflow handling
+  - Three configurable strategies: REJECT, WAIT, SHED
+  - Event-driven architecture with EventEmitter
+  - Priority-based task scheduling (higher priority first, FIFO within same priority)
+  - Drain threshold events for queue monitoring
+- **REJECT strategy** - Immediate rejection with retry-after suggestions
+  - Returns BackpressureError with estimated wait time
+  - Emits 'reject' event for monitoring
+  - Calculates retry-after based on average task duration and queue size
+- **WAIT strategy** - Blocks until queue space available
+  - Configurable timeout per task or global default
+  - Polls queue every 100ms for available space
+  - Returns BackpressureError on timeout
+- **SHED strategy** - Priority-based task dropping
+  - Drops lowest priority task to make room for higher priority
+  - Rejects new task if priority too low
+  - Emits 'shed' event with dropped/new priority details
+- **Task duration tracking** for accurate wait time estimation
+  - Rolling average of last 100 task durations
+  - Used for retry-after calculations
+  - Exposed via getStats() API
+- **Queue statistics API**
+  - getStats() returns size, maxSize, strategy, avgTaskDuration, estimatedWaitTime
+  - clear() method with optional task rejection
+  - Configurable drain threshold (default 20%)
+- **BackpressureError class** with structured metadata
+  - Exported from src/errors.ts for convenience
+  - Includes queueSize, maxSize, suggestedRetryAfter, strategy
+  - Proper Error prototype chain
+- **New unit tests:** 33 tests added
+  - test/unit/workers/backpressure.test.ts
+  - Tests all three strategies, priority handling, drain events, statistics
+  - All tests passing (100% success rate)
+- **Files created:**
+  - src/workers/backpressure.ts (BackpressureQueue and BackpressureError)
+  - test/unit/workers/backpressure.test.ts
+- **Files modified:**
+  - src/errors.ts (re-export BackpressureError)
+- **Total test count:** 536 tests (503 vitest unit + correctness + 33 backpressure + 11 integration)
+
 ### 🧪 Testing
 
 #### ✅ Sprint 5 Complete - Comprehensive Unit Tests (Task 21 - Parts 1-9)
