@@ -116,6 +116,29 @@ For detailed benchmarks and architecture, see [docs/ACCELERATION_ARCHITECTURE.md
   - Memory isolation between workers and main thread
   - Automatic fallback on integrity failures
 
+### ⚡ Lazy Loading & Faster Startup ⚡ NEW in v3.4.0
+
+- **Lazy WASM Initialization:** WASM modules load on-demand at first use
+  - No startup overhead until acceleration is needed
+  - Thread-safe concurrent initialization (Promise-based)
+  - Reduces cold start time for simple operations
+- **Dynamic GPU Import:** GPU module only loads when GPU is actually used
+  - No browser/GPU detection overhead at startup
+  - Cleaner module dependency graph
+- **Worker Pool On-Demand:** Workers created lazily when needed
+
+### 🔧 Codebase Refactoring ⚡ NEW in v3.5.0
+
+- **44% Code Reduction:** Complete refactoring across 7 sprints
+  - Sprint 1-3: WASM wrapper, acceleration router, tool handlers optimization
+  - Sprint 4: Lazy loading implementation
+  - Sprint 5-7: Documentation, dead code removal, worker infrastructure
+- **Generic Parallel Executor Framework:** Type-safe parallel operation pattern
+  - Unified chunking utilities for arrays and matrices
+  - Configurable merge strategies (sum, min, max, concat)
+  - Foundation for future parallel operation extensions
+- **Improved Type Safety:** Better generic constraints and DI patterns
+
 ### 7 Mathematical Tools
 
 1. **evaluate** - Evaluate mathematical expressions with variables
@@ -456,6 +479,7 @@ math-mcp/
 │   │   └── server.ts             # HTTP telemetry server (port 9090)
 │   ├── workers/                  # ⚡ WebWorker infrastructure (v3.0.0)
 │   │   ├── worker-pool.ts        # Dynamic worker pool with DI (v3.2.0)
+│   │   ├── parallel-executor.ts  # ⚡ Generic parallel framework (v3.5.0)
 │   │   ├── backpressure-queue.ts # ⚡ Backpressure strategies (v3.2.0)
 │   │   ├── task-queue.ts         # Priority-based task scheduling
 │   │   ├── math-worker.ts        # Worker thread implementation
@@ -565,7 +589,7 @@ npm run dev
 
 ### Project Management
 - **[docs/planning/IMPLEMENTATION_PLAN_VERIFICATION.md](docs/planning/IMPLEMENTATION_PLAN_VERIFICATION.md)** - ⚡ NEW v3.2.0: Verification report
-- **[docs/planning/REFACTORING_PLAN.md](docs/planning/REFACTORING_PLAN.md)** - ⚡ NEW v3.2.0: Refactoring strategy
+- **[docs/planning/REFACTORING_PLAN.md](docs/planning/REFACTORING_PLAN.md)** - ⚡ COMPLETE v3.5.0: All 7 sprints done (44% code reduction)
 - **[docs/planning/PROJECT_HISTORY.md](docs/planning/PROJECT_HISTORY.md)** - ⚡ NEW v3.2.0: Project evolution timeline
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
