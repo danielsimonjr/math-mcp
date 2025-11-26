@@ -11,6 +11,45 @@ Documentation in reverse chronological order (latest first).
 **Focus:** Code quality improvements, refactoring, maintainability
 **Code Review:** See [CODE_REVIEW_ANALYSIS.md](./CODE_REVIEW_ANALYSIS.md) for comprehensive analysis
 
+### 🏗️ Architecture Improvements (Sprint 9)
+
+#### ✅ Task 19 Complete - Dependency Injection for Worker Pool (2-3 weeks)
+- **Removed global singleton pattern** from acceleration-router.ts
+- **Created AccelerationRouter class** with dependency injection support
+  - Constructor accepts optional `WorkerPool` instance for DI
+  - Maintains backward compatibility with deprecated function API
+  - `initialize()` method for lazy pool creation
+  - `shutdown()` method with proper lifecycle management (doesn't shutdown injected pools)
+- **Created WorkerPoolManager** for managing multiple worker pools
+  - Support for named pools (e.g., 'matrix-ops', 'stats-ops')
+  - Aggregate statistics across all pools
+  - Independent pool lifecycle management
+  - `createPool()`, `getPool()`, `removePool()`, `shutdownAll()` methods
+- **Enhanced testability**
+  - Multiple independent router instances supported
+  - Injected pools for testing isolation
+  - Mock pool injection for unit tests
+- **Documentation updated**
+  - Added DI usage examples in index-wasm.ts comments
+  - JSDoc for all new APIs
+  - Migration guide via deprecation notices
+- **Backward compatibility maintained**
+  - Deprecated function API still works via compatibility layer
+  - Existing code requires no changes
+  - Gradual migration path available
+- **New unit tests:** 52 tests added
+  - test/unit/workers/pool-manager.test.ts (24 tests)
+  - test/unit/acceleration-router-di.test.ts (28 tests)
+  - All tests passing (100% success rate)
+- **Files created:**
+  - src/workers/pool-manager.ts (new WorkerPoolManager class)
+  - test/unit/workers/pool-manager.test.ts
+  - test/unit/acceleration-router-di.test.ts
+- **Files modified:**
+  - src/acceleration-router.ts (refactored to class-based with DI)
+  - src/index-wasm.ts (added DI usage examples)
+- **Total test count:** 713 tests (470 unit + 232 correctness + 11 integration)
+
 ### 🧪 Testing
 
 #### ✅ Sprint 5 Complete - Comprehensive Unit Tests (Task 21 - Parts 1-9)

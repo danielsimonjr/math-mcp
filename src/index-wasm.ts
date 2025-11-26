@@ -43,6 +43,21 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { accelerationAdapter } from "./acceleration-adapter.js";
 import { getRoutingStats } from "./acceleration-router.js";
+// Note: The new class-based AccelerationRouter with DI support is available:
+// import { AccelerationRouter, WorkerPoolManager } from "./acceleration-router.js";
+// import { WorkerPoolManager } from "./workers/pool-manager.js";
+//
+// Example DI usage:
+// const router = new AccelerationRouter({ enableWorkers: true });
+// await router.initialize();
+// ... use router.matrixMultiply(), router.statsMean(), etc.
+//
+// For advanced use cases with multiple pools:
+// const poolManager = new WorkerPoolManager();
+// const matrixPool = await poolManager.createPool('matrix', { maxWorkers: 4 });
+// const router = new AccelerationRouter({}, matrixPool);
+//
+// Currently using backward-compatible function API for stability.
 import {
   handleEvaluate,
   handleSimplify,
