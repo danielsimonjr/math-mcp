@@ -234,7 +234,7 @@ export function validateMatrixSize(matrix: number[][], context: string): number[
 
   if (rows > LIMITS.MAX_MATRIX_SIZE || cols > LIMITS.MAX_MATRIX_SIZE) {
     throw new SizeLimitError(
-      `${context} size ${rows}×${cols} exceeds maximum allowed size of ${LIMITS.MAX_MATRIX_SIZE}×${LIMITS.MAX_MATRIX_SIZE}`
+      `${context} size ${rows}×${cols} exceeds maximum size of ${LIMITS.MAX_MATRIX_SIZE}×${LIMITS.MAX_MATRIX_SIZE}`
     );
   }
 
@@ -275,7 +275,7 @@ export function validateMatrixCompatibility(
     case 'multiply':
       if (aCols !== bRows) {
         throw new ValidationError(
-          `Cannot multiply matrices: first matrix columns (${aCols}) must equal second matrix rows (${bRows})`
+          `Incompatible matrix dimensions: cannot multiply ${aRows}×${aCols} by ${bRows}×${bCols} (columns ${aCols} ≠ rows ${bRows})`
         );
       }
       break;
@@ -353,7 +353,7 @@ export function validateNumberArray(data: unknown, context: string): number[] {
 export function validateArrayLength(array: number[], context: string): number[] {
   if (array.length > LIMITS.MAX_ARRAY_LENGTH) {
     throw new SizeLimitError(
-      `${context} length ${array.length} exceeds maximum allowed length of ${LIMITS.MAX_ARRAY_LENGTH}`
+      `${context} length ${array.length} exceeds maximum length of ${LIMITS.MAX_ARRAY_LENGTH}`
     );
   }
   return array;
@@ -394,7 +394,7 @@ export function validateExpression(expression: string, context: string): string 
 
   if (trimmed.length > LIMITS.MAX_EXPRESSION_LENGTH) {
     throw new ComplexityError(
-      `${context} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_EXPRESSION_LENGTH}`
+      `${context} length ${trimmed.length} exceeds maximum length of ${LIMITS.MAX_EXPRESSION_LENGTH}`
     );
   }
 
@@ -413,7 +413,7 @@ export function validateExpression(expression: string, context: string): string 
 
   if (maxDepth > LIMITS.MAX_NESTING_DEPTH) {
     throw new ComplexityError(
-      `${context} has nesting depth of ${maxDepth}, maximum allowed is ${LIMITS.MAX_NESTING_DEPTH}`
+      `${context} complexity limit exceeded: nesting depth ${maxDepth} exceeds maximum of ${LIMITS.MAX_NESTING_DEPTH}`
     );
   }
 
