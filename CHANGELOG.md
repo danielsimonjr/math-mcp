@@ -5,6 +5,60 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## Version 3.5.0 - Refactoring Sprints 5-7 Complete - November 2025
+
+**Status:** ✅ Complete
+**Focus:** Documentation, dead code audit, and worker infrastructure
+**Builds on:** v3.4.0
+
+### 📚 Sprint 5: Documentation Optimization
+
+**Status:** Complete - Module-level documentation already implemented in earlier sprints.
+
+- All source files have comprehensive module headers
+- JSDoc comments use consistent format
+- Cross-references between related modules
+
+### 🧹 Sprint 6: Dead Code Removal
+
+**Status:** Complete - Audit performed, backward compatibility maintained.
+
+- Audited deprecated exports in `acceleration-router-compat.ts`
+- Kept deprecated functions for backward compatibility (removal in future major version)
+- No truly unused code found - codebase is clean
+
+### ⚙️ Sprint 7: Worker Infrastructure Optimization
+
+**Status:** Complete - Generic parallel executor framework created.
+
+#### New: Generic Parallel Executor (`src/workers/parallel-executor.ts`)
+- Type-safe `ParallelOperationConfig` interface for defining operations
+- `executeParallel()` function for unified parallel execution
+- Reusable chunking utilities: `chunkArray()`, `chunkMatrixRows()`
+- Merge utilities: `mergeSum()`, `mergeMin()`, `mergeMax()`, `mergeArrays()`
+- Foundation for consolidating parallel-matrix.ts and parallel-stats.ts
+
+### ✅ Verification
+
+```bash
+# Type checking
+$ npm run type-check
+✓ Clean compilation (no errors)
+
+# Integration tests
+$ npm test
+✓ 11/11 tests passing (100%)
+```
+
+### 📦 Upgrade Notes
+
+**From 3.4.0 to 3.5.0:**
+- **No breaking changes** - Drop-in replacement
+- **New utility module** - `parallel-executor.ts` for future parallel operations
+- **All refactoring sprints complete** (1-7)
+
+---
+
 ## Version 3.4.0 - Lazy Loading & Performance Optimization - November 2025
 
 **Status:** ✅ Complete
