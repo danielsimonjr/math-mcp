@@ -1,430 +1,484 @@
-# Math MCP Server - User Guide
+# Math MCP Server - Project Overview
 
-A comprehensive guide to using the Math MCP Server for mathematical computations with AI assistants.
+A comprehensive overview of the Math MCP Server codebase, architecture, and key systems.
 
 ## Table of Contents
 
-1. [What is Math MCP Server?](#what-is-math-mcp-server)
-2. [Installation](#installation)
-3. [Quick Start](#quick-start)
-4. [Available Tools](#available-tools)
-5. [Tool Reference](#tool-reference)
-6. [Performance Features](#performance-features)
-7. [Configuration](#configuration)
-8. [Troubleshooting](#troubleshooting)
-9. [Examples](#examples)
+1. [Project Summary](#project-summary)
+2. [Architecture at a Glance](#architecture-at-a-glance)
+3. [Core Systems](#core-systems)
+4. [Multi-Tier Acceleration](#multi-tier-acceleration)
+5. [Worker Infrastructure](#worker-infrastructure)
+6. [Security & Protection](#security--protection)
+7. [Observability](#observability)
+8. [Directory Structure](#directory-structure)
+9. [Key Files Reference](#key-files-reference)
+10. [Configuration](#configuration)
 
 ---
 
-## What is Math MCP Server?
+## Project Summary
 
-Math MCP Server is a **Model Context Protocol (MCP)** server that provides mathematical computation capabilities to AI assistants like Claude. It enables:
+**Math MCP Server** is a high-performance Model Context Protocol (MCP) server that provides mathematical computation capabilities to AI assistants like Claude.
 
-- **Expression evaluation** - Arithmetic, algebra, calculus
-- **Symbolic math** - Simplification, derivatives, equation solving
-- **Linear algebra** - Matrix operations (multiply, inverse, determinant, eigenvalues)
-- **Statistics** - Mean, median, mode, standard deviation, variance
-- **Unit conversion** - Convert between any compatible units
+| Property | Value |
+|----------|-------|
+| **Version** | 3.5.0 |
+| **Runtime** | Node.js >= 18 |
+| **Protocol** | MCP (Model Context Protocol) |
+| **Transport** | stdio |
+| **Language** | TypeScript |
+| **Acceleration** | WASM + WebWorkers |
 
-### Key Features
+### Key Capabilities
 
-- **High Performance** - Up to 42x faster with WASM acceleration
-- **Production Ready** - Rate limiting, health checks, Prometheus metrics
-- **Secure** - Input validation, expression sandboxing, size limits
-- **Zero Configuration** - Works out of the box with automatic optimization
+| Capability | Description | Speedup |
+|------------|-------------|---------|
+| Expression Evaluation | Arithmetic, algebra, calculus | - |
+| Symbolic Math | Simplification, derivatives, equation solving | - |
+| Matrix Operations | Multiply, inverse, determinant, transpose | Up to 32x |
+| Statistics | Mean, median, std, variance, min, max | Up to 143x |
+| Unit Conversion | Length, mass, time, temperature, etc. | - |
 
----
+### Design Principles
 
-## Installation
-
-### Requirements
-
-- **Node.js** >= 18.0.0
-- **npm** >= 8.0.0
-- **Memory** >= 2GB RAM (4GB+ recommended for large operations)
-
-### Quick Install
-
-```bash
-# Clone the repository
-git clone https://github.com/danielsimonjr/math-mcp.git
-cd math-mcp
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Build WASM modules
-npm run build:wasm
-
-# Generate WASM hashes (for integrity verification)
-npm run generate:hashes
-
-# Verify installation
-npm test
-```
-
-### Verify Installation
-
-```bash
-# Check Node.js version
-node --version  # Should show v18.0.0 or higher
-
-# Run type check
-npm run type-check
-
-# Run tests (expect 11/11 passing)
-npm test
-```
-
-Expected output:
-```
-✓ All integration tests passed!
-✓ WASM integration working correctly
-Success rate: 100.0%
-```
+1. **Performance First** - Multi-tier acceleration with automatic routing
+2. **Security by Default** - Input validation, rate limiting, expression sandboxing
+3. **Graceful Degradation** - Automatic fallback from GPU → Workers → WASM → mathjs
+4. **Production Ready** - Health checks, metrics, structured logging
 
 ---
 
-## Quick Start
+## Architecture at a Glance
 
-### Integration with Claude Desktop
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         MCP CLIENT                                  │
+│                  (Claude Desktop / CLI)                             │
+└───────────────────────────┬─────────────────────────────────────────┘
+                            │ stdio
+                            ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      MCP SERVER LAYER                               │
+│  ┌──────────────┐  ┌───────────────┐  ┌─────────────────────────┐  │
+│  │ index-wasm   │  │ tool-handlers │  │     rate-limiter        │  │
+│  │ (7 tools)    │  │ (business)    │  │   (DoS protection)      │  │
+│  └──────┬───────┘  └───────┬───────┘  └─────────────────────────┘  │
+└─────────┼──────────────────┼────────────────────────────────────────┘
+          │                  │
+          ▼                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   ACCELERATION LAYER                                │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │              acceleration-router                              │  │
+│  │   Routes operations to optimal tier based on input size       │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│         │              │              │              │              │
+│         ▼              ▼              ▼              ▼              │
+│    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐          │
+│    │  GPU    │   │ Workers │   │  WASM   │   │ mathjs  │          │
+│    │(future) │   │ (large) │   │(medium) │   │ (small) │          │
+│    └─────────┘   └─────────┘   └─────────┘   └─────────┘          │
+└─────────────────────────────────────────────────────────────────────┘
+          │              │              │
+          ▼              ▼              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   WORKER INFRASTRUCTURE                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │
+│  │ worker-pool │  │ task-queue  │  │ backpressure│                 │
+│  │ (dynamic)   │  │ (priority)  │  │ (overflow)  │                 │
+│  └─────────────┘  └─────────────┘  └─────────────┘                 │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-Add to your Claude Desktop configuration file:
+---
 
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Linux:** `~/.config/Claude/claude_desktop_config.json`
+## Core Systems
 
-```json
-{
-  "mcpServers": {
-    "math-mcp": {
-      "command": "node",
-      "args": ["/path/to/math-mcp/dist/index-wasm.js"]
-    }
-  }
+### 1. MCP Server (`index-wasm.ts`)
+
+The main entry point that:
+- Creates the MCP server instance
+- Registers 7 mathematical tools
+- Connects via stdio transport
+- Coordinates rate limiting and acceleration
+
+**7 Registered Tools:**
+
+| Tool | Handler | Accelerated |
+|------|---------|-------------|
+| `evaluate` | `handleEvaluate()` | No |
+| `simplify` | `handleSimplify()` | No |
+| `derivative` | `handleDerivative()` | No |
+| `solve` | `handleSolve()` | No |
+| `matrix_operations` | `handleMatrixOperations()` | Yes |
+| `statistics` | `handleStatistics()` | Yes |
+| `unit_conversion` | `handleUnitConversion()` | No |
+
+### 2. Tool Handlers (`tool-handlers.ts`)
+
+Business logic implementation with:
+- Input validation via `validation.ts`
+- Expression sandboxing (AST whitelist)
+- Timeout protection
+- Acceleration routing for matrix/stats
+
+```typescript
+// Handler pattern
+export async function handleToolName(
+  params: ToolParams,
+  accelerator?: AccelerationWrapper
+): Promise<MCP_Response>
+```
+
+### 3. Validation (`validation.ts`)
+
+Comprehensive input validation:
+
+| Limit | Value | Purpose |
+|-------|-------|---------|
+| `MAX_MATRIX_SIZE` | 1000 | Prevent memory exhaustion |
+| `MAX_ARRAY_LENGTH` | 100,000 | Prevent DoS |
+| `MAX_EXPRESSION_LENGTH` | 10,000 | Prevent parsing overhead |
+| `MAX_NESTING_DEPTH` | 50 | Prevent stack overflow |
+
+### 4. Error Hierarchy (`errors.ts`)
+
+```
+MathMCPError (base)
+├── ValidationError
+│   ├── SizeLimitError
+│   └── ComplexityError
+├── WasmError
+├── TimeoutError
+├── RateLimitError
+└── BackpressureError
+```
+
+---
+
+## Multi-Tier Acceleration
+
+### Tier Hierarchy
+
+```
+Performance
+    ▲
+    │   ┌─────────────────────────────────────┐
+    │   │  GPU (WebGPU) - Future              │  Up to 1920x
+    │   │  Massive data (500+ matrices)       │
+    │   ├─────────────────────────────────────┤
+    │   │  Workers (worker_threads)           │  Up to 32x
+    │   │  Large data (100-500 matrices)      │
+    │   ├─────────────────────────────────────┤
+    │   │  WASM (AssemblyScript)              │  Up to 42x
+    │   │  Medium data (10-100 matrices)      │
+    │   ├─────────────────────────────────────┤
+    │   │  mathjs (Pure JavaScript)           │  Baseline
+    │   │  Small data (<10 matrices)          │
+    │   └─────────────────────────────────────┘
+    └──────────────────────────────────────────▶ Data Size
+```
+
+### Automatic Routing
+
+The `AccelerationRouter` automatically selects the optimal tier:
+
+```typescript
+// Threshold-based routing
+if (matrixSize >= 100) → Workers
+else if (matrixSize >= 10) → WASM
+else → mathjs
+
+// Fallback chain on failure
+GPU → Workers → WASM → mathjs
+```
+
+### WASM Thresholds
+
+| Operation | WASM Threshold | Speedup |
+|-----------|----------------|---------|
+| Matrix Multiply | 10x10 | 8x |
+| Matrix Determinant | 5x5 | 17x |
+| Matrix Transpose | 20x20 | 2x |
+| Statistics (mean, std, etc.) | 100 elements | 15-42x |
+
+### Lazy Loading (v3.4.0)
+
+- WASM modules load on first use (not at startup)
+- Thread-safe concurrent initialization
+- GPU module uses dynamic import
+- Reduces cold start time
+
+---
+
+## Worker Infrastructure
+
+### Worker Pool
+
+Dynamic pool of worker threads for parallel operations:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                      WORKER POOL                             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐            │
+│  │Worker 0 │ │Worker 1 │ │Worker 2 │ │Worker N │            │
+│  │  BUSY   │ │  IDLE   │ │  BUSY   │ │  IDLE   │            │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘            │
+│                                                              │
+│  Configuration:                                              │
+│  • Min workers: 2 (configurable, 0 for auto-scaling)        │
+│  • Max workers: CPU cores - 1                               │
+│  • Idle timeout: 60 seconds                                 │
+│  • Task timeout: 30 seconds                                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Task Queue
+
+Priority-based scheduling:
+
+```
+High Priority ─────────────────────────▶ Low Priority
+
+┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+│ Priority │  │ Priority │  │ Priority │  │ Priority │
+│    10    │  │    5     │  │    5     │  │    0     │
+│  (FIFO)  │  │  (FIFO)  │  │  (FIFO)  │  │  (FIFO)  │
+└──────────┘  └──────────┘  └──────────┘  └──────────┘
+```
+
+### Backpressure Strategies
+
+When queues overflow:
+
+| Strategy | Behavior | Best For |
+|----------|----------|----------|
+| **REJECT** | Fail fast with retry hint | Low-latency APIs |
+| **WAIT** | Block until space (timeout) | Batch processing |
+| **SHED** | Drop lowest priority | Mixed workloads |
+
+### Parallel Operations
+
+Data is chunked across workers:
+
+```
+Input: 1000x1000 matrix
+           │
+           ▼
+    ┌──────────────┐
+    │   Chunking   │  Split into N chunks
+    └──────────────┘
+           │
+    ┌──────┴──────┐
+    ▼             ▼
+┌────────┐   ┌────────┐
+│Worker 1│   │Worker N│   Process in parallel
+│Rows 0- │   │Rows N- │
+│  499   │   │  999   │
+└────────┘   └────────┘
+    │             │
+    └──────┬──────┘
+           ▼
+    ┌──────────────┐
+    │    Merge     │  Combine results
+    └──────────────┘
+           │
+           ▼
+    Result: computed matrix
+```
+
+---
+
+## Security & Protection
+
+### Input Validation
+
+```typescript
+// All inputs validated before processing
+validateMatrix(data, context)      // 2D array of numbers
+validateMatrixSize(matrix, ctx)    // Size limits
+validateExpression(expr, ctx)      // Length, nesting
+validateScope(scope, ctx)          // Variable safety
+```
+
+### Expression Sandboxing
+
+```typescript
+// Forbidden functions blocked
+const BLOCKED = ['import', 'evaluate', 'parse', 'compile', 'help', 'Function'];
+
+// AST whitelist enforced
+const ALLOWED_NODES = [
+  'ConstantNode', 'OperatorNode', 'FunctionNode',
+  'SymbolNode', 'ParenthesisNode', ...
+];
+```
+
+### Rate Limiting
+
+Token bucket algorithm:
+
+```
+┌─────────────────────────┐
+│  Token Bucket           │
+│  ┌───────────────────┐  │
+│  │ ░░░░░░░░░░░░░░░░░ │  │ Max: 100 tokens
+│  │ ░░░░ TOKENS ░░░░░ │  │ Refill: ~1.67/sec
+│  │ ░░░░░░░░░░░░░░░░░ │  │
+│  └───────────────────┘  │
+│          │              │
+│    1 token per request  │
+└─────────────────────────┘
+
+Defaults:
+• 100 requests per minute
+• 10 concurrent max
+• 50 queued max
+```
+
+### WASM Integrity
+
+SHA-256 verification of WASM binaries:
+- Prevents execution of tampered modules
+- Automatic fallback on integrity failure
+- Can be disabled for development
+
+---
+
+## Observability
+
+### Health Checks
+
+Kubernetes-compatible probes:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /health` | Full health status |
+| `GET /health/live` | Liveness probe |
+| `GET /health/ready` | Readiness probe |
+
+```typescript
+interface HealthResponse {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  version: string;
+  uptime: number;
+  checks: {
+    wasm: HealthCheck;
+    rateLimit: HealthCheck;
+    memory: HealthCheck;
+  };
 }
 ```
 
-Restart Claude Desktop and start using math tools!
+### Prometheus Metrics
 
-### Integration with Claude CLI
+Available at `GET /metrics` (port 9090):
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `math_mcp_operation_duration_seconds` | Histogram | Operation latency |
+| `math_mcp_operation_total` | Counter | Total operations |
+| `math_mcp_queue_size` | Gauge | Queue depths |
+| `math_mcp_workers` | Gauge | Worker counts |
+| `math_mcp_rate_limit_hits_total` | Counter | Rate limit triggers |
+| `math_mcp_errors_total` | Counter | Error counts |
+
+### Logging
+
+Structured JSON logging with levels:
 
 ```bash
-claude mcp add --transport stdio math-mcp node /path/to/math-mcp/dist/index-wasm.js
-```
-
-### Running Standalone
-
-```bash
-# Start the server
-npm start
-
-# Or directly
-node dist/index-wasm.js
+LOG_LEVEL=debug|info|warn|error
 ```
 
 ---
 
-## Available Tools
+## Directory Structure
 
-The server provides **7 mathematical tools**:
-
-| Tool | Description | Acceleration |
-|------|-------------|--------------|
-| `evaluate` | Evaluate mathematical expressions | - |
-| `simplify` | Simplify algebraic expressions | - |
-| `derivative` | Calculate derivatives | - |
-| `solve` | Solve equations | - |
-| `matrix_operations` | Matrix operations | WASM/Workers |
-| `statistics` | Statistical calculations | WASM/Workers |
-| `unit_conversion` | Convert between units | - |
-
----
-
-## Tool Reference
-
-### 1. evaluate
-
-Evaluate mathematical expressions with optional variables.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `expression` | string | Yes | Mathematical expression to evaluate |
-| `scope` | object | No | Variables to use (e.g., `{x: 5, y: 10}`) |
-
-**Examples:**
-```javascript
-// Basic arithmetic
-evaluate("2 + 2")                        // 4
-evaluate("sqrt(16)")                     // 4
-evaluate("2^10")                         // 1024
-
-// With variables
-evaluate("x^2 + 2*x + 1", {x: 3})       // 16
-evaluate("a * b + c", {a: 2, b: 3, c: 4}) // 10
-
-// Complex operations
-evaluate("sin(pi/2)")                    // 1
-evaluate("log(e)")                       // 1
-evaluate("factorial(5)")                 // 120
-
-// Matrix operations
-evaluate("det([[1,2],[3,4]])")          // -2
-evaluate("transpose([[1,2],[3,4]])")    // [[1,3],[2,4]]
 ```
-
-### 2. simplify
-
-Simplify algebraic expressions.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `expression` | string | Yes | Expression to simplify |
-| `rules` | array | No | Custom simplification rules |
-
-**Examples:**
-```javascript
-simplify("2 * x + x")                   // "3 * x"
-simplify("x^2 - x^2")                   // "0"
-simplify("(x + 1) * (x - 1)")          // "x^2 - 1"
-simplify("sin(x)^2 + cos(x)^2")        // "1"
-simplify("x/x")                         // "1"
-```
-
-### 3. derivative
-
-Calculate the derivative of an expression.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `expression` | string | Yes | Expression to differentiate |
-| `variable` | string | Yes | Variable to differentiate with respect to |
-
-**Examples:**
-```javascript
-derivative("x^2", "x")                  // "2 * x"
-derivative("x^3 + 2*x^2 + x", "x")     // "3 * x^2 + 4 * x + 1"
-derivative("sin(x)", "x")               // "cos(x)"
-derivative("e^x", "x")                  // "e^x"
-derivative("ln(x)", "x")                // "1 / x"
-derivative("x * y^2", "x")              // "y^2"
-derivative("x * y^2", "y")              // "2 * x * y"
-```
-
-### 4. solve
-
-Solve equations for a variable.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `equation` | string | Yes | Equation to solve (must contain `=`) |
-| `variable` | string | Yes | Variable to solve for |
-
-**Examples:**
-```javascript
-solve("x + 5 = 10", "x")                // x = 5
-solve("2*x - 4 = 0", "x")               // x = 2
-solve("x^2 - 4 = 0", "x")               // x = 2, x = -2
-solve("x^2 + 2*x + 1 = 0", "x")         // x = -1
-```
-
-### 5. matrix_operations
-
-Perform matrix operations with WASM acceleration for large matrices.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `operation` | string | Yes | Operation: `multiply`, `inverse`, `determinant`, `transpose`, `eigenvalues`, `add`, `subtract` |
-| `matrix_a` | string | Yes | First matrix in JSON format |
-| `matrix_b` | string | No | Second matrix (for binary operations) |
-
-**Operations:**
-
-| Operation | Requires matrix_b | Description |
-|-----------|-------------------|-------------|
-| `multiply` | Yes | Matrix multiplication (A × B) |
-| `add` | Yes | Element-wise addition (A + B) |
-| `subtract` | Yes | Element-wise subtraction (A - B) |
-| `inverse` | No | Matrix inverse (A⁻¹) |
-| `determinant` | No | Matrix determinant |
-| `transpose` | No | Matrix transpose (Aᵀ) |
-| `eigenvalues` | No | Eigenvalues of matrix |
-
-**Examples:**
-```javascript
-// Determinant
-matrix_operations("determinant", "[[1,2],[3,4]]")
-// Result: -2
-
-// Multiplication
-matrix_operations("multiply", "[[1,2],[3,4]]", "[[5,6],[7,8]]")
-// Result: [[19,22],[43,50]]
-
-// Transpose
-matrix_operations("transpose", "[[1,2,3],[4,5,6]]")
-// Result: [[1,4],[2,5],[3,6]]
-
-// Inverse
-matrix_operations("inverse", "[[1,2],[3,4]]")
-// Result: [[-2,1],[1.5,-0.5]]
-
-// Addition
-matrix_operations("add", "[[1,2],[3,4]]", "[[5,6],[7,8]]")
-// Result: [[6,8],[10,12]]
-
-// Eigenvalues
-matrix_operations("eigenvalues", "[[4,2],[1,3]]")
-// Result: [5, 2]
-```
-
-**Acceleration:**
-- Matrices 10×10+ use WASM (8-17x faster)
-- Matrices 100×100+ use WebWorkers (32x faster)
-
-### 6. statistics
-
-Calculate statistical values with WASM acceleration for large datasets.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `operation` | string | Yes | Operation: `mean`, `median`, `mode`, `std`, `variance`, `min`, `max`, `sum`, `product` |
-| `data` | string | Yes | Data array in JSON format |
-
-**Operations:**
-
-| Operation | Description |
-|-----------|-------------|
-| `mean` | Arithmetic mean (average) |
-| `median` | Middle value |
-| `mode` | Most frequent value(s) - **returns array** |
-| `std` | Standard deviation |
-| `variance` | Variance |
-| `min` | Minimum value |
-| `max` | Maximum value |
-| `sum` | Sum of all values |
-| `product` | Product of all values |
-
-**Examples:**
-```javascript
-// Mean
-statistics("mean", "[1,2,3,4,5]")
-// Result: 3
-
-// Median
-statistics("median", "[1,2,3,4,5]")
-// Result: 3
-
-// Mode (returns array)
-statistics("mode", "[1,2,2,3,4,4,4,5]")
-// Result: [4]
-
-// Standard deviation
-statistics("std", "[2,4,4,4,5,5,7,9]")
-// Result: 2
-
-// Variance
-statistics("variance", "[2,4,4,4,5,5,7,9]")
-// Result: 4
-
-// Min/Max/Sum/Product
-statistics("min", "[5,2,8,1,9]")      // 1
-statistics("max", "[5,2,8,1,9]")      // 9
-statistics("sum", "[1,2,3,4,5]")      // 15
-statistics("product", "[2,3,4]")       // 24
-```
-
-**Acceleration:**
-- Arrays 100+ elements use WASM (15-42x faster)
-- Arrays 100K+ elements use WebWorkers (125x faster)
-
-### 7. unit_conversion
-
-Convert between compatible units.
-
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `value` | string | Yes | Value with unit (e.g., "5 inches") |
-| `target_unit` | string | Yes | Target unit (e.g., "cm") |
-
-**Supported Unit Categories:**
-
-| Category | Example Units |
-|----------|---------------|
-| Length | m, cm, mm, km, in, ft, yd, mi |
-| Mass | kg, g, mg, lb, oz |
-| Time | s, min, h, day, week, year |
-| Temperature | celsius, fahrenheit, kelvin |
-| Speed | m/s, km/h, mph, knot |
-| Area | m^2, cm^2, ft^2, acre, hectare |
-| Volume | L, mL, m^3, gallon, cup |
-| Pressure | Pa, bar, psi, atm |
-| Energy | J, kJ, cal, kcal, Wh, kWh |
-| Power | W, kW, hp |
-| And many more... | |
-
-**Examples:**
-```javascript
-// Length
-unit_conversion("5 inches", "cm")           // "12.7 cm"
-unit_conversion("1 mile", "km")             // "1.609344 km"
-unit_conversion("100 cm", "m")              // "1 m"
-
-// Temperature
-unit_conversion("100 fahrenheit", "celsius") // "37.778 celsius"
-unit_conversion("0 celsius", "kelvin")       // "273.15 kelvin"
-
-// Speed
-unit_conversion("60 mph", "km/h")           // "96.5606 km/h"
-unit_conversion("100 km/h", "m/s")          // "27.778 m/s"
-
-// Mass
-unit_conversion("1 lb", "kg")               // "0.453592 kg"
-unit_conversion("1 kg", "oz")               // "35.274 oz"
-
-// Energy
-unit_conversion("1 kWh", "J")               // "3600000 J"
-unit_conversion("1000 cal", "kcal")         // "1 kcal"
-
-// Compound units
-unit_conversion("60 kg*m/s^2", "N")         // "60 N"
+math-mcp/
+├── src/                          # TypeScript source
+│   ├── index-wasm.ts             # Main entry point
+│   ├── index.ts                  # Basic entry (no acceleration)
+│   │
+│   ├── # Core
+│   ├── tool-handlers.ts          # Tool business logic
+│   ├── handler-utils.ts          # Handler utilities
+│   ├── errors.ts                 # Error types
+│   │
+│   ├── # Acceleration
+│   ├── acceleration-router.ts    # Tier routing
+│   ├── acceleration-adapter.ts   # Clean adapter
+│   ├── wasm-wrapper.ts           # WASM integration
+│   ├── wasm-executor.ts          # WASM execution
+│   ├── degradation-policy.ts     # Fallback policy
+│   ├── routing-utils.ts          # Routing utilities
+│   │
+│   ├── # Security
+│   ├── validation.ts             # Input validation
+│   ├── rate-limiter.ts           # Token bucket
+│   ├── wasm-integrity.ts         # WASM verification
+│   │
+│   ├── # Caching
+│   ├── expression-cache.ts       # LRU cache
+│   │
+│   ├── # Workers
+│   ├── workers/
+│   │   ├── worker-pool.ts        # Pool manager
+│   │   ├── task-queue.ts         # Priority queue
+│   │   ├── backpressure.ts       # Overflow handling
+│   │   ├── parallel-matrix.ts    # Parallel matrix ops
+│   │   ├── parallel-stats.ts     # Parallel stats
+│   │   ├── parallel-executor.ts  # Generic framework
+│   │   ├── math-worker.ts        # Worker thread
+│   │   ├── chunk-utils.ts        # Chunking
+│   │   └── worker-types.ts       # Type definitions
+│   │
+│   ├── # Telemetry
+│   ├── health.ts                 # Health checks
+│   └── telemetry/
+│       ├── metrics.ts            # Prometheus metrics
+│       └── server.ts             # HTTP server
+│
+├── wasm/                         # WASM modules
+│   ├── assembly/                 # AssemblyScript source
+│   ├── bindings/                 # JS bindings
+│   └── build/                    # Compiled .wasm
+│
+├── test/                         # Tests
+│   ├── integration-test.js       # Integration (11 tests)
+│   ├── correctness-tests.js      # Math correctness
+│   ├── unit/                     # Unit tests
+│   └── security/                 # Security tests (119)
+│
+├── docs/                         # Documentation
+│   ├── OVERVIEW.md               # This file
+│   ├── ARCHITECTURE.md           # Architecture details
+│   ├── COMPONENTS.md             # Component reference
+│   └── USER_GUIDE.md             # User guide
+│
+└── dist/                         # Compiled output
 ```
 
 ---
 
-## Performance Features
+## Key Files Reference
 
-### Multi-Tier Acceleration
-
-The server automatically routes operations through the optimal tier:
-
-| Data Size | Tier | Speedup |
-|-----------|------|---------|
-| Small (<10 matrices, <100 elements) | mathjs | Baseline |
-| Medium (10-100 matrices, 100-100K elements) | WASM | Up to 42x |
-| Large (100+ matrices, 100K+ elements) | WebWorkers | Up to 143x |
-
-### Lazy Loading
-
-- WASM modules load on first use (no startup overhead)
-- Workers created on-demand
-- Reduces cold start time
-
-### Expression Caching
-
-- Parsed expressions are cached (LRU cache)
-- Repeated evaluations are faster
-- Default cache size: 1000 entries
+| File | Purpose |
+|------|---------|
+| `src/index-wasm.ts` | Production entry point |
+| `src/tool-handlers.ts` | Tool business logic |
+| `src/acceleration-router.ts` | Tier-based routing |
+| `src/wasm-wrapper.ts` | WASM operations |
+| `src/validation.ts` | Input validation |
+| `src/rate-limiter.ts` | DoS protection |
+| `src/workers/worker-pool.ts` | Worker management |
+| `src/workers/task-queue.ts` | Priority scheduling |
+| `src/workers/backpressure.ts` | Overflow handling |
+| `src/health.ts` | Health checks |
+| `src/telemetry/metrics.ts` | Prometheus metrics |
 
 ---
 
@@ -432,185 +486,42 @@ The server automatically routes operations through the optimal tier:
 
 ### Environment Variables
 
-```bash
-# Logging
-LOG_LEVEL=debug|info|warn|error    # Default: info
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_LEVEL` | info | Logging level |
+| `ENABLE_WORKERS` | true | Enable worker tier |
+| `ENABLE_WASM` | true | Enable WASM tier |
+| `MIN_WORKERS` | 2 | Minimum workers |
+| `MAX_WORKERS` | CPU-1 | Maximum workers |
+| `TASK_TIMEOUT` | 30000 | Task timeout (ms) |
+| `MAX_MATRIX_SIZE` | 1000 | Max matrix dimension |
+| `MAX_ARRAY_LENGTH` | 100000 | Max array elements |
+| `MAX_REQUESTS_PER_WINDOW` | 100 | Rate limit |
+| `RATE_LIMIT_WINDOW_MS` | 60000 | Rate window |
+| `MAX_CONCURRENT_REQUESTS` | 10 | Max concurrent |
+| `EXPRESSION_CACHE_SIZE` | 1000 | Cache entries |
 
-# Acceleration tiers
-ENABLE_GPU=true                     # Default: false (not yet implemented)
-ENABLE_WORKERS=true                 # Default: true
-ENABLE_WASM=true                    # Default: true
-
-# Worker pool
-MIN_WORKERS=0                       # Default: 2 (0 for auto-scaling)
-MAX_WORKERS=8                       # Default: CPU cores - 1
-WORKER_IDLE_TIMEOUT=60000           # Default: 60000 (1 minute)
-TASK_TIMEOUT=30000                  # Default: 30000 (30 seconds)
-
-# Security limits
-MAX_MATRIX_SIZE=1000                # Maximum matrix dimension
-MAX_ARRAY_LENGTH=100000             # Maximum array length
-MAX_EXPRESSION_LENGTH=10000         # Maximum expression length
-
-# Performance
-ENABLE_PERF_LOGGING=true            # Log performance stats periodically
-DISABLE_PERF_TRACKING=true          # Disable for minimal overhead
-```
-
-### Running with Custom Configuration
+### Running the Server
 
 ```bash
-# Debug mode with performance logging
-LOG_LEVEL=debug ENABLE_PERF_LOGGING=true node dist/index-wasm.js
+# Production (with acceleration)
+node dist/index-wasm.js
 
-# Minimal memory usage (auto-scaling workers)
-MIN_WORKERS=0 MAX_WORKERS=2 node dist/index-wasm.js
+# Basic (mathjs only)
+node dist/index.js
 
-# High throughput configuration
-MIN_WORKERS=4 MAX_WORKERS=16 node dist/index-wasm.js
-```
+# With debug logging
+LOG_LEVEL=debug node dist/index-wasm.js
 
----
-
-## Troubleshooting
-
-### WASM Not Loading
-
-**Symptoms:**
-```
-[WARN] WASM not initialized, falling back to mathjs
-```
-
-**Solutions:**
-1. Rebuild WASM modules:
-   ```bash
-   cd wasm && npm install && npm run asbuild && cd ..
-   ```
-2. Regenerate hashes:
-   ```bash
-   npm run generate:hashes
-   ```
-
-### Workers Not Starting
-
-**Symptoms:**
-```
-[ERROR] Worker threads not supported
-```
-
-**Solutions:**
-1. Verify Node.js version: `node --version` (must be >= 18)
-2. Check if `worker_threads` module is available
-
-### Performance Issues
-
-**Symptoms:** Operations slower than expected
-
-**Solutions:**
-1. Verify using `index-wasm.js` (not `index.js`)
-2. Check input sizes exceed acceleration thresholds
-3. Enable performance logging:
-   ```bash
-   ENABLE_PERF_LOGGING=true node dist/index-wasm.js
-   ```
-
-### Memory Issues
-
-**Symptoms:**
-```
-JavaScript heap out of memory
-```
-
-**Solutions:**
-1. Increase Node.js memory:
-   ```bash
-   node --max-old-space-size=4096 dist/index-wasm.js
-   ```
-2. Reduce worker count:
-   ```bash
-   MAX_WORKERS=2 node dist/index-wasm.js
-   ```
-
----
-
-## Examples
-
-### Scientific Calculator
-
-```javascript
-// Trigonometry
-evaluate("sin(pi/4)")                    // 0.7071...
-evaluate("cos(pi/3)")                    // 0.5
-evaluate("tan(pi/4)")                    // 1
-
-// Logarithms
-evaluate("log(100, 10)")                 // 2
-evaluate("ln(e^5)")                      // 5
-evaluate("log2(256)")                    // 8
-
-// Complex expressions
-evaluate("sqrt(3^2 + 4^2)")              // 5
-evaluate("(1 + sqrt(5)) / 2")            // 1.618... (golden ratio)
-```
-
-### Calculus
-
-```javascript
-// Derivatives
-derivative("x^3 - 3*x^2 + 2*x - 1", "x") // "3*x^2 - 6*x + 2"
-
-// Finding critical points
-solve("3*x^2 - 6*x + 2 = 0", "x")        // x = 1 ± sqrt(3)/3
-```
-
-### Linear Algebra
-
-```javascript
-// System of equations via matrices
-// [2x + 3y = 8]
-// [4x + 5y = 14]
-// Solution: x = A^(-1) * b
-
-matrix_operations("inverse", "[[2,3],[4,5]]")
-// [[-2.5, 1.5], [2, -1]]
-
-matrix_operations("multiply", "[[-2.5,1.5],[2,-1]]", "[[8],[14]]")
-// [[1], [2]] -> x=1, y=2
-```
-
-### Data Analysis
-
-```javascript
-// Dataset statistics
-const data = "[23,45,67,89,12,34,56,78,90,11]";
-
-statistics("mean", data)      // 50.5
-statistics("median", data)    // 50.5
-statistics("std", data)       // 28.6...
-statistics("min", data)       // 11
-statistics("max", data)       // 90
-```
-
-### Physics Calculations
-
-```javascript
-// Kinetic energy: E = 0.5 * m * v^2
-evaluate("0.5 * 10 * 20^2", {})          // 2000 J
-
-// Unit conversions
-unit_conversion("2000 J", "kJ")           // "2 kJ"
-unit_conversion("72 km/h", "m/s")         // "20 m/s"
-
-// Force: F = m * a
-evaluate("10 * 9.8", {})                  // 98 N
-unit_conversion("98 N", "lbf")            // "22.03 lbf"
+# With performance logging
+ENABLE_PERF_LOGGING=true node dist/index-wasm.js
 ```
 
 ---
 
 ## Related Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture
-- [../README.md](../README.md) - Project overview
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Detailed architecture
+- [COMPONENTS.md](COMPONENTS.md) - Component reference
+- [USER_GUIDE.md](USER_GUIDE.md) - User guide and examples
 - [../CHANGELOG.md](../CHANGELOG.md) - Version history
-- [ACCELERATION_ARCHITECTURE.md](ACCELERATION_ARCHITECTURE.md) - Performance details
