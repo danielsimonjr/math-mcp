@@ -1,19 +1,12 @@
 /**
  * @file tool-handlers.ts
- * @description Shared tool handler implementations for the Math MCP Server
+ * @description Tool handler implementations for the Math MCP Server
  *
- * This module contains all the business logic for handling mathematical operations.
- * By centralizing the handlers, we avoid code duplication between index.ts and
- * index-wasm.ts, making the codebase more maintainable.
- *
- * Each handler:
- * - Validates inputs thoroughly
- * - Handles errors gracefully
- * - Uses timeout protection for potentially long operations
- * - Returns properly formatted responses
+ * Each handler validates inputs, executes with timeout protection,
+ * and returns properly formatted responses.
  *
  * @module tool-handlers
- * @since 2.1.0
+ * @since 2.1.0 (refactored 3.3.0)
  */
 
 import * as math from 'mathjs';
@@ -30,17 +23,20 @@ import {
   validateEnum,
   safeJsonParse,
 } from './validation.js';
-import { ValidationError, MathMCPError } from './errors.js';
-import { withTimeout, DEFAULT_OPERATION_TIMEOUT, logger, perfTracker } from './utils.js';
+import { ValidationError } from './errors.js';
+import { withTimeout, DEFAULT_OPERATION_TIMEOUT } from './utils.js';
 import { getCachedExpression } from './expression-cache.js';
+import {
+  executeHandler,
+  successResponse,
+  withErrorHandling as baseWithErrorHandling,
+  type ToolResponse,
+} from './handler-utils.js';
 
-/**
- * Type for acceleration wrapper functions (optional, may not be available).
- * This allows the handlers to work with intelligent routing through
- * mathjs → WASM → WebWorkers → WebGPU acceleration layers.
- *
- * @since 3.0.0
- */
+// Re-export for backward compatibility
+export { ToolResponse, withErrorHandling } from './handler-utils.js';
+
+/** Acceleration wrapper for WASM/Workers/GPU operations */
 export interface AccelerationWrapper {
   matrixMultiply: (a: number[][], b: number[][]) => Promise<number[][]>;
   matrixDeterminant: (matrix: number[][]) => Promise<number>;
@@ -57,939 +53,337 @@ export interface AccelerationWrapper {
   statsSum: (data: number[]) => Promise<number>;
 }
 
-/**
- * Legacy alias for backward compatibility.
- * @deprecated Use AccelerationWrapper instead
- */
+/** @deprecated Use AccelerationWrapper instead */
 export type WasmWrapper = AccelerationWrapper;
 
-/**
- * Standard response format for tool handlers.
- *
- * @interface ToolResponse
- */
-export interface ToolResponse {
-  /** Content blocks to return to the client */
-  content: Array<{
-    type: string;
-    text: string;
-  }>;
-  /** Whether this response represents an error */
-  isError: boolean;
-}
+// ============================================================================
+// Safe Expression Evaluation
+// ============================================================================
 
-/**
- * Safely evaluates a mathematical expression by validating the AST.
- *
- * Security features:
- * - Parses expression to AST and validates node types
- * - Blocks function definitions, assignments, and imports
- * - Only allows mathematical operations and constants
- * - Uses restricted evaluation scope
- *
- * @param {string} expression - The expression to evaluate
- * @param {Record<string, number>} scope - Variable scope
- * @returns {number | math.Matrix | math.Complex | math.Fraction | math.BigNumber} The evaluation result
- * @throws {ValidationError} If expression contains unsafe operations
- */
-function safeEvaluate(
-  expression: string,
-  scope: Record<string, number>
-): number | math.Matrix | math.Complex | math.Fraction | math.BigNumber {
-  // List of allowed node types (safe mathematical operations)
-  const ALLOWED_NODE_TYPES = new Set([
-    'ConstantNode',      // Numbers: 42, 3.14
-    'SymbolNode',        // Variables: x, y
-    'OperatorNode',      // Operators: +, -, *, /, ^
-    'ParenthesisNode',   // Parentheses: (...)
-    'FunctionNode',      // Math functions: sin(), sqrt(), etc.
-    'ArrayNode',         // Arrays: [1, 2, 3]
-    'AccessorNode',      // Array access: arr[0]
-    'IndexNode',         // Index: [0]
-    'RangeNode',         // Ranges: 1:10
-  ]);
+const ALLOWED_NODE_TYPES = new Set([
+  'ConstantNode', 'SymbolNode', 'OperatorNode', 'ParenthesisNode',
+  'FunctionNode', 'ArrayNode', 'AccessorNode', 'IndexNode', 'RangeNode',
+]);
 
-  // Forbidden function names (even though they're FunctionNodes)
-  const FORBIDDEN_FUNCTIONS = new Set([
-    'import',
-    'createUnit',
-    'evaluate',
-    'parse',
-    'compile',
-    'help',
-  ]);
+const FORBIDDEN_FUNCTIONS = new Set([
+  'import', 'createUnit', 'evaluate', 'parse', 'compile', 'help',
+]);
 
-  // Recursively validate AST nodes
-  // Note: Using 'any' for internal AST traversal as mathjs MathNode doesn't expose all properties
-  function validateNode(n: any): void {
-    if (!n || !n.type) {
-      return;
-    }
+function validateNode(n: any): void {
+  if (!n?.type) return;
 
-    // Check if node type is allowed
-    if (!ALLOWED_NODE_TYPES.has(n.type)) {
-      throw new ValidationError(
-        `Unsafe operation detected: ${n.type} is not allowed in expressions`
-      );
-    }
-
-    // Special check for FunctionNode - block dangerous functions
-    if (n.type === 'FunctionNode' && FORBIDDEN_FUNCTIONS.has(n.fn?.name || n.name)) {
-      throw new ValidationError(
-        `Function '${n.fn?.name || n.name}' is not allowed for security reasons`
-      );
-    }
-
-    // Check for assignment operations
-    if (n.type === 'AssignmentNode' || n.type === 'FunctionAssignmentNode') {
-      throw new ValidationError(
-        'Assignment operations are not allowed in expressions'
-      );
-    }
-
-    // Recursively validate child nodes
-    if (n.args && Array.isArray(n.args)) {
-      n.args.forEach(validateNode);
-    }
-    if (n.content) {
-      validateNode(n.content);
-    }
-    if (n.index) {
-      validateNode(n.index);
-    }
-    if (n.items && Array.isArray(n.items)) {
-      n.items.forEach(validateNode);
-    }
-    if (n.blocks && Array.isArray(n.blocks)) {
-      n.blocks.forEach((block: any) => {
-        if (block.node) validateNode(block.node);
-      });
-    }
+  if (!ALLOWED_NODE_TYPES.has(n.type)) {
+    throw new ValidationError(`Unsafe operation detected: ${n.type} is not allowed`);
   }
 
-  // Use cached compiled expression if available
+  if (n.type === 'FunctionNode' && FORBIDDEN_FUNCTIONS.has(n.fn?.name || n.name)) {
+    throw new ValidationError(`Function '${n.fn?.name || n.name}' is not allowed`);
+  }
+
+  if (n.type === 'AssignmentNode' || n.type === 'FunctionAssignmentNode') {
+    throw new ValidationError('Assignment operations are not allowed');
+  }
+
+  // Recursively validate children
+  n.args?.forEach?.(validateNode);
+  n.content && validateNode(n.content);
+  n.index && validateNode(n.index);
+  n.items?.forEach?.(validateNode);
+  n.blocks?.forEach?.((b: any) => b.node && validateNode(b.node));
+}
+
+function safeEvaluate(expression: string, scope: Record<string, number>): any {
   const compiled = getCachedExpression(
     expression,
     () => {
-      // Parse expression to AST
       const node = math.parse(expression);
-
-      // Validate the entire AST
       validateNode(node);
-
-      // Compile and return
       return node.compile();
     },
     scope
   );
-
-  // Evaluate with scope
   return compiled.evaluate(scope);
 }
 
-/**
- * Handles the 'evaluate' tool.
- * Evaluates mathematical expressions with optional variables.
- *
- * Security considerations:
- * - Expression length and complexity are validated
- * - AST is validated to prevent code injection
- * - No function definitions or assignments allowed
- * - Scope variables are validated and type-checked
- * - Operation has timeout protection
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.expression - Mathematical expression to evaluate
- * @param {Record<string, number>} [args.scope] - Optional variables
- * @returns {Promise<ToolResponse>} The evaluation result
- *
- * @example
- * ```typescript
- * await handleEvaluate({ expression: '2 + 2' });
- * // Returns: { content: [{ type: 'text', text: '{"result":"4"}' }] }
- *
- * await handleEvaluate({ expression: 'x^2 + y', scope: { x: 5, y: 3 } });
- * // Returns: { content: [{ type: 'text', text: '{"result":"28"}' }] }
- * ```
- */
+// ============================================================================
+// Tool Handlers
+// ============================================================================
+
+/** Evaluates mathematical expressions */
 export async function handleEvaluate(args: {
   expression: string;
   scope?: object;
 }): Promise<ToolResponse> {
-  const startTime = performance.now();
-
-  try {
-    // Validate expression
-    const validatedExpression = validateExpression(args.expression, 'expression');
-
-    // Validate scope if provided
-    const validatedScope = args.scope
-      ? validateScope(args.scope, 'scope')
-      : {};
-
-    logger.debug('Evaluating expression', {
-      expression: validatedExpression,
-      hasScope: Object.keys(validatedScope).length > 0,
-    });
-
-    // Evaluate with timeout protection and AST validation
-    const result = await withTimeout(
-      Promise.resolve(safeEvaluate(validatedExpression, validatedScope)),
-      DEFAULT_OPERATION_TIMEOUT,
-      'evaluate'
-    );
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('evaluate', duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: math.format(result) }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('evaluate_error', duration);
-
-    logger.error('Evaluate operation failed', {
-      expression: args.expression,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  return executeHandler(
+    { operationName: 'evaluate', logContext: { expression: args.expression, hasScope: !!args.scope } },
+    async () => {
+      const expr = validateExpression(args.expression, 'expression');
+      const scope = args.scope ? validateScope(args.scope, 'scope') : {};
+      const result = await withTimeout(
+        Promise.resolve(safeEvaluate(expr, scope)),
+        DEFAULT_OPERATION_TIMEOUT, 'evaluate'
+      );
+      return successResponse(math.format(result));
+    }
+  );
 }
 
-/**
- * Handles the 'simplify' tool.
- * Simplifies mathematical expressions.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.expression - Expression to simplify
- * @param {string[]} [args.rules] - Optional simplification rules
- * @returns {Promise<ToolResponse>} The simplified expression
- *
- * @example
- * ```typescript
- * await handleSimplify({ expression: '2 * x + x' });
- * // Returns: { content: [{ type: 'text', text: '{"result":"3 * x"}' }] }
- * ```
- */
+/** Simplifies mathematical expressions */
 export async function handleSimplify(args: {
   expression: string;
   rules?: string[];
 }): Promise<ToolResponse> {
-  const startTime = performance.now();
-
-  try {
-    // Validate expression
-    const validatedExpression = validateExpression(args.expression, 'expression');
-
-    logger.debug('Simplifying expression', { expression: validatedExpression });
-
-    // Simplify with timeout protection
-    const simplified = await withTimeout(
-      Promise.resolve(
-        args.rules
-          ? math.simplify(validatedExpression, args.rules)
-          : math.simplify(validatedExpression)
-      ),
-      DEFAULT_OPERATION_TIMEOUT,
-      'simplify'
-    );
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('simplify', duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: simplified.toString() }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('simplify_error', duration);
-
-    logger.error('Simplify operation failed', {
-      expression: args.expression,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  return executeHandler(
+    { operationName: 'simplify', logContext: { expression: args.expression } },
+    async () => {
+      const expr = validateExpression(args.expression, 'expression');
+      const simplified = await withTimeout(
+        Promise.resolve(args.rules ? math.simplify(expr, args.rules) : math.simplify(expr)),
+        DEFAULT_OPERATION_TIMEOUT, 'simplify'
+      );
+      return successResponse(simplified.toString());
+    }
+  );
 }
 
-/**
- * Handles the 'derivative' tool.
- * Calculates the derivative of an expression with respect to a variable.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.expression - Expression to differentiate
- * @param {string} args.variable - Variable to differentiate with respect to
- * @returns {Promise<ToolResponse>} The derivative
- *
- * @example
- * ```typescript
- * await handleDerivative({ expression: 'x^2', variable: 'x' });
- * // Returns: { content: [{ type: 'text', text: '{"result":"2 * x"}' }] }
- * ```
- */
+/** Calculates derivatives */
 export async function handleDerivative(args: {
   expression: string;
   variable: string;
 }): Promise<ToolResponse> {
-  const startTime = performance.now();
-
-  try {
-    // Validate expression and variable
-    const validatedExpression = validateExpression(args.expression, 'expression');
-    const validatedVariable = validateVariableName(args.variable, 'variable');
-
-    logger.debug('Computing derivative', {
-      expression: validatedExpression,
-      variable: validatedVariable,
-    });
-
-    // Calculate derivative with timeout protection
-    const derivative = await withTimeout(
-      Promise.resolve(math.derivative(validatedExpression, validatedVariable)),
-      DEFAULT_OPERATION_TIMEOUT,
-      'derivative'
-    );
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('derivative', duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: derivative.toString() }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('derivative_error', duration);
-
-    logger.error('Derivative operation failed', {
-      expression: args.expression,
-      variable: args.variable,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  return executeHandler(
+    { operationName: 'derivative', logContext: { expression: args.expression, variable: args.variable } },
+    async () => {
+      const expr = validateExpression(args.expression, 'expression');
+      const varName = validateVariableName(args.variable, 'variable');
+      const result = await withTimeout(
+        Promise.resolve(math.derivative(expr, varName)),
+        DEFAULT_OPERATION_TIMEOUT, 'derivative'
+      );
+      return successResponse(result.toString());
+    }
+  );
 }
 
-/**
- * Handles the 'solve' tool.
- * Solves equations for a specified variable.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.equation - Equation to solve (must contain '=')
- * @param {string} args.variable - Variable to solve for
- * @returns {Promise<ToolResponse>} The solution
- *
- * @example
- * ```typescript
- * await handleSolve({ equation: '2*x + 3 = 7', variable: 'x' });
- * // Returns solution for x
- * ```
- */
+/** Solves equations */
 export async function handleSolve(args: {
   equation: string;
   variable: string;
 }): Promise<ToolResponse> {
-  const startTime = performance.now();
+  return executeHandler(
+    { operationName: 'solve', logContext: { equation: args.equation, variable: args.variable } },
+    async () => {
+      const equation = validateExpression(args.equation, 'equation');
+      const varName = validateVariableName(args.variable, 'variable');
 
-  try {
-    // Validate inputs
-    const validatedEquation = validateExpression(args.equation, 'equation');
-    const validatedVariable = validateVariableName(args.variable, 'variable');
-
-    // Parse equation into left and right sides
-    const parts = validatedEquation.split('=');
-    if (parts.length !== 2) {
-      throw new ValidationError("Equation must contain exactly one '=' sign");
-    }
-
-    logger.debug('Solving equation', {
-      equation: validatedEquation,
-      variable: validatedVariable,
-    });
-
-    // Rearrange to left - right = 0
-    const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-
-    // Use cached parsed and compiled expression
-    const _compiled = getCachedExpression(
-      expr,
-      () => {
-        const node = math.parse(expr);
-        return node.compile(); // Validate the expression is compilable
+      const parts = equation.split('=');
+      if (parts.length !== 2) {
+        throw new ValidationError("Equation must contain exactly one '=' sign");
       }
-    );
 
-    // Try to solve symbolically
-    let result: string;
-    try {
-      const simplified = math.simplify(expr);
-      result = `Simplified equation: ${simplified.toString()} = 0`;
-    } catch (e) {
-      result = `Expression to solve: ${expr} = 0 for ${validatedVariable}`;
+      const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
+
+      // Validate compilable
+      getCachedExpression(expr, () => math.parse(expr).compile());
+
+      let result: string;
+      try {
+        const simplified = math.simplify(expr);
+        result = `Simplified equation: ${simplified.toString()} = 0`;
+      } catch {
+        result = `Expression to solve: ${expr} = 0 for ${varName}`;
+      }
+
+      return successResponse(result);
     }
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('solve', duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('solve_error', duration);
-
-    logger.error('Solve operation failed', {
-      equation: args.equation,
-      variable: args.variable,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  );
 }
 
-/**
- * Handles the 'matrix_operations' tool.
- * Performs various matrix operations with optional WASM acceleration.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.operation - Operation to perform
- * @param {string} args.matrix_a - First matrix (JSON string)
- * @param {string} [args.matrix_b] - Second matrix (JSON string, for binary ops)
- * @param {AccelerationWrapper} [accelerationWrapper] - Optional acceleration wrapper (mathjs/WASM/Workers/GPU)
- * @returns {Promise<ToolResponse>} The operation result
- *
- * @example
- * ```typescript
- * await handleMatrixOperations({
- *   operation: 'determinant',
- *   matrix_a: '[[1,2],[3,4]]'
- * });
- * // Returns: { content: [{ type: 'text', text: '{"result":"-2"}' }] }
- * ```
- */
+// ============================================================================
+// Matrix Operations
+// ============================================================================
+
+type MatrixOp = 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
+
+const matrixOps: Record<MatrixOp, (
+  a: number[][],
+  b: number[][] | undefined,
+  accel?: AccelerationWrapper
+) => Promise<unknown>> = {
+  multiply: async (a, b, accel) => {
+    if (!b) throw new ValidationError('matrix_b is required for multiply');
+    validateMatrixCompatibility(a, b, 'multiply');
+    return accel
+      ? withTimeout(accel.matrixMultiply(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_multiply')
+      : math.multiply(a, b);
+  },
+  inverse: async (a) => {
+    validateSquareMatrix(a, 'matrix_a');
+    return math.inv(a);
+  },
+  determinant: async (a, _, accel) => {
+    validateSquareMatrix(a, 'matrix_a');
+    return accel
+      ? withTimeout(accel.matrixDeterminant(a), DEFAULT_OPERATION_TIMEOUT, 'matrix_determinant')
+      : math.det(a);
+  },
+  transpose: async (a, _, accel) => {
+    return accel
+      ? withTimeout(accel.matrixTranspose(a), DEFAULT_OPERATION_TIMEOUT, 'matrix_transpose')
+      : math.transpose(a);
+  },
+  eigenvalues: async (a) => {
+    validateSquareMatrix(a, 'matrix_a');
+    return math.eigs(a).values;
+  },
+  add: async (a, b, accel) => {
+    if (!b) throw new ValidationError('matrix_b is required for add');
+    validateMatrixCompatibility(a, b, 'add');
+    return accel
+      ? withTimeout(accel.matrixAdd(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_add')
+      : math.add(a, b);
+  },
+  subtract: async (a, b, accel) => {
+    if (!b) throw new ValidationError('matrix_b is required for subtract');
+    validateMatrixCompatibility(a, b, 'subtract');
+    return accel
+      ? withTimeout(accel.matrixSubtract(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_subtract')
+      : math.subtract(a, b);
+  },
+};
+
+/** Performs matrix operations */
 export async function handleMatrixOperations(
-  args: {
-    operation: string;
-    matrix_a: string;
-    matrix_b?: string;
-  },
+  args: { operation: string; matrix_a: string; matrix_b?: string },
   accelerationWrapper?: AccelerationWrapper
 ): Promise<ToolResponse> {
-  const startTime = performance.now();
+  const op = validateEnum(args.operation, Object.keys(matrixOps) as MatrixOp[], 'operation');
 
-  try {
-    // Validate operation type
-    const validOperation = validateEnum(
-      args.operation,
-      ['multiply', 'inverse', 'determinant', 'transpose', 'eigenvalues', 'add', 'subtract'] as const,
-      'operation'
-    );
+  return executeHandler(
+    { operationName: `matrix_${op}`, logContext: { operation: op } },
+    async () => {
+      const matrixA = validateMatrixSize(
+        validateMatrix(safeJsonParse(args.matrix_a, 'matrix_a'), 'matrix_a'),
+        'matrix_a'
+      );
+      const matrixB = args.matrix_b
+        ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'), 'matrix_b')
+        : undefined;
 
-    // Parse and validate first matrix
-    const matrixA = validateMatrixSize(
-      validateMatrix(safeJsonParse(args.matrix_a, 'matrix_a'), 'matrix_a'),
-      'matrix_a'
-    );
-
-    logger.debug('Matrix operation', {
-      operation: validOperation,
-      matrixASize: `${matrixA.length}×${matrixA[0].length}`,
-    });
-
-    let result: number | number[] | number[][] | { values: number[] };
-
-    switch (validOperation) {
-      case 'multiply': {
-        if (!args.matrix_b) {
-          throw new ValidationError('matrix_b is required for multiply operation');
-        }
-
-        const matrixB = validateMatrixSize(
-          validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'),
-          'matrix_b'
-        );
-
-        validateMatrixCompatibility(matrixA, matrixB, 'multiply');
-
-        // Use acceleration wrapper if available, otherwise use mathjs
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.matrixMultiply(matrixA, matrixB),
-              DEFAULT_OPERATION_TIMEOUT,
-              'matrix_multiply'
-            )
-          : (math.multiply(matrixA, matrixB) as number[][]);
-        break;
-      }
-
-      case 'inverse': {
-        validateSquareMatrix(matrixA, 'matrix_a');
-        result = math.inv(matrixA) as number[][];
-        break;
-      }
-
-      case 'determinant': {
-        validateSquareMatrix(matrixA, 'matrix_a');
-
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.matrixDeterminant(matrixA),
-              DEFAULT_OPERATION_TIMEOUT,
-              'matrix_determinant'
-            )
-          : (math.det(matrixA) as number);
-        break;
-      }
-
-      case 'transpose': {
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.matrixTranspose(matrixA),
-              DEFAULT_OPERATION_TIMEOUT,
-              'matrix_transpose'
-            )
-          : (math.transpose(matrixA) as number[][]);
-        break;
-      }
-
-      case 'eigenvalues': {
-        validateSquareMatrix(matrixA, 'matrix_a');
-        const eigResult = math.eigs(matrixA);
-        result = eigResult.values as unknown as number[];
-        break;
-      }
-
-      case 'add': {
-        if (!args.matrix_b) {
-          throw new ValidationError('matrix_b is required for add operation');
-        }
-
-        const matrixB = validateMatrixSize(
-          validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'),
-          'matrix_b'
-        );
-
-        validateMatrixCompatibility(matrixA, matrixB, 'add');
-
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.matrixAdd(matrixA, matrixB),
-              DEFAULT_OPERATION_TIMEOUT,
-              'matrix_add'
-            )
-          : (math.add(matrixA, matrixB) as number[][]);
-        break;
-      }
-
-      case 'subtract': {
-        if (!args.matrix_b) {
-          throw new ValidationError('matrix_b is required for subtract operation');
-        }
-
-        const matrixB = validateMatrixSize(
-          validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'),
-          'matrix_b'
-        );
-
-        validateMatrixCompatibility(matrixA, matrixB, 'subtract');
-
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.matrixSubtract(matrixA, matrixB),
-              DEFAULT_OPERATION_TIMEOUT,
-              'matrix_subtract'
-            )
-          : (math.subtract(matrixA, matrixB) as number[][]);
-        break;
-      }
-
-      default:
-        throw new ValidationError(`Unknown matrix operation: ${validOperation}`);
+      const result = await matrixOps[op](matrixA, matrixB, accelerationWrapper);
+      return successResponse(math.format(result));
     }
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation(`matrix_${validOperation}`, duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: math.format(result) }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation(`matrix_${args.operation}_error`, duration);
-
-    logger.error('Matrix operation failed', {
-      operation: args.operation,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  );
 }
 
-/**
- * Handles the 'statistics' tool.
- * Performs statistical calculations with optional WASM acceleration.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.operation - Statistical operation to perform
- * @param {string} args.data - Data array (JSON string)
- * @param {AccelerationWrapper} [accelerationWrapper] - Optional acceleration wrapper (mathjs/WASM/Workers/GPU)
- * @returns {Promise<ToolResponse>} The calculation result
- *
- * @example
- * ```typescript
- * await handleStatistics({
- *   operation: 'mean',
- *   data: '[1,2,3,4,5]'
- * });
- * // Returns: { content: [{ type: 'text', text: '{"result":"3"}' }] }
- * ```
- */
+// ============================================================================
+// Statistics Operations
+// ============================================================================
+
+type StatsOp = 'mean' | 'median' | 'mode' | 'std' | 'variance' | 'min' | 'max' | 'sum' | 'product';
+
+const statsOps: Record<StatsOp, (data: number[], accel?: AccelerationWrapper) => Promise<unknown>> = {
+  mean: async (data, accel) =>
+    accel ? withTimeout(accel.statsMean(data), DEFAULT_OPERATION_TIMEOUT, 'stats_mean') : math.mean(data),
+  median: async (data, accel) =>
+    accel ? withTimeout(accel.statsMedian(data), DEFAULT_OPERATION_TIMEOUT, 'stats_median') : math.median(data),
+  mode: async (data, accel) => {
+    const result = accel
+      ? await withTimeout(accel.statsMode(data), DEFAULT_OPERATION_TIMEOUT, 'stats_mode')
+      : math.mode(data);
+    return Array.isArray(result) ? result : [result];
+  },
+  std: async (data, accel) =>
+    accel ? withTimeout(accel.statsStd(data), DEFAULT_OPERATION_TIMEOUT, 'stats_std') : math.std(data),
+  variance: async (data, accel) =>
+    accel ? withTimeout(accel.statsVariance(data), DEFAULT_OPERATION_TIMEOUT, 'stats_variance') : math.variance(data),
+  min: async (data, accel) =>
+    accel ? withTimeout(accel.statsMin(data), DEFAULT_OPERATION_TIMEOUT, 'stats_min') : math.min(data),
+  max: async (data, accel) =>
+    accel ? withTimeout(accel.statsMax(data), DEFAULT_OPERATION_TIMEOUT, 'stats_max') : math.max(data),
+  sum: async (data, accel) =>
+    accel ? withTimeout(accel.statsSum(data), DEFAULT_OPERATION_TIMEOUT, 'stats_sum') : math.sum(data),
+  product: async (data) => math.prod(data),
+};
+
+/** Performs statistical calculations */
 export async function handleStatistics(
-  args: {
-    operation: string;
-    data: string;
-  },
+  args: { operation: string; data: string },
   accelerationWrapper?: AccelerationWrapper
 ): Promise<ToolResponse> {
-  const startTime = performance.now();
+  const op = validateEnum(args.operation, Object.keys(statsOps) as StatsOp[], 'operation');
 
-  try {
-    // Validate operation type
-    const validOperation = validateEnum(
-      args.operation,
-      ['mean', 'median', 'mode', 'std', 'variance', 'min', 'max', 'sum', 'product'] as const,
-      'operation'
-    );
-
-    // Parse and validate data array
-    const dataArray = validateArrayLength(
-      validateNumberArray(safeJsonParse(args.data, 'data'), 'data'),
-      'data'
-    );
-
-    logger.debug('Statistics operation', {
-      operation: validOperation,
-      dataLength: dataArray.length,
-    });
-
-    let result: number | number[];
-
-    switch (validOperation) {
-      case 'mean':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsMean(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_mean'
-            )
-          : (math.mean(dataArray) as number);
-        break;
-
-      case 'median':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsMedian(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_median'
-            )
-          : (math.median(dataArray) as unknown as number);
-        break;
-
-      case 'mode':
-        {
-          const modeResult = accelerationWrapper
-            ? await withTimeout(
-                accelerationWrapper.statsMode(dataArray),
-                DEFAULT_OPERATION_TIMEOUT,
-                'stats_mode'
-              )
-            : math.mode(dataArray);
-
-          // Normalize mode to always return an array for consistency
-          // Single mode: [value], Multiple modes: [value1, value2, ...]
-          result = Array.isArray(modeResult) ? modeResult : [modeResult];
-        }
-        break;
-
-      case 'std':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsStd(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_std'
-            )
-          : (math.std(dataArray) as unknown as number);
-        break;
-
-      case 'variance':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsVariance(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_variance'
-            )
-          : (math.variance(dataArray) as unknown as number);
-        break;
-
-      case 'min':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsMin(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_min'
-            )
-          : (math.min(dataArray) as number);
-        break;
-
-      case 'max':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsMax(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_max'
-            )
-          : (math.max(dataArray) as number);
-        break;
-
-      case 'sum':
-        result = accelerationWrapper
-          ? await withTimeout(
-              accelerationWrapper.statsSum(dataArray),
-              DEFAULT_OPERATION_TIMEOUT,
-              'stats_sum'
-            )
-          : (math.sum(dataArray) as number);
-        break;
-
-      case 'product':
-        result = math.prod(dataArray) as number;
-        break;
-
-      default:
-        throw new ValidationError(`Unknown statistics operation: ${validOperation}`);
+  return executeHandler(
+    { operationName: `stats_${op}`, logContext: { operation: op } },
+    async () => {
+      const data = validateArrayLength(
+        validateNumberArray(safeJsonParse(args.data, 'data'), 'data'),
+        'data'
+      );
+      const result = await statsOps[op](data, accelerationWrapper);
+      return successResponse(math.format(result));
     }
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation(`stats_${validOperation}`, duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: math.format(result) }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation(`stats_${args.operation}_error`, duration);
-
-    logger.error('Statistics operation failed', {
-      operation: args.operation,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
+  );
 }
 
-/**
- * Handles the 'unit_conversion' tool.
- * Converts between different units of measurement.
- *
- * @param {Object} args - Tool arguments
- * @param {string} args.value - Value with unit (e.g., "5 inches")
- * @param {string} args.target_unit - Target unit (e.g., "cm")
- * @returns {Promise<ToolResponse>} The converted value
- *
- * @example
- * ```typescript
- * await handleUnitConversion({
- *   value: '5 inches',
- *   target_unit: 'cm'
- * });
- * // Returns: { content: [{ type: 'text', text: '{"result":"12.7 cm"}' }] }
- * ```
- */
+// ============================================================================
+// Unit Conversion
+// ============================================================================
+
+const UNIT_LIMITS = { value: 100, unit: 50, parens: 10 };
+const UNIT_PATTERNS = {
+  value: /^[0-9\s+\-*/.^a-zA-Z()]+$/,
+  unit: /^[a-zA-Z0-9\s/^*-]+$/,
+};
+
+/** Converts between units of measurement */
 export async function handleUnitConversion(args: {
   value: string;
   target_unit: string;
 }): Promise<ToolResponse> {
-  const startTime = performance.now();
+  return executeHandler(
+    { operationName: 'unit_conversion', logContext: { value: args.value, targetUnit: args.target_unit } },
+    async () => {
+      // Validate inputs
+      if (typeof args.value !== 'string' || !args.value.trim()) {
+        throw new ValidationError('value must be a non-empty string');
+      }
+      if (typeof args.target_unit !== 'string' || !args.target_unit.trim()) {
+        throw new ValidationError('target_unit must be a non-empty string');
+      }
 
-  try {
-    // Validate inputs - basic type checking
-    if (typeof args.value !== 'string' || args.value.trim().length === 0) {
-      throw new ValidationError('value must be a non-empty string');
-    }
+      // Length limits
+      if (args.value.length > UNIT_LIMITS.value) {
+        throw new ValidationError(`value exceeds maximum length of ${UNIT_LIMITS.value}`);
+      }
+      if (args.target_unit.length > UNIT_LIMITS.unit) {
+        throw new ValidationError(`target_unit exceeds maximum length of ${UNIT_LIMITS.unit}`);
+      }
 
-    if (typeof args.target_unit !== 'string' || args.target_unit.trim().length === 0) {
-      throw new ValidationError('target_unit must be a non-empty string');
-    }
+      // Pattern validation
+      if (!UNIT_PATTERNS.value.test(args.value)) {
+        throw new ValidationError('value contains invalid characters');
+      }
+      if (!UNIT_PATTERNS.unit.test(args.target_unit)) {
+        throw new ValidationError('target_unit contains invalid characters');
+      }
 
-    // Input sanitization - length limits (prevent DoS via extremely long strings)
-    const MAX_VALUE_LENGTH = 100;
-    const MAX_UNIT_LENGTH = 50;
+      // Parentheses validation
+      const openParens = (args.value.match(/\(/g) || []).length;
+      const closeParens = (args.value.match(/\)/g) || []).length;
+      if (openParens !== closeParens) {
+        throw new ValidationError('value has mismatched parentheses');
+      }
+      if (openParens > UNIT_LIMITS.parens) {
+        throw new ValidationError(`value has too many nested expressions (max ${UNIT_LIMITS.parens})`);
+      }
 
-    if (args.value.length > MAX_VALUE_LENGTH) {
-      throw new ValidationError(
-        `value exceeds maximum length of ${MAX_VALUE_LENGTH} characters`
+      const result = await withTimeout(
+        Promise.resolve(math.unit(args.value).to(args.target_unit)),
+        DEFAULT_OPERATION_TIMEOUT, 'unit_conversion'
       );
+
+      return successResponse(result.toString());
     }
-
-    if (args.target_unit.length > MAX_UNIT_LENGTH) {
-      throw new ValidationError(
-        `target_unit exceeds maximum length of ${MAX_UNIT_LENGTH} characters`
-      );
-    }
-
-    // Input sanitization - format validation (prevent injection attacks)
-    // Allow: numbers, basic units, operators (+, -, *, /, ^), spaces, and common unit characters
-    const ALLOWED_VALUE_PATTERN = /^[0-9\s+\-*/.^a-zA-Z()]+$/;
-    const ALLOWED_UNIT_PATTERN = /^[a-zA-Z0-9\s/^*-]+$/;
-
-    if (!ALLOWED_VALUE_PATTERN.test(args.value)) {
-      throw new ValidationError(
-        'value contains invalid characters. Only numbers, units, and basic operators are allowed.'
-      );
-    }
-
-    if (!ALLOWED_UNIT_PATTERN.test(args.target_unit)) {
-      throw new ValidationError(
-        'target_unit contains invalid characters. Only alphanumeric characters and unit operators are allowed.'
-      );
-    }
-
-    // Additional safety: prevent excessive nesting/complexity
-    const openParens = (args.value.match(/\(/g) || []).length;
-    const closeParens = (args.value.match(/\)/g) || []).length;
-
-    if (openParens !== closeParens) {
-      throw new ValidationError('value has mismatched parentheses');
-    }
-
-    if (openParens > 10) {
-      throw new ValidationError(
-        'value has too many nested expressions (max 10 levels)'
-      );
-    }
-
-    logger.debug('Unit conversion', {
-      value: args.value,
-      targetUnit: args.target_unit,
-    });
-
-    // Perform conversion with timeout protection
-    const result = await withTimeout(
-      Promise.resolve(math.unit(args.value).to(args.target_unit)),
-      DEFAULT_OPERATION_TIMEOUT,
-      'unit_conversion'
-    );
-
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('unit_conversion', duration);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify({ result: result.toString() }, null, 2),
-        },
-      ],
-      isError: false,
-    };
-  } catch (error) {
-    const duration = performance.now() - startTime;
-    perfTracker.recordOperation('unit_conversion_error', duration);
-
-    logger.error('Unit conversion failed', {
-      value: args.value,
-      targetUnit: args.target_unit,
-      error: error instanceof Error ? error.message : String(error),
-    });
-
-    throw error;
-  }
-}
-
-/**
- * Wraps a tool handler with error handling.
- * Converts all errors into properly formatted ToolResponse objects.
- *
- * @template T - The type of the handler arguments
- * @param {Function} handler - The handler function to wrap
- * @param {T} args - Arguments to pass to the handler
- * @returns {Promise<ToolResponse>} The handler response or error response
- *
- * @example
- * ```typescript
- * const response = await withErrorHandling(
- *   handleEvaluate,
- *   { expression: '2 + 2' }
- * );
- * ```
- */
-export async function withErrorHandling<T>(
-  handler: (args: T) => Promise<ToolResponse>,
-  args: T
-): Promise<ToolResponse> {
-  try {
-    return await handler(args);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorName = error instanceof MathMCPError ? error.name : 'Error';
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(
-            {
-              error: errorMessage,
-              errorType: errorName,
-            },
-            null,
-            2
-          ),
-        },
-      ],
-      isError: true,
-    };
-  }
+  );
 }
