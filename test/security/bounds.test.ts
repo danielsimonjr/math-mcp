@@ -490,9 +490,8 @@ describe('Bounds Testing', () => {
   describe('Unit conversion edge cases', () => {
     it('should handle zero value conversion', async () => {
       const result = await handleUnitConversion({
-        value: 0,
-        from_unit: 'meter',
-        to_unit: 'kilometer',
+        value: '0 meter',
+        target_unit: 'kilometer',
       });
 
       expect(result.isError).toBe(false);
@@ -501,9 +500,8 @@ describe('Bounds Testing', () => {
 
     it('should handle negative value conversion', async () => {
       const result = await handleUnitConversion({
-        value: -10,
-        from_unit: 'celsius',
-        to_unit: 'fahrenheit',
+        value: '-10 celsius',
+        target_unit: 'fahrenheit',
       });
 
       expect(result.isError).toBe(false);
@@ -511,9 +509,8 @@ describe('Bounds Testing', () => {
 
     it('should handle very small value conversion', async () => {
       const result = await handleUnitConversion({
-        value: 0.001,
-        from_unit: 'meter',
-        to_unit: 'millimeter',
+        value: '0.001 meter',
+        target_unit: 'millimeter',
       });
 
       expect(result.isError).toBe(false);
@@ -523,9 +520,8 @@ describe('Bounds Testing', () => {
     it('should reject invalid unit names', async () => {
       await expect(
         handleUnitConversion({
-          value: 10,
-          from_unit: 'invalid_unit',
-          to_unit: 'meter',
+          value: '10 invalid_unit',
+          target_unit: 'meter',
         })
       ).rejects.toThrow(/unknown|invalid|unit/i);
     });
