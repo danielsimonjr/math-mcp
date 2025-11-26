@@ -68,7 +68,7 @@ async function main() {
 
     try {
       const hash = await computeFileHash(filePath);
-      const relativePath = relative(PROJECT_ROOT, filePath);
+      const relativePath = relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
 
       hashes[relativePath] = {
         sha256: hash,
