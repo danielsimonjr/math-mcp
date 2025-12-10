@@ -108,7 +108,7 @@
       "Bash(npm view:*)",
       "Bash(npm ls:*)",
       "Bash(npm whoami:*)",
-      "Bash(npm uninstall:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []
