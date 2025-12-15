@@ -55,7 +55,7 @@
   "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.23.0",
+    "@modelcontextprotocol/sdk": "1.24.3",
     "mathjs": "15.1.0",
     "prom-client": "^15.1.3"
   },
