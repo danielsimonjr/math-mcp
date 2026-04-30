@@ -7,6 +7,26 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Fixed
+- **`health.ts:checkWasm()` no longer reports `pass` unconditionally.**
+  Replaced the no-op try block (which set `matrixLoaded = true` before
+  any actual existence check) with `fs.existsSync` calls against the
+  WASM binding files. Health now correctly returns `warn` when matrix
+  or statistics bindings are missing (e.g. before `npm run build:wasm`).
+- **Validation/test error-message drift aligned.**
+  - `validateExpression` now throws `"…exceeds maximum allowed length…"`
+    matching the wording already used by `validateVariableName` and the
+    test fixture.
+  - `validateMatrixCompatibility` test loosened to a case-insensitive
+    `/cannot multiply/i` regex; the implementation throws
+    `"Incompatible matrix dimensions: cannot multiply…"` (sentence-case),
+    not capital-C "Cannot multiply…" as the stale test asserted.
+  - JSDoc example in `validateMatrixCompatibility` updated to match the
+    actual thrown text.
+- **`health.test.ts` memory check** loosened from `toBe('pass')` to
+  `['pass','warn']` — vitest workers can push RSS past the 1024MB warn
+  threshold without indicating real trouble.
+
 ### Added
 - `STRUCTURE-AUDIT-2026-04-29.md` — read-only audit of the codebase
   produced by `feature-dev:code-explorer`. Covers module map, layer

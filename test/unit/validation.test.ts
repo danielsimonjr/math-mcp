@@ -269,7 +269,7 @@ describe('validation', () => {
         const a = [[1, 2]]; // 1x2
         const b = [[1, 2, 3]]; // 1x3 (should be 2xN)
         expect(() => validateMatrixCompatibility(a, b, 'multiply')).toThrow(ValidationError);
-        expect(() => validateMatrixCompatibility(a, b, 'multiply')).toThrow(/Cannot multiply/);
+        expect(() => validateMatrixCompatibility(a, b, 'multiply')).toThrow(/cannot multiply/i);
       });
 
       it('should include dimensions in error message', () => {

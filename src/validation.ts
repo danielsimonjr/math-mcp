@@ -255,10 +255,10 @@ export function validateMatrixSize(matrix: number[][], context: string): number[
  * // OK: 1×3 × 3×1 is valid
  *
  * validateMatrixCompatibility([[1,2]], [[1,2,3]], 'multiply');
- * // Throws: ValidationError("Cannot multiply...")
+ * // Throws: ValidationError("Incompatible matrix dimensions: cannot multiply...")
  *
  * validateMatrixCompatibility([[1,2]], [[1,2,3]], 'add');
- * // Throws: ValidationError("Cannot add...")
+ * // Throws: ValidationError("Incompatible matrix dimensions: cannot add...")
  * ```
  */
 export function validateMatrixCompatibility(
@@ -394,7 +394,7 @@ export function validateExpression(expression: string, context: string): string 
 
   if (trimmed.length > LIMITS.MAX_EXPRESSION_LENGTH) {
     throw new ComplexityError(
-      `${context} length ${trimmed.length} exceeds maximum length of ${LIMITS.MAX_EXPRESSION_LENGTH}`
+      `${context} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_EXPRESSION_LENGTH}`
     );
   }
 

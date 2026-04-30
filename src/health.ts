@@ -71,24 +71,18 @@ const startTime = Date.now();
  */
 async function checkWasm(): Promise<HealthCheck> {
   try {
-    // Check if WASM modules are loaded by checking global state
-    // In a real implementation, we'd check actual WASM module state
-    // For now, we'll assume healthy if no errors
-
-    // Try to import and check WASM bindings
     let matrixLoaded = false;
     let statsLoaded = false;
 
     try {
-      // Attempt dynamic import to check if modules exist
-      const matrixPath = new URL('../wasm/bindings/matrix.cjs', import.meta.url);
-      const statsPath = new URL('../wasm/bindings/statistics.cjs', import.meta.url);
-
-      // Check if files exist (simplified check)
-      matrixLoaded = true;
-      statsLoaded = true;
+      const { existsSync } = await import('node:fs');
+      const { fileURLToPath } = await import('node:url');
+      const matrixPath = fileURLToPath(new URL('../wasm/bindings/matrix.cjs', import.meta.url));
+      const statsPath = fileURLToPath(new URL('../wasm/bindings/statistics.cjs', import.meta.url));
+      matrixLoaded = existsSync(matrixPath);
+      statsLoaded = existsSync(statsPath);
     } catch {
-      // Modules not loaded
+      // fs / url import failed — leave both false
     }
 
     if (matrixLoaded && statsLoaded) {
