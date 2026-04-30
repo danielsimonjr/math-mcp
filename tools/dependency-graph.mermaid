@@ -1,0 +1,13 @@
+graph TD
+  _["."]
+  _ --> shared
+  _ --> telemetry
+  _ --> workers
+  gpu["gpu"]
+  gpu --> _
+  shared["shared"]
+  telemetry["telemetry"]
+  telemetry --> _
+  workers["workers"]
+  workers --> _
+  workers --> shared

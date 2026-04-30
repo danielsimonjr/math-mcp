@@ -7,6 +7,30 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Added — Dependency graph generator (`tools/`)
+- New `tools/generate-dependency-graph.ts` script (adapted from the
+  Mathjs fork's equivalent). Run with `npm run graph` (new package
+  script). Outputs three artifacts in `tools/`:
+  - `dependency-graph.json` — machine-readable
+  - `dependency-graph.md` — human-readable; stats, layer-violation
+    table, most-depended-on src files, per-file test coverage map,
+    folder dependencies
+  - `dependency-graph.mermaid` — top-level folder diagram
+- The script's layer model encodes the `STRUCTURE-AUDIT-2026-04-29.md`
+  §2 layering (L1 primitives → L8 orchestrators) and flags any import
+  going from a lower layer to a higher one. **Current state: 0
+  violations** — confirms the Task 21 structural fixes (moving
+  `AccelerationWrapper` to types.ts, breaking the router↔compat
+  circle, dropping the L4-into-L2 BackpressureError re-export) all
+  hold.
+- Test-coverage map mirrors the audit's manual matrix:
+  35 src files / 25 test files / 106 src->src imports / 10 src files
+  with no direct test (mostly entry points and stub modules).
+- Companion doc: `tools/DEPENDENCY_GRAPH_USAGE.md` — how to run, when
+  to re-run, how to update the layer map, known limitations.
+- New devDeps: `@babel/core`, `@babel/preset-typescript` (parser),
+  `tsx` (runner).
+
 ### Documentation — Task 25 (RLM-driven docs sync)
 - Updated 13 of 17 `docs/*.md` files using the `rlm` skill
   (`scripts/rlm_query.py`, claude-sonnet-4-6) to reflect the
