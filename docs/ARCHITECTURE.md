@@ -43,7 +43,7 @@ This document provides a comprehensive overview of the Math MCP Server codebase 
               ▼           ▼               ▼                ▼
        ┌──────────┐ ┌──────────┐  ┌─────────────┐  ┌──────────────┐
        │  mathjs  │ │   WASM   │  │  WebWorkers │  │   WebGPU     │
-       │  (small) │ │ (medium) │  │   (large)   │  │  (massive)   │
+       │  (small) │ │ (medium) │  │   (large)   │  │  (future)   │
        │   <10    │ │  10-100  │  │  100-500    │  │   (future)   │
        └──────────┘ └──────────┘  └─────────────┘  └──────────────┘
                          │               │
@@ -63,6 +63,8 @@ math-mcp/
 ├── src/                          # TypeScript source code
 │   ├── index-wasm.ts             # Main entry point (production)
 │   ├── index.ts                  # Basic entry point (no acceleration)
+│   ├── mathjs-shim.ts            # Single import surface for mathjs fork
+│   ├── types.ts                  # Shared type definitions (AccelerationWrapper, etc.)
 │   │
 │   │── # Core Infrastructure
 │   ├── acceleration-router.ts    # Tier-based routing logic
@@ -135,7 +137,13 @@ math-mcp/
 │   ├── unit/                     # Unit tests (Vitest)
 │   │   ├── telemetry/
 │   │   ├── health.test.ts
-│   │   └── backpressure.test.ts
+│   │   ├── backpressure.test.ts
+│   │   ├── handler-utils.test.ts
+│   │   ├── routing-utils.test.ts
+│   │   ├── mathjs-shim.test.ts
+│   │   ├── acceleration-adapter.test.ts
+│   │   ├── wasm-executor.test.ts
+│   │   └── wasm-integrity.test.ts
 │   └── security/                 # Security tests (119 tests)
 │       ├── injection.test.ts
 │       ├── dos.test.ts
@@ -157,6 +165,7 @@ math-mcp/
 ├── wasm-hashes.json              # WASM integrity hashes
 ├── package.json                  # Dependencies & scripts
 ├── tsconfig.json                 # TypeScript configuration
+├── eslint.config.js              # ESLint flat config
 └── CHANGELOG.md                  # Version history
 ```
 
@@ -178,6 +187,7 @@ The main entry point that:
 2. Registers request handlers for 7 mathematical tools
 3. Connects via stdio transport
 4. Routes operations through the acceleration adapter
+5. Starts the telemetry server (no-op unless `ENABLE_TELEMETRY=true`) and registers SIGINT/SIGTERM handlers to stop it cleanly
 
 ```typescript
 // Key components:
@@ -278,6 +288,7 @@ THRESHOLDS = {
   matrix_multiply: 10,   // 8x speedup at 10x10
   matrix_det: 5,         // 17x speedup at 5x5
   matrix_transpose: 20,  // 2x speedup at 20x20
+  matrix_add_sub: 20,    // threshold for matrix add/subtract
   statistics: 100,       // 15-42x speedup at 100+ elements
   median: 50,            // Lower due to sorting
 }
@@ -460,7 +471,7 @@ Prevents DoS attacks with token bucket algorithm:
 ### `wasm-integrity.ts` - WASM Verification
 
 SHA-256 cryptographic verification of WASM binaries:
-- Verifies module integrity at load time
+- Verifies module integrity at load time via `fs.existsSync` checks against binding files
 - Prevents execution of tampered modules
 - Automatic fallback on integrity failure
 
@@ -660,6 +671,9 @@ TASK_TIMEOUT=30000
 MAX_MATRIX_SIZE=1000
 MAX_ARRAY_LENGTH=100000
 MAX_EXPRESSION_LENGTH=10000
+
+# Telemetry
+ENABLE_TELEMETRY=true
 ```
 
 ### 5. Type Safety
@@ -673,6 +687,20 @@ interface ParallelOperationConfig<TInput, TChunk, TResult extends WorkerResult> 
   merge: (results: TResult[], input: TInput) => TResult;
 }
 ```
+
+### 6. Single mathjs Import Surface
+
+All source files import mathjs through the shim rather than directly from the package:
+
+```typescript
+// All src/ files use:
+import math from './mathjs-shim.js';
+
+// The shim unwraps the local fork's default export and retypes the namespace,
+// providing the full mathjs surface (parse, simplify, det, etc.)
+```
+
+The `AccelerationWrapper` interface is defined in `src/types.ts` and re-exported from `tool-handlers.ts` for backward compatibility. The function-style API (`routedMatrixMultiply`, `getRoutingStats`, etc.) is imported directly from `./acceleration-router-compat.js` by consumers that need it.
 
 ---
 

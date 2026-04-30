@@ -102,8 +102,8 @@ Unlike the original plan to clone and modify mathjs, the implemented solution us
   - `determinant` - Determinant calculation (WASM ≥5×5)
   - `transpose` - Matrix transposition (WASM ≥20×20)
   - `eigenvalues` - Eigenvalue computation
-  - `add` - Matrix addition
-  - `subtract` - Matrix subtraction
+  - `add` - Matrix addition (WASM ≥20×20)
+  - `subtract` - Matrix subtraction (WASM ≥20×20)
 - **Input:** Operation name, matrix_a (JSON), optional matrix_b
 - **Output:** Computed matrix or scalar result
 
@@ -119,6 +119,7 @@ Unlike the original plan to clone and modify mathjs, the implemented solution us
   - `min` - Minimum value (WASM ≥100 elements)
   - `max` - Maximum value (WASM ≥100 elements)
   - `sum` - Sum of all values (WASM ≥100 elements)
+  - `product` - Product of all values
 - **Input:** Operation name, data array (JSON)
 - **Output:** Computed statistical value
 
@@ -143,6 +144,7 @@ const THRESHOLDS = {
   matrix_multiply: 10,    // Use WASM for matrices ≥10×10
   matrix_det: 5,          // Use WASM for matrices ≥5×5
   matrix_transpose: 20,   // Use WASM for matrices ≥20×20
+  matrix_add_sub: 20,     // Use WASM for matrices ≥20×20 (add/subtract)
   statistics: 100,        // Use WASM for arrays ≥100 elements
   median: 50,             // Use WASM for arrays ≥50 elements (sorting overhead)
 };
@@ -205,6 +207,8 @@ C:/mcp-servers/math-mcp/
 ├── src/                          # TypeScript source
 │   ├── index.ts                  # MathJS-only server (legacy)
 │   ├── index-wasm.ts             # WASM-accelerated server (PRODUCTION)
+│   ├── mathjs-shim.ts            # Single mathjs import surface
+│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
 │   └── wasm-wrapper.ts           # WASM integration layer
 │
 ├── dist/                         # Compiled JavaScript
@@ -240,8 +244,15 @@ C:/mcp-servers/math-mcp/
 │       ├── profile-matrix.js
 │       └── profile-stats.js
 │
-├── test/                         # Integration tests
-│   └── integration-test.js       # End-to-end MCP tests
+├── test/                         # Tests
+│   ├── integration-test.js       # End-to-end MCP tests
+│   └── unit/                     # Unit tests
+│       ├── handler-utils.test.ts
+│       ├── routing-utils.test.ts
+│       ├── mathjs-shim.test.ts
+│       ├── acceleration-adapter.test.ts
+│       ├── wasm-executor.test.ts
+│       └── wasm-integrity.test.ts
 │
 ├── docs/                         # Documentation
 │   ├── DEPLOYMENT_PLAN.md        # Production deployment guide
@@ -253,6 +264,7 @@ C:/mcp-servers/math-mcp/
 │
 ├── CHANGELOG.md                  # Complete project history
 ├── README.md                     # Main documentation
+├── eslint.config.js              # ESLint flat config
 ├── package.json                  # Dependencies & scripts
 └── tsconfig.json                 # TypeScript configuration
 ```
@@ -261,7 +273,7 @@ C:/mcp-servers/math-mcp/
 
 **Production:**
 - `@modelcontextprotocol/sdk` ^1.20.2 - MCP protocol implementation
-- `mathjs` ^15.0.0 - Mathematical operations library
+- `mathjs` `file:../Mathjs` - Mathematical operations library (local fork v15.2.0)
 
 **Development:**
 - `typescript` ^5.9.3 - TypeScript compiler
@@ -278,6 +290,12 @@ C:/mcp-servers/math-mcp/
 ```bash
 npm run build
 # Compiles: src/*.ts → dist/*.js
+```
+
+**Install dependencies:**
+```bash
+npm install
+# Note: use npm install, not npm ci (package-lock.json is gitignored)
 ```
 
 **WASM Build (if needed):**
@@ -428,18 +446,26 @@ Any MCP-compatible client can integrate by:
 - Threshold-based routing verification
 - Performance monitoring validation
 
-**2. Differential Tests:**
+**2. Unit Tests (750 passing / 0 failing / 2 skipped):**
+- `handler-utils.test.ts` — successResponse, errorResponse, executeHandler, withErrorHandling
+- `routing-utils.test.ts` — routeWithFallback tier ordering, computeRoutingStatsSummary
+- `mathjs-shim.test.ts` — mathjs surface sanity checks and end-to-end smoke test
+- `acceleration-adapter.test.ts` — adapter unwrapping, error propagation, singleton export
+- `wasm-executor.test.ts` — threshold gating, wasmReady flag, fallback, perf counters
+- `wasm-integrity.test.ts` — integrity check env-var handling, hash match/mismatch, fs errors
+
+**3. Differential Tests:**
 - WASM results must exactly match mathjs results
 - Floating-point precision validation
 - Edge case handling (empty arrays, singular matrices)
 
-**3. Performance Benchmarks:**
+**4. Performance Benchmarks:**
 - Matrix operations: 10×10, 20×20, 50×50
 - Statistics: 100, 1,000, 10,000 elements
 - WASM vs mathjs comparison
 - Speedup verification
 
-**4. MCP Protocol Tests:**
+**5. MCP Protocol Tests:**
 - Request/response format validation
 - Error handling verification
 - All 7 tools functional testing
@@ -447,6 +473,7 @@ Any MCP-compatible client can integrate by:
 ### Success Criteria (All Met ✅)
 
 - ✅ Integration tests: 11/11 passing (100%)
+- ✅ Unit tests: 750 passing / 0 failing / 2 skipped
 - ✅ Matrix operations: 7-17x speedup (target: 5-10x)
 - ✅ Statistical operations: 15-42x speedup (target: 2-5x)
 - ✅ WASM usage rate: 70% (target: >50%)
@@ -667,7 +694,7 @@ claude mcp list
 **License:** ISC License
 
 **Dependencies:**
-- mathjs (Apache-2.0)
+- mathjs (Apache-2.0) — local fork at `file:../Mathjs`
 - @modelcontextprotocol/sdk (MIT)
 - TypeScript (Apache-2.0)
 - AssemblyScript (Apache-2.0)

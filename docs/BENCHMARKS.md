@@ -174,6 +174,7 @@ export const THRESHOLDS = {
   matrix_multiply: 10,      // Use WASM for 10×10+ matrices
   matrix_det: 5,            // Use WASM for 5×5+ matrices
   matrix_transpose: 20,     // Use WASM for 20×20+ matrices
+  matrix_add_sub: 20,       // Use WASM for 20×20+ matrices (add/subtract)
   statistics: 100,          // Use WASM for 100+ elements
   median: 50,               // Use WASM for 50+ elements (sorting overhead)
 } as const;

@@ -221,6 +221,7 @@ const THRESHOLDS = {
   matrix_multiply: 10,    // Use WASM for matrices ≥10×10
   matrix_det: 5,          // Use WASM for matrices ≥5×5
   matrix_transpose: 20,   // Use WASM for matrices ≥20×20
+  matrix_add_sub: 20,     // Use WASM for matrices ≥20×20 (add/subtract)
   statistics: 100,        // Use WASM for arrays ≥100 elements
   median: 50,             // Use WASM for arrays ≥50 elements (sorting)
 };
@@ -285,6 +286,21 @@ const THRESHOLDS = {
 - Matrix dimension mismatch (clear errors)
 - Non-numeric inputs (validation)
 
+### 8. Unit Tests
+
+**Location**: `test/unit/`
+**Framework**: Vitest
+**Total**: 750 passing / 0 failing / 2 skipped
+
+#### Unit Test Files
+
+- `handler-utils.test.ts` — `successResponse`, `errorResponse`, `executeHandler`, `withErrorHandling`
+- `routing-utils.test.ts` — `routeWithFallback` tier ordering, `computeRoutingStatsSummary`
+- `mathjs-shim.test.ts` — mathjs surface sanity checks (parse, simplify, derivative, statistics, unit)
+- `acceleration-adapter.test.ts` — compat layer mocks, `{result, tier}` unwrapping, `statsMode` normalization
+- `wasm-executor.test.ts` — `executeUnaryOp`/`executeBinaryOp` threshold gating, `recordPerf`/`getPerfStats`/`resetPerfCounters`
+- `wasm-integrity.test.ts` — `isIntegrityCheckEnabled`, hash-match/mismatch, missing-manifest, fs read-failure
+
 ## Test Infrastructure
 
 ### Directory Structure
@@ -296,7 +312,14 @@ C:/mcp-servers/math-mcp/
 │   ├── threshold-validation.js    # Threshold routing tests
 │   ├── fallback-test.js          # Fallback mechanism tests
 │   ├── mcp-e2e-test.js           # MCP protocol end-to-end tests
-│   └── edge-cases.js             # Edge case and error handling
+│   ├── edge-cases.js             # Edge case and error handling
+│   └── unit/
+│       ├── handler-utils.test.ts
+│       ├── routing-utils.test.ts
+│       ├── mathjs-shim.test.ts
+│       ├── acceleration-adapter.test.ts
+│       ├── wasm-executor.test.ts
+│       └── wasm-integrity.test.ts
 ├── wasm/
 │   ├── tests/
 │   │   ├── differential-test.js  # WASM vs mathjs comparison
@@ -311,6 +334,7 @@ C:/mcp-servers/math-mcp/
 ├── src/
 │   ├── index.ts                  # Original mathjs-only server
 │   ├── index-wasm.ts            # WASM-accelerated server (production)
+│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
 │   └── wasm-wrapper.ts          # WASM integration layer
 └── docs/
     ├── TEST_GUIDE.md            # Detailed testing documentation
@@ -383,7 +407,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Build TypeScript
         run: npm run build
       - name: Build WASM modules
@@ -461,6 +485,10 @@ jobs:
    - Statistics: 15-42x speedup
    - WASM usage: 70% of operations
    - Average execution time: 0.207ms
+
+5. **Unit Test Suite**
+   - 750 passing / 0 failing / 2 skipped
+   - 6 new unit test files covering hot-path gaps (`handler-utils.ts`, `wasm-executor.ts`, `routing-utils.ts`, `acceleration-adapter.ts`, `wasm-integrity.ts`, `mathjs-shim.ts`)
 
 ### In Progress ⏳
 

@@ -28,6 +28,14 @@ The math-mcp project uses a multi-level testing strategy:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│  Unit Tests (test/unit/)                                    │
+│  - handler-utils, routing-utils, mathjs-shim                │
+│  - acceleration-adapter, wasm-executor, wasm-integrity      │
+│  Status: 750 passing / 0 failing / 2 skipped                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
 │  Integration Tests (test/integration-test.js)               │
 │  - End-to-end MCP server testing                            │
 │  - WASM initialization verification                         │
@@ -59,6 +67,7 @@ The math-mcp project uses a multi-level testing strategy:
 
 **All tests must meet these criteria:**
 
+- ✅ Unit tests: 750 passing / 0 failing / 2 skipped
 - ✅ Integration tests: 11/11 passing (100%)
 - ✅ WASM results match mathjs exactly (differential tests)
 - ✅ WASM speedup: 7-17x for matrices, 15-42x for statistics
@@ -76,7 +85,10 @@ The math-mcp project uses a multi-level testing strategy:
 # 1. Build the project
 npm run build
 
-# 2. Run integration tests
+# 2. Run unit tests
+npx vitest run
+
+# 3. Run integration tests
 node test/integration-test.js
 
 # Expected output:
@@ -596,6 +608,21 @@ claude mcp list
 
 ## Writing New Tests
 
+### Adding Unit Tests
+
+**Location:** `test/unit/<module>.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest';
+
+describe('newFeature', () => {
+  it('should produce correct output', () => {
+    const result = newFeature(input);
+    expect(result).toEqual(expectedValue);
+  });
+});
+```
+
 ### Adding Integration Tests
 
 **Location:** `test/integration-test.js`
@@ -699,7 +726,7 @@ function benchmarkNewOperation() {
 
 ```bash
 # Run before committing
-npm run build && node test/integration-test.js
+npm run build && npx vitest run && node test/integration-test.js
 ```
 
 ### CI/CD Pipeline (Recommended)
@@ -720,6 +747,7 @@ jobs:
           node-version: '18'
       - run: npm install
       - run: npm run build
+      - run: npx vitest run
       - run: node test/integration-test.js
       - run: cd wasm && node tests/differential-matrix.cjs
       - run: cd wasm && node tests/differential-statistics.cjs
@@ -730,6 +758,18 @@ jobs:
 ## Troubleshooting Tests
 
 ### Test Failures
+
+**Unit tests fail:**
+```bash
+# 1. Rebuild the project
+npm run build
+
+# 2. Check Node.js version
+node --version  # Should be 18+
+
+# 3. Run with verbose output
+npx vitest run --reporter=verbose
+```
 
 **Integration tests fail:**
 ```bash
@@ -784,6 +824,7 @@ ls -la bindings/
 
 ### Current Coverage
 
+- ✅ Unit tests: 750 passing / 0 failing / 2 skipped
 - ✅ Integration tests: 11/11 (100%)
 - ✅ WASM differential: Matrix operations (multiply, det, transpose)
 - ✅ WASM differential: Statistics (mean, median, variance, std, min, max, sum)
@@ -814,10 +855,11 @@ The math-mcp testing strategy ensures:
 **Test Command Summary:**
 ```bash
 # Quick test
-npm run build && node test/integration-test.js
+npm run build && npx vitest run && node test/integration-test.js
 
 # Full test suite
 npm run build
+npx vitest run
 node test/integration-test.js
 cd wasm
 node tests/differential-matrix.cjs
@@ -829,6 +871,6 @@ node benchmarks/profile-stats.js
 ---
 
 **Last Updated:** November 2, 2025
-**Test Status:** 11/11 Integration Tests Passing (100%)
+**Test Status:** 750 passing / 0 failing / 2 skipped; 11/11 Integration Tests Passing (100%)
 **WASM Status:** All Differential Tests Passing
 **Performance:** 14.30x avg, 42x peak speedup achieved

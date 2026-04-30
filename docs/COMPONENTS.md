@@ -82,6 +82,8 @@ function registerHandlers(server: Server): void
 async function main(): Promise<void>
 ```
 
+**Startup:** After the MCP transport connects, `startTelemetryServer()` is called (no-op unless `ENABLE_TELEMETRY=true`). SIGINT/SIGTERM handlers call `stopTelemetryServer()` to release the port cleanly on shutdown.
+
 **Tool Definitions:**
 | Tool | Description | Accelerated |
 |------|-------------|-------------|
@@ -103,12 +105,14 @@ async function main(): Promise<void>
 |----------|-------|
 | **Location** | `src/index.ts` |
 | **Purpose** | Simple server for basic use or testing |
-| **Dependencies** | MCP SDK, mathjs |
+| **Dependencies** | MCP SDK, mathjs-shim |
 
 Use this when:
 - WASM/Workers not available
 - Minimal memory footprint needed
 - Testing basic functionality
+
+The `statistics` tool in this entry point includes `product` as an enum value; the handler uses `math.prod()`.
 
 ---
 
@@ -137,6 +141,9 @@ Business logic for all 7 mathematical tools.
 | `handleUnitConversion(args)` | Unit conversion |
 
 **AccelerationWrapper Interface:**
+
+The `AccelerationWrapper` interface is defined in `src/types.ts`; `tool-handlers.ts` re-exports it for backward compatibility.
+
 ```typescript
 interface AccelerationWrapper {
   matrixMultiply(a: number[][], b: number[][]): Promise<number[][]>;
@@ -268,6 +275,8 @@ class AccelerationRouter {
 }
 ```
 
+**Note:** The function-style API (`routedMatrixMultiply`, `getRoutingStats`, etc.) is imported directly from `./acceleration-router-compat.js`. The router module does not re-export them.
+
 **Configuration:**
 ```typescript
 interface AccelerationRouterConfig {
@@ -297,11 +306,12 @@ export async function ensureWasmInitialized(): Promise<void>
 **Performance Thresholds:**
 ```typescript
 const THRESHOLDS = {
-  matrix_multiply: 10,   // Use WASM for 10x10+ matrices
-  matrix_det: 5,         // Use WASM for 5x5+ matrices
-  matrix_transpose: 20,  // Use WASM for 20x20+ matrices
-  statistics: 100,       // Use WASM for 100+ elements
-  median: 50,            // Lower threshold for sorting
+  matrix_multiply: 10,    // Use WASM for 10x10+ matrices
+  matrix_det: 5,          // Use WASM for 5x5+ matrices
+  matrix_transpose: 20,   // Use WASM for 20x20+ matrices
+  matrix_add_sub: 20,     // Use WASM for 20x20+ matrices (add/subtract)
+  statistics: 100,        // Use WASM for 100+ elements
+  median: 50,             // Lower threshold for sorting
 };
 ```
 
@@ -447,7 +457,7 @@ Clean adapter interface for acceleration operations.
 | **Location** | `src/acceleration-adapter.ts` |
 | **Since** | v3.0.0 |
 
-Provides simplified interface for tool handlers to use acceleration without knowing implementation details.
+Provides simplified interface for tool handlers to use acceleration without knowing implementation details. Imports the function-style API directly from `./acceleration-router-compat.js`.
 
 ---
 
@@ -853,7 +863,7 @@ async function getReadiness(): Promise<boolean>
 ```
 
 **Health Checks:**
-- WASM module status
+- WASM module status (uses `fs.existsSync` to verify binding files; returns `warn` when matrix or statistics bindings are missing)
 - Rate limiter status
 - Memory usage
 
@@ -920,6 +930,19 @@ Shared constants across modules.
 ---
 
 ## Type Definitions
+
+### `types.ts`
+
+Core type definitions shared across modules.
+
+| Property | Value |
+|----------|-------|
+| **Location** | `src/types.ts` |
+| **Since** | v3.3.0 |
+
+Defines the `AccelerationWrapper` interface (re-exported from `tool-handlers.ts` for backward compatibility).
+
+---
 
 ### `worker-types.ts`
 

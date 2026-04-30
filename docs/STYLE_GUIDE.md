@@ -74,7 +74,7 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import * as math from "mathjs";
+import math from "./mathjs-shim.js";
 import * as wasmWrapper from "./wasm-wrapper.js";
 
 // ============================================================================
@@ -122,7 +122,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // MAIN FUNCTION
 // ============================================================================
 
-async function main() {
+async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("Math MCP Server running on stdio");
@@ -170,6 +170,7 @@ const ERROR_MESSAGES = {
 const THRESHOLDS = {
   matrix_multiply: 10,
   matrix_det: 5,
+  matrix_add_sub: 20,
   statistics: 100,
 };
 ```
@@ -295,7 +296,7 @@ async function processRequest(data: string): Promise<Result> {
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import * as math from "mathjs";
+import math from "./mathjs-shim.js";
 
 import * as wasmWrapper from "./wasm-wrapper.js";
 import { formatResult } from "./utils.js";
@@ -480,6 +481,8 @@ math-mcp/
 ├── src/                          # TypeScript source code
 │   ├── index.ts                  # MathJS-only server (legacy)
 │   ├── index-wasm.ts             # WASM-accelerated server (PRODUCTION)
+│   ├── mathjs-shim.ts            # Single mathjs import surface
+│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
 │   └── wasm-wrapper.ts           # WASM integration layer
 │
 ├── dist/                         # Compiled JavaScript output
@@ -506,8 +509,15 @@ math-mcp/
 │   ├── tests/                    # Differential tests
 │   └── benchmarks/               # Performance benchmarks
 │
-├── test/                         # Integration tests
-│   └── integration-test.js
+├── test/                         # Tests
+│   ├── integration-test.js
+│   └── unit/                     # Unit tests
+│       ├── handler-utils.test.ts
+│       ├── routing-utils.test.ts
+│       ├── mathjs-shim.test.ts
+│       ├── acceleration-adapter.test.ts
+│       ├── wasm-executor.test.ts
+│       └── wasm-integrity.test.ts
 │
 ├── docs/                         # Documentation
 │   ├── DEPLOYMENT_PLAN.md
@@ -515,6 +525,7 @@ math-mcp/
 │   ├── STYLE_GUIDE.md
 │   └── ...
 │
+├── eslint.config.js              # ESLint flat config
 ├── CHANGELOG.md                  # Project history
 ├── README.md                     # Main documentation
 ├── package.json                  # Dependencies and scripts
@@ -530,6 +541,7 @@ math-mcp/
 
 **Tests:**
 - Integration tests → `test/`
+- Unit tests → `test/unit/`
 - WASM differential tests → `wasm/tests/`
 - Benchmarks → `wasm/benchmarks/`
 
@@ -794,20 +806,22 @@ and Claude CLI.
 ### Before Submitting
 
 - [ ] Code follows style guide conventions
-- [ ] All tests pass (npm run build && node test/integration-test.js)
+- [ ] All tests pass (`npm run build && npm test`)
 - [ ] New features have tests
 - [ ] Documentation updated (README, CHANGELOG, etc.)
 - [ ] No console.log() in production code (use console.error() for logging)
-- [ ] Type safety: No any types unless absolutely necessary
+- [ ] Type safety: No `any` types unless absolutely necessary (lint will warn)
 - [ ] Error handling: All async functions have try-catch or error handling
 - [ ] Comments: Complex logic is explained
 
 ### TypeScript Specific
 
 - [ ] Import statements include .js extensions (ESM requirement)
+- [ ] mathjs imported via `./mathjs-shim.js` (not `import * as math from 'mathjs'`)
 - [ ] Proper use of async/await
 - [ ] MCP responses formatted correctly
 - [ ] Server name is "math-mcp" (not "mathjs-mcp")
+- [ ] `AccelerationWrapper` imported from `src/types.ts` (or re-exported via `tool-handlers.ts`)
 
 ### WASM Specific
 

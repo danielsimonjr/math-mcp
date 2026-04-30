@@ -59,7 +59,7 @@ The intelligent router that selects the optimal acceleration tier.
 
 **Example:**
 ```typescript
-import { routedMatrixMultiply } from './acceleration-router.js';
+import { routedMatrixMultiply } from './acceleration-router-compat.js';
 
 // Automatically routed to optimal tier
 const { result, tier } = await routedMatrixMultiply(matrixA, matrixB);
@@ -85,6 +85,7 @@ Single-threaded WASM acceleration using AssemblyScript.
   matrix_multiply: 10,    // Use WASM for 10×10+ matrices
   matrix_det: 5,          // Use WASM for 5×5+ matrices
   matrix_transpose: 20,   // Use WASM for 20×20+ matrices
+  matrix_add_sub: 20,     // Use WASM for 20×20+ matrices
   statistics: 100,        // Use WASM for 100+ elements
 }
 ```
@@ -184,7 +185,7 @@ import {
   routedMatrixMultiply,
   getRoutingStats,
   AccelerationTier,
-} from './acceleration-router.js';
+} from './acceleration-router-compat.js';
 
 // Get result with tier information
 const { result, tier } = await routedMatrixMultiply(a, b);
@@ -229,7 +230,7 @@ console.log(`GPU usage: ${stats.gpuUsage} operations`);
 
 ### Acceleration Adapter
 
-The adapter implements the `AccelerationWrapper` interface and provides a clean API for tool handlers:
+The adapter implements the `AccelerationWrapper` interface (defined in `src/types.ts`) and provides a clean API for tool handlers:
 
 ```typescript
 export class AccelerationAdapter implements AccelerationWrapper {
@@ -359,7 +360,7 @@ try {
 ### Routing Statistics
 
 ```typescript
-import { getRoutingStats } from './acceleration-router.js';
+import { getRoutingStats } from './acceleration-router-compat.js';
 
 const stats = getRoutingStats();
 console.log('Routing Statistics:', {

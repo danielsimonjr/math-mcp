@@ -102,6 +102,7 @@ The main entry point that:
 - Registers 7 mathematical tools
 - Connects via stdio transport
 - Coordinates rate limiting and acceleration
+- Starts the telemetry server after transport connects (no-op unless `ENABLE_TELEMETRY=true`)
 
 **7 Registered Tools:**
 
@@ -130,6 +131,8 @@ export async function handleToolName(
   accelerator?: AccelerationWrapper
 ): Promise<MCP_Response>
 ```
+
+The `AccelerationWrapper` interface is defined in `src/types.ts`; `tool-handlers.ts` re-exports it for backward compatibility.
 
 ### 3. Validation (`validation.ts`)
 
@@ -200,8 +203,13 @@ GPU → Workers → WASM → mathjs
 |-----------|----------------|---------|
 | Matrix Multiply | 10x10 | 8x |
 | Matrix Determinant | 5x5 | 17x |
+| Matrix Add/Subtract | 20x20 | 2x |
 | Matrix Transpose | 20x20 | 2x |
 | Statistics (mean, std, etc.) | 100 elements | 15-42x |
+
+### Function-Style API
+
+The function-style API (`routedMatrixMultiply`, `getRoutingStats`, etc.) is imported directly from `./acceleration-router-compat.js`. Consumers should not rely on the router module re-exporting these functions.
 
 ### Lazy Loading (v3.4.0)
 
@@ -343,6 +351,7 @@ SHA-256 verification of WASM binaries:
 - Prevents execution of tampered modules
 - Automatic fallback on integrity failure
 - Can be disabled for development
+- Checks for binding-file existence via `fs.existsSync` at health-check time
 
 ---
 
@@ -407,9 +416,12 @@ math-mcp/
 │   ├── tool-handlers.ts          # Tool business logic
 │   ├── handler-utils.ts          # Handler utilities
 │   ├── errors.ts                 # Error types
+│   ├── types.ts                  # Shared type definitions (AccelerationWrapper, etc.)
+│   ├── mathjs-shim.ts            # Single mathjs import surface
 │   │
 │   ├── # Acceleration
 │   ├── acceleration-router.ts    # Tier routing
+│   ├── acceleration-router-compat.ts  # Function-style API (routedMatrixMultiply, etc.)
 │   ├── acceleration-adapter.ts   # Clean adapter
 │   ├── wasm-wrapper.ts           # WASM integration
 │   ├── wasm-executor.ts          # WASM execution
@@ -470,7 +482,10 @@ math-mcp/
 |------|---------|
 | `src/index-wasm.ts` | Production entry point |
 | `src/tool-handlers.ts` | Tool business logic |
+| `src/types.ts` | Shared interfaces (`AccelerationWrapper`, etc.) |
+| `src/mathjs-shim.ts` | Single mathjs import surface |
 | `src/acceleration-router.ts` | Tier-based routing |
+| `src/acceleration-router-compat.ts` | Function-style routing API |
 | `src/wasm-wrapper.ts` | WASM operations |
 | `src/validation.ts` | Input validation |
 | `src/rate-limiter.ts` | DoS protection |
@@ -491,6 +506,7 @@ math-mcp/
 | `LOG_LEVEL` | info | Logging level |
 | `ENABLE_WORKERS` | true | Enable worker tier |
 | `ENABLE_WASM` | true | Enable WASM tier |
+| `ENABLE_TELEMETRY` | false | Enable telemetry/metrics server |
 | `MIN_WORKERS` | 2 | Minimum workers |
 | `MAX_WORKERS` | CPU-1 | Maximum workers |
 | `TASK_TIMEOUT` | 30000 | Task timeout (ms) |
@@ -516,6 +532,10 @@ LOG_LEVEL=debug node dist/index-wasm.js
 # With performance logging
 ENABLE_PERF_LOGGING=true node dist/index-wasm.js
 ```
+
+### Dependencies
+
+The project uses a local mathjs fork (`file:../Mathjs`, danielsimonjr/mathjs v15.2.0). Use `npm install` rather than `npm ci`; `package-lock.json` is gitignored.
 
 ---
 

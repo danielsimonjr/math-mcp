@@ -122,6 +122,8 @@ npm install
 cd ..
 ```
 
+> **Note:** The mathjs dependency uses a local fork at `file:../Mathjs`. Use `npm install` (not `npm ci`); `package-lock.json` is gitignored.
+
 ### Verify Installation
 
 ```bash
@@ -603,7 +605,6 @@ math-mcp/
 │       ├── matrix.cjs
 │       └── statistics.cjs
 ├── package.json             # ✅ Include
-├── package-lock.json        # ✅ Include
 ├── README.md                # ✅ Include
 ├── CHANGELOG.md             # ✅ Include
 ├── LICENSE                  # ✅ Include
@@ -788,6 +789,7 @@ node test/integration-test.js
 - ❌ `dist/` - Build output (regenerate)
 - ❌ `wasm/build/` - WASM binaries (regenerate)
 - ❌ `node_modules/` - Dependencies (reinstall)
+- ❌ `package-lock.json` - Gitignored (use `npm install`)
 
 **Exception:** May include `wasm/build/` for convenience
 

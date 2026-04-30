@@ -7,6 +7,34 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Documentation — Task 25 (RLM-driven docs sync)
+- Updated 13 of 17 `docs/*.md` files using the `rlm` skill
+  (`scripts/rlm_query.py`, claude-sonnet-4-6) to reflect the
+  Tasks 19-23 codebase changes. Per-file minimal-edit prompt with
+  full-file return; output token cap raised to 32000 to prevent
+  truncation on the larger docs.
+  - **Updated**: ACCELERATION_ARCHITECTURE, ARCHITECTURE, BENCHMARKS,
+    BUILD_GUIDE, COMPONENTS, DEPLOYMENT_PLAN, OVERVIEW,
+    PRODUCT_SPECIFICATION, STYLE_GUIDE, TEST_GUIDE,
+    TEST_VERIFICATION_PLAN, USER_GUIDE, plus a one-line bump in
+    SPRINT_9_PLAN's projected test count (661+ → 750+).
+  - **Untouched** (correctly identified as historical or already
+    accurate): DATAFLOW.md, PR_TASK_19.md, README.md.
+  - **Skipped explicitly**: IMPLEMENTATION_PLAN.md (75KB historical
+    pivot retrospective — should not be retroactively edited).
+- Substantive changes propagated across the docs:
+  - `import * as math from 'mathjs'` examples replaced with
+    `import math from './mathjs-shim.js'` everywhere.
+  - File trees in ARCHITECTURE / COMPONENTS / STYLE_GUIDE now show
+    `mathjs-shim.ts`, `types.ts`, `eslint.config.js`, and the new
+    `test/unit/` test files.
+  - `THRESHOLDS` example blocks now include `matrix_add_sub: 20`.
+  - Telemetry section in USER_GUIDE documents `ENABLE_TELEMETRY=true`.
+  - `AccelerationWrapper` references point to `src/types.ts`.
+  - `WasmWrapper` mentions removed (deprecated alias is gone).
+  - Function-style API examples import from
+    `./acceleration-router-compat.js` directly.
+
 ### Polished — Task 23 (lint/format restoration)
 - **`eslint.config.js`** flat-config replaces the legacy
   `.eslintrc.json`. Lint had been silently broken since the eslint v9

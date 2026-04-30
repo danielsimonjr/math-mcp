@@ -153,7 +153,7 @@ Once configured, these 7 tools will be available:
    - Example: `determinant([[1,2],[3,4]])` returns `-2`
 
 6. **statistics** - Statistical calculations (WASM-accelerated)
-   - Operations: mean, median, mode, std, variance, min, max, sum
+   - Operations: mean, median, mode, std, variance, min, max, sum, product
    - Example: `mean([1,2,3,4,5])` returns `3`
 
 7. **unit_conversion** - Convert between units
@@ -196,11 +196,12 @@ The WASM wrapper uses threshold-based routing to determine when to use WASM vs m
 
 ```typescript
 const THRESHOLDS = {
-  matrix_multiply: 10,  // Use WASM for matrices >= 10x10
-  matrix_det: 5,        // Use WASM for matrices >= 5x5
-  matrix_transpose: 20, // Use WASM for matrices >= 20x20
-  statistics: 100,      // Use WASM for arrays >= 100 elements
-  median: 50,           // Use WASM for arrays >= 50 elements (sorting overhead)
+  matrix_multiply: 10,   // Use WASM for matrices >= 10x10
+  matrix_det: 5,         // Use WASM for matrices >= 5x5
+  matrix_transpose: 20,  // Use WASM for matrices >= 20x20
+  matrix_add_sub: 20,    // Use WASM for matrices >= 20x20 (add/subtract)
+  statistics: 100,       // Use WASM for arrays >= 100 elements
+  median: 50,            // Use WASM for arrays >= 50 elements (sorting overhead)
 };
 ```
 
@@ -441,6 +442,8 @@ C:/mcp-servers/math-mcp/
 ├── src/               # TypeScript source code
 │   ├── index.ts       # Original mathjs-only server
 │   ├── index-wasm.ts  # WASM-accelerated server (production)
+│   ├── mathjs-shim.ts # Single import surface for mathjs fork
+│   ├── types.ts       # Shared interfaces (AccelerationWrapper, etc.)
 │   └── wasm-wrapper.ts # WASM integration layer
 ├── dist/              # Compiled JavaScript output
 │   ├── index.js       # Mathjs-only (fallback)
@@ -451,8 +454,9 @@ C:/mcp-servers/math-mcp/
 │   ├── bindings/      # JavaScript bindings
 │   ├── build/         # Compiled WASM output
 │   └── tests/         # WASM differential tests
-├── test/              # Integration tests
-│   └── integration-test.js
+├── test/              # Integration and unit tests
+│   ├── integration-test.js
+│   └── unit/          # Unit test files
 ├── docs/              # Documentation
 └── package.json       # Points to dist/index-wasm.js
 ```

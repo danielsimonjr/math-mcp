@@ -455,6 +455,9 @@ MAX_EXPRESSION_LENGTH=10000         # Maximum expression length
 # Performance
 ENABLE_PERF_LOGGING=true            # Log performance stats periodically
 DISABLE_PERF_TRACKING=true          # Disable for minimal overhead
+
+# Telemetry
+ENABLE_TELEMETRY=true               # Enable Prometheus telemetry server (default: false)
 ```
 
 ### Running with Custom Configuration
