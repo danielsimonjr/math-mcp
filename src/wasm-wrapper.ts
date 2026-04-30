@@ -262,7 +262,7 @@ export async function statsStd(data: number[]): Promise<number> {
     getSize: getArrayLength,
     wasmFn: (d) => wasmStats!.std(d),
     mathjsFn: (d) => {
-      const result = math.std(data);
+      const result = math.std(d);
       return typeof result === 'number' ? result : Number(result);
     },
   };
@@ -278,7 +278,7 @@ export async function statsVariance(data: number[]): Promise<number> {
     getSize: getArrayLength,
     wasmFn: (d) => wasmStats!.variance(d),
     mathjsFn: (d) => {
-      const result = math.variance(data);
+      const result = math.variance(d);
       return typeof result === 'number' ? result : Number(result);
     },
   };

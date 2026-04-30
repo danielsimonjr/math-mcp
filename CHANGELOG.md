@@ -7,6 +7,42 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Polished — Task 23 (lint/format restoration)
+- **`eslint.config.js`** flat-config replaces the legacy
+  `.eslintrc.json`. Lint had been silently broken since the eslint v9
+  upgrade dropped `.eslintrc.*` lookup; `npm run lint` now exits 0 with
+  zero errors. Behavior matches the legacy config (recommended TS +
+  JSDoc + prettier-disable) with two intentional softenings:
+  - `@typescript-eslint/no-explicit-any` → `warn` (was `error`).
+    The mathjs Node AST traversal in `tool-handlers.ts` and the worker
+    IPC payload have legitimate dynamic shapes; flag new introductions
+    without forcing a wholesale typed rewrite.
+  - `jsdoc/require-jsdoc` → `off`. The eslint --fix codemod for this
+    rule emits empty `/** */` stubs that are worse than no docstring.
+- **6 lint-error fixes**:
+  - `index-wasm.ts`: removed unused `AccelerationWrapper` import.
+  - `tool-handlers.ts`: removed unused `baseWithErrorHandling` alias;
+    rewrote two `cond && fn()` expression statements as `if (cond) fn()`.
+  - `index.ts`: dropped unused `e` catch-binding (`} catch (e) {` →
+    `} catch {`); added explicit `Promise<void>` to `main()`.
+  - `index-wasm.ts`: added explicit return type to `shutdown` arrow.
+  - `acceleration-router.ts` + `-compat.ts`: typed
+    `getRoutingStats()` return as `ReturnType<typeof
+    computeRoutingStatsSummary>` (was inferred-only).
+  - `wasm-wrapper.ts`: `statsStd` and `statsVariance` mathjsFn
+    callbacks now use the inner `d` parameter instead of the outer
+    `data` (the warnings flagged a real-but-equivalent shadowing bug —
+    the parameter is what `executeUnaryOp` passes in, identical at
+    call time but cleaner).
+  - `workers/worker-pool.ts`: dropped unused `error` catch-binding.
+- **`package.json` lint scripts** now glob `test/**/*.ts` too, so unit
+  tests are covered.
+- **`globals` + `@eslint/js`** added to devDependencies (required by
+  the flat config).
+- Net diff: 294 warnings remain (mostly pre-existing JSDoc style and
+  the documented `any` warnings in `tool-handlers.ts` /
+  `worker-types.ts`); 0 errors.
+
 ### Added — Task 22 (coverage gap closure)
 - **`test/unit/handler-utils.test.ts`** (14 tests) — covers
   `successResponse`, `errorResponse` (including `MathMCPError` subclass

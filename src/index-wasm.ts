@@ -58,7 +58,6 @@ import {
   handleStatistics,
   handleUnitConversion,
   withErrorHandling,
-  AccelerationWrapper,
 } from "./tool-handlers.js";
 import { logger, getPackageVersion, perfTracker } from "./utils.js";
 import { MathMCPError } from "./errors.js";
@@ -401,7 +400,7 @@ async function main(): Promise<void> {
     await startTelemetryServer();
 
     // Stop telemetry on shutdown so the port is released cleanly.
-    const shutdown = async () => {
+    const shutdown = async (): Promise<void> => {
       await stopTelemetryServer();
       process.exit(0);
     };

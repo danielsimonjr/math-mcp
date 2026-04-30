@@ -149,7 +149,7 @@ export class WorkerPool {
         { eval: true }
       );
       await testWorker.terminate();
-    } catch (error) {
+    } catch {
       throw new WasmError(
         'Worker threads not supported in this environment. ' +
           'Parallel processing unavailable. ' +

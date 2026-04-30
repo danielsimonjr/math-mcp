@@ -228,7 +228,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           // For simple cases, try to isolate the variable
           const simplified = math.simplify(expr);
           result = `Simplified equation: ${simplified.toString()} = 0`;
-        } catch (e) {
+        } catch {
           result = `Expression to solve: ${expr} = 0 for ${variable}`;
         }
 
@@ -368,7 +368,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start the server
-async function main() {
+async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("Math MCP Server running on stdio");

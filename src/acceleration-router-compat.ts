@@ -74,7 +74,7 @@ export async function routedStatsMean(
 }
 
 /** @deprecated Use AccelerationRouter.getRoutingStats() */
-export function getRoutingStats() {
+export function getRoutingStats(): ReturnType<AccelerationRouter['getRoutingStats']> {
   return defaultRouter.getRoutingStats();
 }
 

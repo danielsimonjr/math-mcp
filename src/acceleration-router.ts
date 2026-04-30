@@ -366,7 +366,7 @@ export class AccelerationRouter {
   // ============================================================================
 
   /** Get routing statistics */
-  getRoutingStats() {
+  getRoutingStats(): ReturnType<typeof computeRoutingStatsSummary> {
     return computeRoutingStatsSummary(this.routingStats);
   }
 

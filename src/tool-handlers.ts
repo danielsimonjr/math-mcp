@@ -29,7 +29,6 @@ import { getCachedExpression } from './expression-cache.js';
 import {
   executeHandler,
   successResponse,
-  withErrorHandling as baseWithErrorHandling,
   type ToolResponse,
 } from './handler-utils.js';
 
@@ -69,8 +68,8 @@ function validateNode(n: any): void {
 
   // Recursively validate children
   n.args?.forEach?.(validateNode);
-  n.content && validateNode(n.content);
-  n.index && validateNode(n.index);
+  if (n.content) validateNode(n.content);
+  if (n.index) validateNode(n.index);
   n.items?.forEach?.(validateNode);
   n.blocks?.forEach?.((b: any) => b.node && validateNode(b.node));
 }
