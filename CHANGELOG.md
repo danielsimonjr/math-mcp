@@ -7,6 +7,43 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Added — Task 22 (coverage gap closure)
+- **`test/unit/handler-utils.test.ts`** (14 tests) — covers
+  `successResponse`, `errorResponse` (including `MathMCPError` subclass
+  identification and non-Error coercion), `executeHandler` (return
+  passthrough, error passthrough, log-context shape), and
+  `withErrorHandling` (success + thrown + non-Error throws).
+- **`test/unit/routing-utils.test.ts`** (15 tests) — covers
+  `routeWithFallback` tier ordering, fall-through behavior, error
+  cascade across tiers, sync vs async fallback, and
+  `computeRoutingStatsSummary` boundary conditions (zero-ops, 0%, 100%,
+  fractional).
+- **`test/unit/mathjs-shim.test.ts`** (5 tests) — sanity checks every
+  mathjs surface that handlers depend on (parse, simplify, derivative,
+  multiply, statistics functions, unit) plus an end-to-end parse/compile/
+  evaluate smoke test guarding against the shim regressing to an
+  unconfigured instance.
+- **`test/unit/acceleration-adapter.test.ts`** (15 tests) — mocks the
+  compat layer and asserts the adapter unwraps `{result, tier}` tuples
+  correctly for matrix ops, returns scalars directly where applicable,
+  normalizes `statsMode` (scalar → `[scalar]`), propagates errors, and
+  exports the singleton.
+- **`test/unit/wasm-executor.test.ts`** (14 tests) — covers
+  `executeUnaryOp` / `executeBinaryOp` threshold gating, wasmReady
+  flag, optional `extraCheck`, automatic mathjs fallback when wasmFn
+  throws, plus `recordPerf` / `getPerfStats` / `resetPerfCounters`
+  including divide-by-zero handling.
+- **`test/unit/wasm-integrity.test.ts`** (7 tests) — mocks fs/crypto to
+  cover `isIntegrityCheckEnabled` env-var handling, hash-match success,
+  hash-mismatch failure (`WasmError`), missing-from-manifest path, and
+  fs read-failure wrap.
+
+Test totals: **750 passed / 0 failed / 2 skipped** (up from 685 / 0 /
+2 after Task 21). 65 new tests across 6 new test files. The audit's
+hot-path coverage gaps (`handler-utils.ts`, `wasm-executor.ts`,
+`routing-utils.ts`, `acceleration-adapter.ts`, `wasm-integrity.ts`,
+`mathjs-shim.ts`) are now covered.
+
 ### Refactored — Task 21 (post-audit fixes)
 - **Broke circular import** between `acceleration-router.ts` and
   `acceleration-router-compat.ts`. The router previously re-exported the
