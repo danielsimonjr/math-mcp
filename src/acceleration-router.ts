@@ -87,25 +87,11 @@ import {
 // Re-exports
 export { AccelerationTier } from './degradation-policy.js';
 
-// Re-export compat layer for backward compatibility
-export {
-  routedMatrixMultiply,
-  routedMatrixTranspose,
-  routedMatrixAdd,
-  routedMatrixSubtract,
-  routedStatsMean,
-  getRoutingStats,
-  resetRoutingStats,
-  shutdownAcceleration,
-  routedMatrixDeterminant,
-  routedStatsMedian,
-  routedStatsStd,
-  routedStatsVariance,
-  routedStatsMin,
-  routedStatsMax,
-  routedStatsSum,
-  routedStatsMode,
-} from './acceleration-router-compat.js';
+// Note: the deprecated function-style API (routedMatrixMultiply, etc.) lives
+// in `./acceleration-router-compat.ts`. It is intentionally NOT re-exported
+// here — that re-export caused a circular import between the two modules
+// and was untidy in tree-shaking. Consumers that still rely on the function
+// API should import from `./acceleration-router-compat.js` directly.
 
 /** Router configuration */
 export interface AccelerationRouterConfig {
@@ -263,7 +249,7 @@ export class AccelerationRouter {
       },
       {
         tier: AccelerationTier.WASM,
-        shouldUse: () => size >= WASM_THRESHOLDS.matrix_transpose,
+        shouldUse: () => size >= WASM_THRESHOLDS.matrix_add_sub,
         execute: () => wasmMatrixAdd(a, b),
       },
     ];
@@ -287,7 +273,7 @@ export class AccelerationRouter {
       },
       {
         tier: AccelerationTier.WASM,
-        shouldUse: () => size >= WASM_THRESHOLDS.matrix_transpose,
+        shouldUse: () => size >= WASM_THRESHOLDS.matrix_add_sub,
         execute: () => wasmMatrixSubtract(a, b),
       },
     ];

@@ -209,11 +209,3 @@ export async function executeBinaryOp<TInputA, TInputB, TResult>(
   return result;
 }
 
-/**
- * Creates a registry of operations with shared configuration.
- */
-export function createOperationRegistry<TName extends string>(
-  operations: Record<TName, UnaryOperationConfig<unknown, unknown> | BinaryOperationConfig<unknown, unknown, unknown>>
-): Record<TName, UnaryOperationConfig<unknown, unknown> | BinaryOperationConfig<unknown, unknown, unknown>> {
-  return operations;
-}

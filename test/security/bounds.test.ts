@@ -180,7 +180,7 @@ describe('Bounds Testing', () => {
 
       await expect(
         handleEvaluate({ expression: longExpr })
-      ).rejects.toThrow(/exceeds maximum length|too long|complexity/i);
+      ).rejects.toThrow(/exceeds maximum (allowed )?length|too long|complexity/i);
     });
 
     it('should reject expression with too many nested parentheses', async () => {

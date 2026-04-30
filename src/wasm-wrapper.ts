@@ -29,11 +29,12 @@ import {
 
 /** Performance thresholds for WASM usage (benchmarked values). */
 export const THRESHOLDS = {
-  matrix_multiply: 10,  // 8x speedup at 10x10
-  matrix_det: 5,        // 17x speedup at 5x5
-  matrix_transpose: 20, // 2x speedup at 20x20
-  statistics: 100,      // 15-42x speedup at 100+ elements
-  median: 50,           // Lower threshold due to sorting
+  matrix_multiply: 10,    // 8x speedup at 10x10
+  matrix_det: 5,          // 17x speedup at 5x5
+  matrix_transpose: 20,   // 2x speedup at 20x20
+  matrix_add_sub: 20,     // element-wise; same shape as transpose
+  statistics: 100,        // 15-42x speedup at 100+ elements
+  median: 50,             // Lower threshold due to sorting
 } as const;
 
 // ============================================================================

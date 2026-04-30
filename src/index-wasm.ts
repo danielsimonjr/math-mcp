@@ -42,22 +42,13 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { accelerationAdapter } from "./acceleration-adapter.js";
-import { getRoutingStats } from "./acceleration-router.js";
-// Note: The new class-based AccelerationRouter with DI support is available:
-// import { AccelerationRouter, WorkerPoolManager } from "./acceleration-router.js";
-// import { WorkerPoolManager } from "./workers/pool-manager.js";
-//
-// Example DI usage:
-// const router = new AccelerationRouter({ enableWorkers: true });
-// await router.initialize();
-// ... use router.matrixMultiply(), router.statsMean(), etc.
-//
-// For advanced use cases with multiple pools:
-// const poolManager = new WorkerPoolManager();
-// const matrixPool = await poolManager.createPool('matrix', { maxWorkers: 4 });
-// const router = new AccelerationRouter({}, matrixPool);
-//
-// Currently using backward-compatible function API for stability.
+import { getRoutingStats } from "./acceleration-router-compat.js";
+import { startTelemetryServer, stopTelemetryServer } from "./telemetry/server.js";
+// The class-based AccelerationRouter (with DI for a custom WorkerPool)
+// lives in acceleration-router.ts. The accelerationAdapter singleton
+// imported above wraps the function-style compat API, which itself
+// delegates to a process-singleton AccelerationRouter — so the class
+// IS in use here, just one shim away.
 import {
   handleEvaluate,
   handleSimplify,
@@ -405,6 +396,17 @@ async function main(): Promise<void> {
     // Create transport and connect
     const transport = new StdioServerTransport();
     await server.connect(transport);
+
+    // Start the telemetry HTTP server (no-op unless ENABLE_TELEMETRY=true)
+    await startTelemetryServer();
+
+    // Stop telemetry on shutdown so the port is released cleanly.
+    const shutdown = async () => {
+      await stopTelemetryServer();
+      process.exit(0);
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
 
     // Log startup info
     const perfStats = getRoutingStats();

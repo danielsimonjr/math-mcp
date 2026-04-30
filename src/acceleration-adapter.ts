@@ -24,8 +24,8 @@ import {
   routedStatsMax,
   routedStatsSum,
   routedStatsMode,
-} from './acceleration-router.js';
-import type { AccelerationWrapper } from './tool-handlers.js';
+} from './acceleration-router-compat.js';
+import type { AccelerationWrapper } from './types.js';
 
 /**
  * Acceleration adapter that implements the AccelerationWrapper interface.

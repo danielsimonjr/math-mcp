@@ -7,6 +7,43 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Refactored — Task 21 (post-audit fixes)
+- **Broke circular import** between `acceleration-router.ts` and
+  `acceleration-router-compat.ts`. The router previously re-exported the
+  function-style API (`routedMatrixMultiply`, etc.) from compat, which
+  imported `AccelerationRouter` back from the router. The re-export
+  block is removed; consumers that still rely on the function API
+  (`acceleration-adapter.ts`, `index-wasm.ts`) now import directly from
+  `./acceleration-router-compat.js`.
+- **Moved `AccelerationWrapper` interface out of `tool-handlers.ts`**
+  into a new `src/types.ts`. `acceleration-adapter.ts` no longer imports
+  upward from a higher-layer handlers module. `tool-handlers.ts`
+  re-exports the type for backward compatibility.
+- **Removed `BackpressureError` re-export from `errors.ts`** — the
+  re-export reached from L2 errors into L4 workers and had zero
+  consumers (the only importer is the backpressure test, which imports
+  directly from `./workers/backpressure.js`).
+- **Removed dead code**: `tool-handlers.ts` no longer exports the
+  unused `WasmWrapper` type alias; `wasm-executor.ts` no longer exports
+  the unused `createOperationRegistry` factory.
+- **Added explicit `matrix_add_sub` threshold** to
+  `wasm-wrapper.ts:THRESHOLDS` (= 20). `acceleration-router.ts` now
+  routes `matrix_add` / `matrix_subtract` against the new key instead of
+  reusing `matrix_transpose` by likely-copy-paste.
+- **Wired telemetry server into `index-wasm.ts`**:
+  `startTelemetryServer()` is called after the MCP transport connects
+  (no-op unless `ENABLE_TELEMETRY=true`), and `stopTelemetryServer()`
+  registers as a SIGINT/SIGTERM handler so the port releases cleanly
+  on shutdown.
+- **`index.ts` schema parity**: `statistics` enum now includes
+  `product`, matching `index-wasm.ts`. The handler uses `math.prod()`.
+  Stale dead-store `_compiled` removed; replaced with a comment
+  explaining why basic entry deliberately doesn't pre-compile.
+- **`index-wasm.ts` import-banner comment** rewritten — the previous
+  multi-line DI usage block claimed the class API was "currently not
+  used" but the compat layer it imports does delegate to that class.
+  New comment names that one-shim relationship plainly.
+
 ### Fixed
 - **`health.ts:checkWasm()` no longer reports `pass` unconditionally.**
   Replaced the no-op try block (which set `matrixLoaded = true` before

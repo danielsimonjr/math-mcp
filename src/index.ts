@@ -109,13 +109,13 @@ const TOOLS: Tool[] = [
   },
   {
     name: "statistics",
-    description: "Calculate statistical values like mean, median, mode, std (standard deviation), variance, min, max, sum",
+    description: "Calculate statistical values like mean, median, mode, std (standard deviation), variance, min, max, sum, product",
     inputSchema: {
       type: "object",
       properties: {
         operation: {
           type: "string",
-          enum: ["mean", "median", "mode", "std", "variance", "min", "max", "sum"],
+          enum: ["mean", "median", "mode", "std", "variance", "min", "max", "sum", "product"],
           description: "Statistical operation to perform",
         },
         data: {
@@ -216,10 +216,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (parts.length !== 2) {
           throw new Error("Equation must contain exactly one '=' sign");
         }
-        // Evaluate as: left - right = 0 and use numeric solver
+        // Evaluate as: left - right = 0 and use numeric solver.
+        // Compiling here would catch syntax errors early, but the basic
+        // entry point uses math.simplify() which re-parses — keeping this
+        // surface minimal.
         const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-        const node = math.parse(expr);
-        const _compiled = node.compile();
 
         // Try to solve symbolically by rearranging
         let result: string;
@@ -318,6 +319,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "sum":
             result = math.sum(dataArray);
+            break;
+          case "product":
+            result = math.prod(dataArray);
             break;
           default:
             throw new Error(`Unknown operation: ${operation}`);
