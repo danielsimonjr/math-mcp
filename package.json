@@ -56,7 +56,7 @@
   "type": "module",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.23.0",
-    "mathjs": "15.1.0",
+    "mathjs": "file:../Mathjs",
     "prom-client": "^15.1.3"
   },
   "devDependencies": {

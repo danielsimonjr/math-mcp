@@ -9,7 +9,8 @@
  * @since 3.1.1
  */
 
-import * as math from 'mathjs';
+import * as mathNs from 'mathjs';
+const math = mathNs.default ?? mathNs;
 import {
   matrixMultiply,
   matrixDeterminant,

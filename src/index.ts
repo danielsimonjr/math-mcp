@@ -7,7 +7,7 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import * as math from "mathjs";
+import math from "./mathjs-shim.js";
 
 // Define available tools
 const TOOLS: Tool[] = [

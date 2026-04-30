@@ -9,7 +9,7 @@
  * @since 2.1.0 (refactored 3.3.0)
  */
 
-import * as math from 'mathjs';
+import math from './mathjs-shim.js';
 import {
   validateExpression,
   validateScope,

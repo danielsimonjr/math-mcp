@@ -14,7 +14,7 @@
  * @since 3.0.0 (refactored 3.3.0)
  */
 
-import * as math from 'mathjs';
+import math from './mathjs-shim.js';
 import {
   matrixMultiply as wasmMatrixMultiply,
   matrixDeterminant as wasmMatrixDeterminant,

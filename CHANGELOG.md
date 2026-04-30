@@ -5,6 +5,37 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Switched mathjs dependency to local fork** at `file:../Mathjs`
+  (danielsimonjr/mathjs v15.2.0). The fork carries 6 CRITICAL + 6 HIGH
+  vulnerability fixes plus npm-audit transitive fixes that aren't yet on
+  upstream npm. Dual-repo dev pattern: `package-lock.json` stays gitignored;
+  use `npm install` (not `npm ci`).
+
+### Added
+- `src/mathjs-shim.ts` — single import surface that resolves the fork's
+  ESM-export shape. The fork bundles `src/defaultInstance.js` via tsup;
+  its only top-level export is `default`, while `types/index.d.ts`
+  declares only named exports. The shim unwraps `default` at runtime and
+  retypes the namespace, so the rest of the codebase imports
+  `from './mathjs-shim.js'` and gets the full mathjs surface (`parse`,
+  `simplify`, `det`, etc.). Replaces direct `import * as math from 'mathjs'`
+  in `acceleration-router.ts`, `index.ts`, `tool-handlers.ts`, and
+  `wasm-wrapper.ts`. `test/correctness-tests.js` inlines an equivalent
+  unwrap (plain JS, no shim import needed).
+
+### Verified
+- Type-check, build, and `vitest run` all green against the local fork.
+  Totals: 655 passed / 3 failed / 2 skipped (660 total). The 3 failures
+  (`validateMatrixCompatibility` regex, `validateExpression` regex,
+  `health > Memory health check`) are pre-existing test/source
+  string-match drift, unrelated to mathjs — scheduled for Task 21
+  (code-reviewer pass per src/).
+
+---
+
 ## Version 3.5.0 - Refactoring Sprints 5-7 Complete - November 2025
 
 **Status:** ✅ Complete

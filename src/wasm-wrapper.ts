@@ -9,7 +9,7 @@
  * @since 2.0.0 (refactored 3.3.0)
  */
 
-import * as math from 'mathjs';
+import math from './mathjs-shim.js';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
 import { logger } from './utils.js';
