@@ -7,6 +7,21 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Added
+- `STRUCTURE-AUDIT-2026-04-29.md` — read-only audit of the codebase
+  produced by `feature-dev:code-explorer`. Covers module map, layer
+  violations (3 confirmed: `acceleration-router` ↔ `acceleration-router-compat`
+  circular, `acceleration-adapter` importing type from `tool-handlers`,
+  `errors` re-exporting `BackpressureError` from L4 workers), dead
+  exports, file-level test-coverage matrix (15 src files have no
+  covering test; hot-path gaps are `handler-utils.ts`,
+  `wasm-executor.ts`, `routing-utils.ts`, `acceleration-adapter.ts`),
+  and a recommended ordering for Tasks 21–23. Notable findings:
+  `health.ts:checkWasm()` is a logic no-op (always reports `pass`);
+  telemetry subsystem is build-complete but runtime-disconnected;
+  `acceleration-router.ts` matrix_add/subtract reuse the
+  matrix_transpose threshold constant by likely copy-paste.
+
 ### Changed
 - **Switched mathjs dependency to local fork** at `file:../Mathjs`
   (danielsimonjr/mathjs v15.2.0). The fork carries 6 CRITICAL + 6 HIGH
