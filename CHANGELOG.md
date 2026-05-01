@@ -7,6 +7,18 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Fixed
+- **Security: AST validator bypass via expression-cache poisoning**
+  (`src/tool-handlers.ts` `handleSolve`). `handleSolve` previously
+  cached `math.parse(expr).compile()` *without* running `validateNode`,
+  while `handleEvaluate` keys its cache lookup on the same expression
+  string. An attacker could prime the cache through `solve` (e.g.
+  `equation: "import('whatever') = 0"`) and then have `evaluate` pull
+  the unvalidated compiled expression straight out of the cache,
+  skipping the AST sandbox and executing forbidden function nodes.
+  Fix: call `validateNode(parsed)` inside the cache compute closure of
+  `handleSolve`, matching the pattern already used by `safeEvaluate`.
+
 ### Added — Dependency graph generator (`tools/`)
 - New `tools/generate-dependency-graph.ts` script (adapted from the
   Mathjs fork's equivalent). Run with `npm run graph` (new package

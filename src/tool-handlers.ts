@@ -165,8 +165,14 @@ export async function handleSolve(args: {
 
       const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
 
-      // Validate compilable
-      getCachedExpression(expr, () => math.parse(expr).compile());
+      // Validate compilable — must run validateNode inside the cache
+      // compute closure so the same cache key (no-scope) used by
+      // handleEvaluate is never primed with an unvalidated compile.
+      getCachedExpression(expr, () => {
+        const node = math.parse(expr);
+        validateNode(node);
+        return node.compile();
+      });
 
       let result: string;
       try {
