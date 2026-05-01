@@ -50,6 +50,30 @@ Documentation in reverse chronological order (latest first).
   workaround being attached to it.
 
 ### Fixed
+- **WorkerPool path resolution broke at test time**
+  (`src/workers/worker-pool.ts`). `createWorker()` resolved the
+  `math-worker.js` path via `path.join(dirname(fileURLToPath(import.meta.url)), 'math-worker.js')`.
+  At runtime that points at the compiled sibling under `dist/workers/`
+  (correct), but under vitest `import.meta.url` resolves to
+  `src/workers/worker-pool.ts` where only `math-worker.ts` exists —
+  spawning a worker fails with `Cannot find module '...src/workers/math-worker.js'`.
+  Fix: extracted `resolveWorkerPath(import.meta.url)`. It tries the
+  sibling first (production), and on miss walks up to the directory
+  containing `package.json` and resolves to
+  `<projectRoot>/dist/workers/math-worker.js` (test runtime). Throws
+  with a "run `npm run build`" hint if neither resolves. The walk is
+  capped at 16 ancestors to avoid pathological loops.
+- **WorkerPool abort path didn't free the slot until terminate resolved**
+  (`src/workers/worker-pool.ts` `recycleWorker`). The recycle path did
+  `await metadata.worker.terminate()` *before* `this.workers.delete(id)`,
+  so an aborted task kept its `BUSY` slot until the (potentially
+  multi-hundred-ms) `worker_threads` round-trip completed. The DoS
+  abort wiring is built on the inverse promise — the slot must drop
+  immediately on abort. Fix: delete the worker from the pool map
+  synchronously, then fire-and-forget `terminate()` (logging at warn
+  on rejection). Net effect: `busyWorkers` drops to 0 within the same
+  tick the abort handler runs, while OS-level cleanup proceeds in the
+  background.
 - **Graceful shutdown skipped worker-pool / router drain**
   (`src/index-wasm.ts`). The SIGINT/SIGTERM handler called only
   `stopTelemetryServer()` and then `process.exit(0)`, never awaiting

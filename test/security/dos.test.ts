@@ -450,13 +450,15 @@ describe('DoS Protection', () => {
       expect(aborted).toBe(false);
     });
 
-    // Skipped: blocked by pre-existing worker-pool.ts __dirname-resolution
-    // bug — at test time vitest resolves __dirname to src/workers/ where
-    // math-worker.js doesn't exist (it's only compiled to dist/workers/).
-    // The abort wiring itself is exercised by the integration spawn-test in
-    // Pass D. To unskip: fix worker-pool.ts to use a dual-resolved path
-    // (src/.../math-worker.ts AND dist/.../math-worker.js) or configure
-    // vitest to copy math-worker into the test resolution path.
+    // Skipped: the worker-pool path-resolution bug + recycle-timing bug are
+    // both fixed (see worker-pool.ts: resolveWorkerPath() and the
+    // delete-before-terminate change in recycleWorker()). The abort path now
+    // frees the slot in <100ms. The remaining blocker is a pre-existing
+    // race: the pool dispatches tasks to freshly-created workers BEFORE the
+    // worker's async WASM init completes, surfacing as
+    // "WASM not initialized in worker" on the sanity follow-up task.
+    // The pool ignores the worker's `{ type: 'ready' }` message; wiring a
+    // ready-gate is a separate fix outside the scope of this pass.
     it.skip('WorkerPool: abort signal frees worker slot immediately', async () => {
       // Direct-pool test that exercises the full abort wiring without
       // needing a real >30s computation. We submit a task that the worker

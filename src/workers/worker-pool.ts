@@ -14,6 +14,7 @@
 
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import {
@@ -31,6 +32,53 @@ import {
 import { TaskQueue } from './task-queue.js';
 import { logger } from '../utils.js';
 import { WasmError } from '../errors.js';
+
+/**
+ * Resolves the absolute path to the compiled `math-worker.js` script.
+ *
+ * Handles two execution contexts:
+ *  1. Production runtime: this module loads from `dist/workers/worker-pool.js`,
+ *     and the sibling `math-worker.js` exists in the same directory.
+ *  2. Test runtime (vitest): this module loads from `src/workers/worker-pool.ts`,
+ *     where only `math-worker.ts` exists. The compiled `math-worker.js` is in
+ *     `dist/workers/`. We walk parent directories until a `package.json` is
+ *     found, then resolve to `<projectRoot>/dist/workers/math-worker.js`.
+ *
+ * @param {string} moduleUrl - typically `import.meta.url` of the caller
+ * @returns {string} absolute filesystem path to a `math-worker.js` that exists
+ * @throws {Error} when neither sibling nor project-root resolution finds the file
+ */
+function resolveWorkerPath(moduleUrl: string): string {
+  const here = dirname(fileURLToPath(moduleUrl));
+
+  // Preferred: sibling math-worker.js (production runtime under dist/workers/).
+  const sibling = join(here, 'math-worker.js');
+  if (existsSync(sibling)) {
+    return sibling;
+  }
+
+  // Fallback: walk up to project root (directory containing package.json),
+  // then resolve to dist/workers/math-worker.js (test runtime under src/workers/).
+  let current = here;
+  // Cap the walk to avoid pathological infinite loops on broken filesystems.
+  for (let i = 0; i < 16; i++) {
+    if (existsSync(join(current, 'package.json'))) {
+      const fromRoot = join(current, 'dist', 'workers', 'math-worker.js');
+      if (existsSync(fromRoot)) {
+        return fromRoot;
+      }
+      break;
+    }
+    const parent = dirname(current);
+    if (parent === current) break; // reached filesystem root
+    current = parent;
+  }
+
+  throw new Error(
+    `Unable to locate math-worker.js. Searched sibling of ${here} and ` +
+      `dist/workers/ relative to project root. Run \`npm run build\` to generate the worker bundle.`
+  );
+}
 
 /**
  * Default worker pool configuration.
@@ -200,10 +248,12 @@ export class WorkerPool {
 
     logger.debug('Creating worker', { workerId });
 
-    // Get path to worker script
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const workerPath = join(__dirname, 'math-worker.js');
+    // Get path to worker script. Resolve dual-context:
+    //  - Production: import.meta.url is dist/workers/worker-pool.js, sibling math-worker.js exists.
+    //  - Test (vitest): import.meta.url is src/workers/worker-pool.ts where only math-worker.ts
+    //    exists; the compiled math-worker.js lives in dist/workers/. Walk up until we find
+    //    package.json, then fall back to <projectRoot>/dist/workers/math-worker.js.
+    const workerPath = resolveWorkerPath(import.meta.url);
 
     // Create worker
     const worker = new Worker(workerPath);
@@ -352,11 +402,21 @@ export class WorkerPool {
     metadata.worker.removeAllListeners('error');
     metadata.worker.removeAllListeners('exit');
 
-    // Terminate the worker
-    await metadata.worker.terminate();
-
-    // Remove from pool
+    // Free the worker slot synchronously BEFORE awaiting terminate. This is
+    // the property the abort path relies on: aborting an in-flight task must
+    // drop busyWorkers immediately, not after the (potentially slow)
+    // worker_threads.terminate() round-trip resolves. We then fire-and-forget
+    // the actual termination — the worker reference is unreachable from the
+    // pool, so any further events are ignored.
     this.workers.delete(workerId);
+
+    // Terminate the worker (async; does not block slot release).
+    metadata.worker.terminate().catch((err) => {
+      logger.warn('Worker terminate() rejected during recycle', {
+        workerId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
 
     // Create replacement if pool is below minimum
     if (this.workers.size < this.config.minWorkers && !this.shuttingDown) {
