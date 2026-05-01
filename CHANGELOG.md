@@ -8,6 +8,15 @@ Documentation in reverse chronological order (latest first).
 ## [Unreleased]
 
 ### Fixed
+- **Graceful shutdown skipped worker-pool / router drain**
+  (`src/index-wasm.ts`). The SIGINT/SIGTERM handler called only
+  `stopTelemetryServer()` and then `process.exit(0)`, never awaiting
+  `shutdownAcceleration()`. In-flight worker tasks were killed
+  mid-flight, defeating the cooperative drain logic in
+  `worker-pool.ts`. Fix: import `shutdownAcceleration` from
+  `acceleration-router-compat.js` and run it before
+  `stopTelemetryServer` so workers drain (and emit final metrics)
+  before the telemetry port is released.
 - **Security: AST validator bypass via expression-cache poisoning**
   (`src/tool-handlers.ts` `handleSolve`). `handleSolve` previously
   cached `math.parse(expr).compile()` *without* running `validateNode`,

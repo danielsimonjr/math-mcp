@@ -42,7 +42,7 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { accelerationAdapter } from "./acceleration-adapter.js";
-import { getRoutingStats } from "./acceleration-router-compat.js";
+import { getRoutingStats, shutdownAcceleration } from "./acceleration-router-compat.js";
 import { startTelemetryServer, stopTelemetryServer } from "./telemetry/server.js";
 // The class-based AccelerationRouter (with DI for a custom WorkerPool)
 // lives in acceleration-router.ts. The accelerationAdapter singleton
@@ -399,8 +399,13 @@ async function main(): Promise<void> {
     // Start the telemetry HTTP server (no-op unless ENABLE_TELEMETRY=true)
     await startTelemetryServer();
 
-    // Stop telemetry on shutdown so the port is released cleanly.
+    // Graceful shutdown: drain the worker pool / acceleration router
+    // first so in-flight tasks aren't killed mid-flight, then release
+    // the telemetry port, then exit. Order matters — stopTelemetryServer
+    // must come after acceleration shutdown so workers can still emit
+    // their final metrics.
     const shutdown = async (): Promise<void> => {
+      await shutdownAcceleration();
       await stopTelemetryServer();
       process.exit(0);
     };
