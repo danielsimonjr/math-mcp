@@ -514,5 +514,87 @@ describe('DoS Protection', () => {
         await pool.shutdown(1000);
       }
     }, 20000);
+
+    it('TaskQueue: timeout fires onTaskTimeout callback (pool recycle hook)', async () => {
+      // Verifies the queue->pool wiring: when a task times out, the
+      // queue MUST invoke `onTaskTimeout(workerId, taskId)` so the pool
+      // can recycle the worker thread. Without this hook the worker
+      // sits in ERROR state forever, leaking the slot (the original
+      // DoS bug). This is the key piece that protects the worker pool
+      // even when withTimeout's abortFn never fires (e.g., the only
+      // timeout is the pool's internal one).
+      const { TaskQueue } = await import('../../src/workers/task-queue.js');
+      const { OperationType, WorkerStatus } = await import(
+        '../../src/workers/worker-types.js'
+      );
+
+      const calls: Array<{ workerId: string; taskId: string }> = [];
+      const queue = new TaskQueue({
+        taskTimeout: 50,
+        onTaskTimeout: (workerId, taskId) => calls.push({ workerId, taskId }),
+      });
+
+      // Synthetic worker metadata (no real Worker thread needed)
+      const workerStub = {
+        id: 'worker-stub-0',
+        status: WorkerStatus.IDLE as WorkerStatus,
+        worker: {} as never,
+        tasksCompleted: 0,
+        tasksFailed: 0,
+        lastActivity: Date.now(),
+        createdAt: Date.now(),
+        currentTaskId: undefined as string | undefined,
+      };
+
+      const taskPromise = new Promise<unknown>((resolve, reject) => {
+        const task = {
+          id: 'task-test-1',
+          operation: OperationType.MATRIX_MULTIPLY,
+          data: { matrixA: [[1]], matrixB: [[1]] },
+          resolve,
+          reject,
+          createdAt: Date.now(),
+        };
+        queue.enqueue(task);
+        const dequeued = queue.dequeue();
+        expect(dequeued).toBeTruthy();
+        workerStub.status = WorkerStatus.BUSY;
+        workerStub.currentTaskId = dequeued!.id;
+        queue.assignTask(dequeued!, workerStub);
+      });
+
+      await expect(taskPromise).rejects.toThrow(/timed out/i);
+
+      // The pool-side recycle hook fired with the worker holding the task
+      expect(calls.length).toBe(1);
+      expect(calls[0]).toEqual({
+        workerId: 'worker-stub-0',
+        taskId: 'task-test-1',
+      });
+    }, 5000);
+
+    it('TaskQueue.cancelTask removes a pending task and rejects it', async () => {
+      const { TaskQueue } = await import('../../src/workers/task-queue.js');
+      const { OperationType } = await import('../../src/workers/worker-types.js');
+
+      const queue = new TaskQueue({ taskTimeout: 60000 });
+      const taskPromise = new Promise<unknown>((resolve, reject) => {
+        queue.enqueue({
+          id: 'task-cancel-1',
+          operation: OperationType.MATRIX_MULTIPLY,
+          data: { matrixA: [[1]], matrixB: [[1]] },
+          resolve,
+          reject,
+          createdAt: Date.now(),
+        });
+      });
+
+      const cancelled = queue.cancelTask('task-cancel-1', 'aborted');
+      expect(cancelled).toBe(true);
+      await expect(taskPromise).rejects.toThrow(/cancelled/i);
+
+      // Cancelling a non-existent task is a no-op
+      expect(queue.cancelTask('task-does-not-exist')).toBe(false);
+    });
   });
 });

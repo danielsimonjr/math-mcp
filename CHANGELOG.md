@@ -7,6 +7,48 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Security
+- **DoS: `withTimeout` did not abort the underlying work, leaking worker
+  slots**
+  (`src/utils.ts`, `src/workers/task-queue.ts`,
+  `src/workers/worker-pool.ts`, `src/tool-handlers.ts`,
+  `src/acceleration-{adapter,router,router-compat}.ts`,
+  `src/workers/parallel-{matrix,stats}.ts`, `src/types.ts`).
+  `withTimeout` raced a Promise against a timeout but never cancelled
+  the underlying computation. A request that hit the 30s timeout (e.g.
+  a worker-thread `matrixMultiply`) freed only the wrapper Promise —
+  the worker thread kept burning CPU and held its slot. Combined with
+  `maxConcurrent=10` and the worker pool's `maxQueueSize=1000`, an
+  attacker could exhaust the pool by repeatedly hitting the timeout.
+  Fix:
+  1. `withTimeout(promise, ms, op, abortFn?)` now invokes `abortFn`
+     synchronously on timeout (before rejecting) so the abort
+     propagates while the wrapper rejection is still pending.
+  2. `WorkerPool.execute({ signal })` accepts an `AbortSignal` and on
+     abort calls `taskQueue.cancelTask(taskId)` and forcibly recycles
+     the worker thread (terminate + replace) — worker threads cannot
+     be stopped cooperatively.
+  3. `TaskQueue` now invokes a registered `onTaskTimeout(workerId,
+     taskId)` callback inside `handleTaskTimeout`. The pool wires this
+     to `recycleWorker` so a queue-side timeout (the actual leak vector
+     before this fix) reclaims the slot regardless of whether the
+     caller supplied an abort signal.
+  4. `AccelerationWrapper` interface, `AccelerationAdapter`, the router
+     and the parallel-matrix / parallel-stats helpers all thread an
+     optional `signal?: AbortSignal` so a timed-out tool-handler call
+     cancels every chunk task it dispatched.
+  5. Tool handlers now wrap each accelerated call in
+     `runAccelerated(op, name)`, which mints an `AbortController` and
+     passes its signal in while wiring `withTimeout`'s `abortFn` to
+     `ac.abort()`.
+  Tests: added unit coverage in `test/security/dos.test.ts` for
+  `withTimeout`'s abort callback, the queue->pool timeout hook, and
+  `TaskQueue.cancelTask`. The original
+  `should queue operations when at capacity` test was kept skipped —
+  it does not exercise the worker pool (median uses synchronous WASM)
+  and was unrelated to this DoS fix despite the previous "60s timeout"
+  workaround being attached to it.
+
 ### Fixed
 - **Graceful shutdown skipped worker-pool / router drain**
   (`src/index-wasm.ts`). The SIGINT/SIGTERM handler called only
