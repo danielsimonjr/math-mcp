@@ -46,6 +46,16 @@ export class TaskQueue {
   /** Default task timeout in milliseconds */
   private readonly taskTimeout: number;
 
+  /**
+   * Optional callback invoked when a task times out while running on a
+   * worker. The pool uses this to forcibly recycle the worker thread —
+   * the worker is still running CPU-bound JS and cannot be told to stop
+   * cooperatively, so the only way to free the slot is `worker.terminate()`.
+   * Without this callback the worker would remain in ERROR state and never
+   * be reaped, leaking the slot (DoS).
+   */
+  private onTaskTimeout?: (workerId: string, taskId: string) => void;
+
   /** Statistics */
   private stats = {
     totalEnqueued: 0,
@@ -61,14 +71,30 @@ export class TaskQueue {
    * @param {number} [config.maxQueueSize=1000] - Maximum pending tasks
    * @param {number} [config.taskTimeout=30000] - Task timeout in ms
    */
-  constructor(config: { maxQueueSize?: number; taskTimeout?: number } = {}) {
+  constructor(
+    config: {
+      maxQueueSize?: number;
+      taskTimeout?: number;
+      onTaskTimeout?: (workerId: string, taskId: string) => void;
+    } = {}
+  ) {
     this.maxQueueSize = config.maxQueueSize || 1000;
     this.taskTimeout = config.taskTimeout || 30000;
+    this.onTaskTimeout = config.onTaskTimeout;
 
     logger.debug('TaskQueue initialized', {
       maxQueueSize: this.maxQueueSize,
       taskTimeout: this.taskTimeout,
     });
+  }
+
+  /**
+   * Registers (or replaces) the callback invoked on task timeout.
+   * Useful for late-binding when WorkerPool wires itself up after queue
+   * construction.
+   */
+  setTimeoutCallback(cb: (workerId: string, taskId: string) => void): void {
+    this.onTaskTimeout = cb;
   }
 
   /**
@@ -302,6 +328,61 @@ export class TaskQueue {
 
     this.stats.totalTimedOut++;
     this.stats.totalFailed++;
+
+    // Notify the pool so it can forcibly terminate the worker thread.
+    // The worker is still running CPU-bound code and won't accept new work;
+    // the slot must be reclaimed via `worker.terminate()`. Without this,
+    // a steady stream of timing-out requests exhausts the worker pool
+    // (DoS via worker-slot leak).
+    if (this.onTaskTimeout) {
+      try {
+        this.onTaskTimeout(worker.id, taskId);
+      } catch (cbErr) {
+        logger.error('onTaskTimeout callback threw', {
+          taskId,
+          workerId: worker.id,
+          error: cbErr instanceof Error ? cbErr.message : String(cbErr),
+        });
+      }
+    }
+  }
+
+  /**
+   * Cancels a task by ID. If the task is pending, it is removed from the
+   * queue and rejected. If the task is active (running on a worker), the
+   * task is removed from active tracking and rejected; the caller is
+   * responsible for recycling the worker (since worker threads can't be
+   * stopped cooperatively).
+   *
+   * @param taskId - The task to cancel
+   * @param reason - Reason for cancellation (used in error message)
+   * @returns true if the task was found and cancelled, false otherwise
+   */
+  cancelTask(taskId: string, reason: string = 'cancelled'): boolean {
+    // Pending: remove from queue
+    const pendingIdx = this.queue.findIndex((t) => t.id === taskId);
+    if (pendingIdx !== -1) {
+      const [task] = this.queue.splice(pendingIdx, 1);
+      task.reject(new Error(`Task cancelled: ${reason}`));
+      this.stats.totalFailed++;
+      return true;
+    }
+
+    // Active: remove tracking, fire reject; pool must recycle the worker
+    const activeTask = this.activeTasks.get(taskId);
+    if (activeTask) {
+      const timeout = this.taskTimeouts.get(taskId);
+      if (timeout) {
+        clearTimeout(timeout);
+        this.taskTimeouts.delete(taskId);
+      }
+      this.activeTasks.delete(taskId);
+      activeTask.task.reject(new Error(`Task cancelled: ${reason}`));
+      this.stats.totalFailed++;
+      return true;
+    }
+
+    return false;
   }
 
   /**

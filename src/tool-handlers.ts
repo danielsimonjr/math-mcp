@@ -193,6 +193,24 @@ export async function handleSolve(args: {
 
 type MatrixOp = 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
 
+/**
+ * Helper: dispatch an accelerated operation with timeout + abort wiring.
+ *
+ * Creates an AbortController, passes the signal into the accelerated
+ * operation (so the worker pool can cancel in-flight tasks), and wires
+ * `withTimeout`'s `abortFn` to fire the abort on timeout. Without this
+ * abort path, a timed-out operation only frees the *Promise wrapper* —
+ * the underlying worker thread keeps consuming CPU and the worker slot
+ * leaks, which is a DoS vector (worker pool exhaustion).
+ */
+function runAccelerated<T>(
+  op: (signal: AbortSignal) => Promise<T>,
+  operationName: string
+): Promise<T> {
+  const ac = new AbortController();
+  return withTimeout(op(ac.signal), DEFAULT_OPERATION_TIMEOUT, operationName, () => ac.abort());
+}
+
 const matrixOps: Record<MatrixOp, (
   a: number[][],
   b: number[][] | undefined,
@@ -202,7 +220,7 @@ const matrixOps: Record<MatrixOp, (
     if (!b) throw new ValidationError('matrix_b is required for multiply');
     validateMatrixCompatibility(a, b, 'multiply');
     return accel
-      ? withTimeout(accel.matrixMultiply(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_multiply')
+      ? runAccelerated((sig) => accel.matrixMultiply(a, b, sig), 'matrix_multiply')
       : math.multiply(a, b);
   },
   inverse: async (a) => {
@@ -212,12 +230,12 @@ const matrixOps: Record<MatrixOp, (
   determinant: async (a, _, accel) => {
     validateSquareMatrix(a, 'matrix_a');
     return accel
-      ? withTimeout(accel.matrixDeterminant(a), DEFAULT_OPERATION_TIMEOUT, 'matrix_determinant')
+      ? runAccelerated((sig) => accel.matrixDeterminant(a, sig), 'matrix_determinant')
       : math.det(a);
   },
   transpose: async (a, _, accel) => {
     return accel
-      ? withTimeout(accel.matrixTranspose(a), DEFAULT_OPERATION_TIMEOUT, 'matrix_transpose')
+      ? runAccelerated((sig) => accel.matrixTranspose(a, sig), 'matrix_transpose')
       : math.transpose(a);
   },
   eigenvalues: async (a) => {
@@ -228,14 +246,14 @@ const matrixOps: Record<MatrixOp, (
     if (!b) throw new ValidationError('matrix_b is required for add');
     validateMatrixCompatibility(a, b, 'add');
     return accel
-      ? withTimeout(accel.matrixAdd(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_add')
+      ? runAccelerated((sig) => accel.matrixAdd(a, b, sig), 'matrix_add')
       : math.add(a, b);
   },
   subtract: async (a, b, accel) => {
     if (!b) throw new ValidationError('matrix_b is required for subtract');
     validateMatrixCompatibility(a, b, 'subtract');
     return accel
-      ? withTimeout(accel.matrixSubtract(a, b), DEFAULT_OPERATION_TIMEOUT, 'matrix_subtract')
+      ? runAccelerated((sig) => accel.matrixSubtract(a, b, sig), 'matrix_subtract')
       : math.subtract(a, b);
   },
 };
@@ -272,25 +290,25 @@ type StatsOp = 'mean' | 'median' | 'mode' | 'std' | 'variance' | 'min' | 'max' |
 
 const statsOps: Record<StatsOp, (data: number[], accel?: AccelerationWrapper) => Promise<unknown>> = {
   mean: async (data, accel) =>
-    accel ? withTimeout(accel.statsMean(data), DEFAULT_OPERATION_TIMEOUT, 'stats_mean') : math.mean(data),
+    accel ? runAccelerated((sig) => accel.statsMean(data, sig), 'stats_mean') : math.mean(data),
   median: async (data, accel) =>
-    accel ? withTimeout(accel.statsMedian(data), DEFAULT_OPERATION_TIMEOUT, 'stats_median') : math.median(data),
+    accel ? runAccelerated((sig) => accel.statsMedian(data, sig), 'stats_median') : math.median(data),
   mode: async (data, accel) => {
     const result = accel
-      ? await withTimeout(accel.statsMode(data), DEFAULT_OPERATION_TIMEOUT, 'stats_mode')
+      ? await runAccelerated((sig) => accel.statsMode(data, sig), 'stats_mode')
       : math.mode(data);
     return Array.isArray(result) ? result : [result];
   },
   std: async (data, accel) =>
-    accel ? withTimeout(accel.statsStd(data), DEFAULT_OPERATION_TIMEOUT, 'stats_std') : math.std(data),
+    accel ? runAccelerated((sig) => accel.statsStd(data, sig), 'stats_std') : math.std(data),
   variance: async (data, accel) =>
-    accel ? withTimeout(accel.statsVariance(data), DEFAULT_OPERATION_TIMEOUT, 'stats_variance') : math.variance(data),
+    accel ? runAccelerated((sig) => accel.statsVariance(data, sig), 'stats_variance') : math.variance(data),
   min: async (data, accel) =>
-    accel ? withTimeout(accel.statsMin(data), DEFAULT_OPERATION_TIMEOUT, 'stats_min') : math.min(data),
+    accel ? runAccelerated((sig) => accel.statsMin(data, sig), 'stats_min') : math.min(data),
   max: async (data, accel) =>
-    accel ? withTimeout(accel.statsMax(data), DEFAULT_OPERATION_TIMEOUT, 'stats_max') : math.max(data),
+    accel ? runAccelerated((sig) => accel.statsMax(data, sig), 'stats_max') : math.max(data),
   sum: async (data, accel) =>
-    accel ? withTimeout(accel.statsSum(data), DEFAULT_OPERATION_TIMEOUT, 'stats_sum') : math.sum(data),
+    accel ? runAccelerated((sig) => accel.statsSum(data, sig), 'stats_sum') : math.sum(data),
   product: async (data) => math.prod(data),
 };
 

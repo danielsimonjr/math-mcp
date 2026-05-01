@@ -37,62 +37,66 @@ import type { AccelerationWrapper } from './types.js';
  * @implements {AccelerationWrapper}
  */
 export class AccelerationAdapter implements AccelerationWrapper {
-  async matrixMultiply(a: number[][], b: number[][]): Promise<number[][]> {
-    const { result } = await routedMatrixMultiply(a, b);
+  async matrixMultiply(a: number[][], b: number[][], signal?: AbortSignal): Promise<number[][]> {
+    const { result } = await routedMatrixMultiply(a, b, signal);
     return result;
   }
 
-  async matrixDeterminant(matrix: number[][]): Promise<number> {
+  // Note: WASM-only ops below ignore `signal` — they run synchronous WASM
+  // code inside the main thread and aren't bound to a worker slot, so
+  // there's nothing to cancel. Accepting `signal` keeps the interface
+  // uniform.
+  async matrixDeterminant(matrix: number[][], _signal?: AbortSignal): Promise<number> {
     return await routedMatrixDeterminant(matrix);
   }
 
-  async matrixTranspose(matrix: number[][]): Promise<number[][]> {
-    const { result } = await routedMatrixTranspose(matrix);
+  async matrixTranspose(matrix: number[][], signal?: AbortSignal): Promise<number[][]> {
+    const { result } = await routedMatrixTranspose(matrix, signal);
     return result;
   }
 
-  async matrixAdd(a: number[][], b: number[][]): Promise<number[][]> {
-    const { result } = await routedMatrixAdd(a, b);
+  async matrixAdd(a: number[][], b: number[][], signal?: AbortSignal): Promise<number[][]> {
+    const { result } = await routedMatrixAdd(a, b, signal);
     return result;
   }
 
-  async matrixSubtract(a: number[][], b: number[][]): Promise<number[][]> {
-    const { result } = await routedMatrixSubtract(a, b);
+  async matrixSubtract(a: number[][], b: number[][], signal?: AbortSignal): Promise<number[][]> {
+    const { result } = await routedMatrixSubtract(a, b, signal);
     return result;
   }
 
-  async statsMean(data: number[]): Promise<number> {
-    const { result } = await routedStatsMean(data);
+  async statsMean(data: number[], signal?: AbortSignal): Promise<number> {
+    const { result } = await routedStatsMean(data, signal);
     return result;
   }
 
-  async statsMedian(data: number[]): Promise<number> {
+  async statsMedian(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsMedian(data);
   }
 
-  async statsMode(data: number[]): Promise<number[]> {
+  async statsMode(data: number[], _signal?: AbortSignal): Promise<number[]> {
     const result = await routedStatsMode(data);
     // Normalize to always return an array for consistency
     return Array.isArray(result) ? result : [result];
   }
 
-  async statsStd(data: number[]): Promise<number> {
+  async statsStd(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsStd(data);
   }
 
-  async statsVariance(data: number[]): Promise<number> {
+  async statsVariance(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsVariance(data);
   }
 
-  async statsMin(data: number[]): Promise<number> {
+  async statsMin(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsMin(data);
   }
 
-  async statsMax(data: number[]): Promise<number> {
+  async statsMax(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsMax(data);
   }
 
-  async statsSum(data: number[]): Promise<number> {
+  async statsSum(data: number[], _signal?: AbortSignal): Promise<number> {
     return await routedStatsSum(data);
   }
 }

@@ -51,7 +51,8 @@ export const PARALLEL_THRESHOLDS = {
  */
 export async function parallelStatsMean(
   data: number[],
-  pool: WorkerPool
+  pool: WorkerPool,
+  signal?: AbortSignal
 ): Promise<number> {
   const startTime = performance.now();
 
@@ -78,6 +79,7 @@ export async function parallelStatsMean(
         startIndex: chunk.startIndex,
         endIndex: chunk.endIndex,
       },
+      signal,
     });
   });
 

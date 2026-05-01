@@ -56,7 +56,12 @@ describe('AccelerationAdapter', () => {
       });
       const r = await adapter.matrixMultiply([[1, 0], [0, 1]], [[1, 2], [3, 4]]);
       expect(r).toEqual([[1, 2], [3, 4]]);
-      expect(mocked.routedMatrixMultiply).toHaveBeenCalledWith([[1, 0], [0, 1]], [[1, 2], [3, 4]]);
+      // The adapter forwards an optional signal arg (undefined here when
+      // no AbortSignal is passed) — DoS-protection abort wiring added in
+      // 3.5.x. Match either form.
+      const call = mocked.routedMatrixMultiply.mock.calls[0];
+      expect(call[0]).toEqual([[1, 0], [0, 1]]);
+      expect(call[1]).toEqual([[1, 2], [3, 4]]);
     });
 
     it('matrixTranspose unwraps the result', async () => {

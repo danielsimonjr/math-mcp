@@ -35,42 +35,42 @@ async function ensureInitialized(): Promise<void> {
 
 /** @deprecated Use AccelerationRouter.matrixMultiply() */
 export async function routedMatrixMultiply(
-  a: number[][], b: number[][]
+  a: number[][], b: number[][], signal?: AbortSignal
 ): Promise<{ result: number[][]; tier: AccelerationTier }> {
   await ensureInitialized();
-  return defaultRouter.matrixMultiply(a, b);
+  return defaultRouter.matrixMultiply(a, b, signal);
 }
 
 /** @deprecated Use AccelerationRouter.matrixTranspose() */
 export async function routedMatrixTranspose(
-  matrix: number[][]
+  matrix: number[][], signal?: AbortSignal
 ): Promise<{ result: number[][]; tier: AccelerationTier }> {
   await ensureInitialized();
-  return defaultRouter.matrixTranspose(matrix);
+  return defaultRouter.matrixTranspose(matrix, signal);
 }
 
 /** @deprecated Use AccelerationRouter.matrixAdd() */
 export async function routedMatrixAdd(
-  a: number[][], b: number[][]
+  a: number[][], b: number[][], signal?: AbortSignal
 ): Promise<{ result: number[][]; tier: AccelerationTier }> {
   await ensureInitialized();
-  return defaultRouter.matrixAdd(a, b);
+  return defaultRouter.matrixAdd(a, b, signal);
 }
 
 /** @deprecated Use AccelerationRouter.matrixSubtract() */
 export async function routedMatrixSubtract(
-  a: number[][], b: number[][]
+  a: number[][], b: number[][], signal?: AbortSignal
 ): Promise<{ result: number[][]; tier: AccelerationTier }> {
   await ensureInitialized();
-  return defaultRouter.matrixSubtract(a, b);
+  return defaultRouter.matrixSubtract(a, b, signal);
 }
 
 /** @deprecated Use AccelerationRouter.statsMean() */
 export async function routedStatsMean(
-  data: number[]
+  data: number[], signal?: AbortSignal
 ): Promise<{ result: number; tier: AccelerationTier }> {
   await ensureInitialized();
-  return defaultRouter.statsMean(data);
+  return defaultRouter.statsMean(data, signal);
 }
 
 /** @deprecated Use AccelerationRouter.getRoutingStats() */

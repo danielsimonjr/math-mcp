@@ -184,7 +184,11 @@ export class AccelerationRouter {
   // ============================================================================
 
   /** Matrix multiply with intelligent routing */
-  async matrixMultiply(a: number[][], b: number[][]): Promise<{ result: number[][]; tier: AccelerationTier }> {
+  async matrixMultiply(
+    a: number[][],
+    b: number[][],
+    signal?: AbortSignal
+  ): Promise<{ result: number[][]; tier: AccelerationTier }> {
     const size = Math.min(a.length, b.length);
     const pool = this.getPool();
 
@@ -197,7 +201,7 @@ export class AccelerationRouter {
       {
         tier: AccelerationTier.WORKERS,
         shouldUse: () => !!pool && shouldUseParallel(size, 'multiply'),
-        execute: () => parallelMatrixMultiply(a, b, pool!),
+        execute: () => parallelMatrixMultiply(a, b, pool!, signal),
       },
       {
         tier: AccelerationTier.WASM,
@@ -213,7 +217,10 @@ export class AccelerationRouter {
   }
 
   /** Matrix transpose with intelligent routing */
-  async matrixTranspose(matrix: number[][]): Promise<{ result: number[][]; tier: AccelerationTier }> {
+  async matrixTranspose(
+    matrix: number[][],
+    signal?: AbortSignal
+  ): Promise<{ result: number[][]; tier: AccelerationTier }> {
     const size = matrix.length;
     const pool = this.getPool();
 
@@ -221,7 +228,7 @@ export class AccelerationRouter {
       {
         tier: AccelerationTier.WORKERS,
         shouldUse: () => !!pool && shouldUseParallel(size, 'transpose'),
-        execute: () => parallelMatrixTranspose(matrix, pool!),
+        execute: () => parallelMatrixTranspose(matrix, pool!, signal),
       },
       {
         tier: AccelerationTier.WASM,
@@ -237,7 +244,11 @@ export class AccelerationRouter {
   }
 
   /** Matrix add with intelligent routing */
-  async matrixAdd(a: number[][], b: number[][]): Promise<{ result: number[][]; tier: AccelerationTier }> {
+  async matrixAdd(
+    a: number[][],
+    b: number[][],
+    signal?: AbortSignal
+  ): Promise<{ result: number[][]; tier: AccelerationTier }> {
     const size = Math.min(a.length, b.length);
     const pool = this.getPool();
 
@@ -245,7 +256,7 @@ export class AccelerationRouter {
       {
         tier: AccelerationTier.WORKERS,
         shouldUse: () => !!pool && shouldUseParallel(size, 'add'),
-        execute: () => parallelMatrixAdd(a, b, pool!),
+        execute: () => parallelMatrixAdd(a, b, pool!, signal),
       },
       {
         tier: AccelerationTier.WASM,
@@ -261,7 +272,11 @@ export class AccelerationRouter {
   }
 
   /** Matrix subtract with intelligent routing */
-  async matrixSubtract(a: number[][], b: number[][]): Promise<{ result: number[][]; tier: AccelerationTier }> {
+  async matrixSubtract(
+    a: number[][],
+    b: number[][],
+    signal?: AbortSignal
+  ): Promise<{ result: number[][]; tier: AccelerationTier }> {
     const size = Math.min(a.length, b.length);
     const pool = this.getPool();
 
@@ -269,7 +284,7 @@ export class AccelerationRouter {
       {
         tier: AccelerationTier.WORKERS,
         shouldUse: () => !!pool && shouldUseParallel(size, 'subtract'),
-        execute: () => parallelMatrixSubtract(a, b, pool!),
+        execute: () => parallelMatrixSubtract(a, b, pool!, signal),
       },
       {
         tier: AccelerationTier.WASM,
@@ -289,7 +304,10 @@ export class AccelerationRouter {
   // ============================================================================
 
   /** Statistical mean with intelligent routing */
-  async statsMean(data: number[]): Promise<{ result: number; tier: AccelerationTier }> {
+  async statsMean(
+    data: number[],
+    signal?: AbortSignal
+  ): Promise<{ result: number; tier: AccelerationTier }> {
     const size = data.length;
     const pool = this.getPool();
 
@@ -302,7 +320,7 @@ export class AccelerationRouter {
       {
         tier: AccelerationTier.WORKERS,
         shouldUse: () => !!pool && shouldUseParallelStats(size, 'mean'),
-        execute: () => parallelStatsMean(data, pool!),
+        execute: () => parallelStatsMean(data, pool!, signal),
       },
       {
         tier: AccelerationTier.WASM,

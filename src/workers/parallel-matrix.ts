@@ -64,7 +64,8 @@ export const PARALLEL_THRESHOLDS = {
 export async function parallelMatrixMultiply(
   a: number[][],
   b: number[][],
-  pool: WorkerPool
+  pool: WorkerPool,
+  signal?: AbortSignal
 ): Promise<number[][]> {
   const startTime = performance.now();
   const size = a.length;
@@ -94,6 +95,7 @@ export async function parallelMatrixMultiply(
         startRow: chunk.startIndex,
         endRow: chunk.endIndex,
       },
+      signal,
     });
   });
 
@@ -193,7 +195,8 @@ function mergeTransposedChunks(
  */
 export async function parallelMatrixTranspose(
   matrix: number[][],
-  pool: WorkerPool
+  pool: WorkerPool,
+  signal?: AbortSignal
 ): Promise<number[][]> {
   const startTime = performance.now();
   const rows = matrix.length;
@@ -222,6 +225,7 @@ export async function parallelMatrixTranspose(
         startRow: chunk.startIndex,
         endRow: chunk.endIndex,
       },
+      signal,
     });
   });
 
@@ -264,7 +268,8 @@ export async function parallelMatrixTranspose(
 export async function parallelMatrixAdd(
   a: number[][],
   b: number[][],
-  pool: WorkerPool
+  pool: WorkerPool,
+  signal?: AbortSignal
 ): Promise<number[][]> {
   const startTime = performance.now();
   const rows = a.length;
@@ -295,6 +300,7 @@ export async function parallelMatrixAdd(
         startRow: chunkA.startIndex,
         endRow: chunkA.endIndex,
       },
+      signal,
     });
   });
 
@@ -339,7 +345,8 @@ export async function parallelMatrixAdd(
 export async function parallelMatrixSubtract(
   a: number[][],
   b: number[][],
-  pool: WorkerPool
+  pool: WorkerPool,
+  signal?: AbortSignal
 ): Promise<number[][]> {
   const startTime = performance.now();
   const rows = a.length;
@@ -370,6 +377,7 @@ export async function parallelMatrixSubtract(
         startRow: chunkA.startIndex,
         endRow: chunkA.endIndex,
       },
+      signal,
     });
   });
 

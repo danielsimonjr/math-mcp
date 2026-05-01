@@ -115,6 +115,19 @@ export class WorkerPool {
     this.taskQueue = new TaskQueue({
       maxQueueSize: this.config.maxQueueSize,
       taskTimeout: this.config.taskTimeout,
+      // On task timeout, forcibly terminate the worker thread. The worker
+      // is still running CPU-bound JS and cannot be stopped cooperatively;
+      // without `terminate()` the slot leaks (DoS). After termination the
+      // pool replenishes back up to `minWorkers` so capacity is restored
+      // immediately.
+      onTaskTimeout: (workerId) => {
+        this.recycleWorker(workerId).catch((err) => {
+          logger.error('Failed to recycle worker after task timeout', {
+            workerId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
+      },
     });
 
     logger.info('WorkerPool created', {
@@ -374,6 +387,14 @@ export class WorkerPool {
     operation: OperationType;
     data: any;
     priority?: number;
+    /**
+     * Optional abort signal. When aborted, the task is cancelled:
+     * - if pending, it is removed from the queue
+     * - if active, the worker thread is forcibly terminated and replaced,
+     *   freeing the worker slot immediately rather than waiting for the
+     *   30s task timeout. Required for the DoS-protection abort path.
+     */
+    signal?: AbortSignal;
   }): Promise<T> {
     if (!this.initialized) {
       throw new WasmError('WorkerPool not initialized. Call initialize() first.');
@@ -383,15 +404,21 @@ export class WorkerPool {
       throw new WasmError('WorkerPool is shutting down. Cannot accept new tasks.');
     }
 
+    if (request.signal?.aborted) {
+      throw new Error('Task cancelled before submission');
+    }
+
     // On-demand worker creation: if pool is empty (minWorkers = 0), create a worker
     if (this.workers.size === 0 && !this.shuttingDown) {
       logger.debug('Pool empty, creating worker on-demand');
       await this.createWorker();
     }
 
+    const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     return new Promise<T>((resolve, reject) => {
       const task: Task = {
-        id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: taskId,
         operation: request.operation,
         data: request.data,
         resolve: resolve as (result: WorkerResult) => void,
@@ -400,6 +427,25 @@ export class WorkerPool {
         createdAt: Date.now(),
         trackPerformance: this.config.enablePerformanceTracking,
       };
+
+      // Wire abort -> cancel + recycle worker
+      if (request.signal) {
+        const onAbort = (): void => {
+          // Capture worker (if active) BEFORE cancelTask removes it.
+          const info = this.taskQueue.getTaskInfo(taskId);
+          const worker = info?.status === 'active' ? info.worker : undefined;
+          const wasCancelled = this.taskQueue.cancelTask(taskId, 'aborted');
+          if (wasCancelled && worker) {
+            this.recycleWorker(worker.id).catch((err) => {
+              logger.error('Failed to recycle worker after abort', {
+                workerId: worker.id,
+                error: err instanceof Error ? err.message : String(err),
+              });
+            });
+          }
+        };
+        request.signal.addEventListener('abort', onAbort, { once: true });
+      }
 
       // Enqueue the task
       this.taskQueue.enqueue(task);

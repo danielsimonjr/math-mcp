@@ -41,51 +41,75 @@ export const DEFAULT_OPERATION_TIMEOUT = DEFAULT_TIMEOUT;
  * Wraps a promise with a timeout. If the promise doesn't resolve within
  * the specified time, it will be rejected with a TimeoutError.
  *
- * This prevents long-running operations from blocking the server indefinitely,
- * which could be exploited for denial-of-service attacks or simply hang due
- * to algorithmic complexity.
+ * **DoS protection:** the optional `abortFn` callback is invoked on
+ * timeout. Callers should pass an abort handle that cancels the
+ * underlying work — without it, racing a Promise only frees the
+ * *wrapper*; the underlying CPU-bound task (e.g. a worker-thread matrix
+ * multiply) keeps running and continues to occupy a worker slot. A
+ * sustained stream of timing-out requests then exhausts the worker pool,
+ * which is a denial-of-service vector.
  *
  * @template T - The type of value the promise resolves to
  * @param {Promise<T>} promise - The promise to wrap with timeout protection
  * @param {number} timeoutMs - Timeout duration in milliseconds
  * @param {string} [operationName] - Optional name for the operation (for error messages)
+ * @param {() => void} [abortFn] - Optional callback invoked on timeout to
+ *   cancel the underlying work (e.g. terminate a worker, abort a fetch).
+ *   Best-effort — exceptions are caught and logged.
  * @returns {Promise<T>} A promise that resolves with the original value or rejects with TimeoutError
  * @throws {TimeoutError} If the operation exceeds the timeout
  *
  * @example
  * ```typescript
+ * const ac = new AbortController();
  * const result = await withTimeout(
- *   slowOperation(),
+ *   pool.execute({ ..., signal: ac.signal }),
  *   5000,
- *   'Matrix determinant calculation'
+ *   'matrix_multiply',
+ *   () => ac.abort(),
  * );
- * // If slowOperation() takes more than 5 seconds, throws TimeoutError
- *
- * try {
- *   await withTimeout(verySlowOperation(), 1000);
- * } catch (error) {
- *   if (error instanceof TimeoutError) {
- *     console.log('Operation timed out');
- *   }
- * }
  * ```
  */
 export async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
-  operationName?: string
+  operationName?: string,
+  abortFn?: () => void
 ): Promise<T> {
   let timeoutHandle: NodeJS.Timeout;
+  let timedOut = false;
 
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutHandle = setTimeout(() => {
+      timedOut = true;
       const name = operationName ? ` (${operationName})` : '';
+      // Fire abort BEFORE rejecting so the cancel propagates while the
+      // wrapper rejection is still pending — this lets the underlying
+      // worker pool free the slot synchronously with the timeout.
+      if (abortFn) {
+        try {
+          abortFn();
+        } catch (err) {
+          logger.warn('withTimeout abortFn threw', {
+            operation: operationName,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
       reject(new TimeoutError(`Operation${name} exceeded timeout of ${timeoutMs}ms`));
     }, timeoutMs);
   });
 
   try {
     return await Promise.race([promise, timeoutPromise]);
+  } catch (err) {
+    // If the inner promise rejected for a non-timeout reason, the abort
+    // callback never fired — but no work needs cancelling either, so just
+    // re-throw.
+    if (!timedOut && abortFn) {
+      // No-op: the work failed on its own.
+    }
+    throw err;
   } finally {
     clearTimeout(timeoutHandle!);
   }
