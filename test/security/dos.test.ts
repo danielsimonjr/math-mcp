@@ -270,7 +270,7 @@ describe('DoS Protection', () => {
       // Most should complete successfully (might be queued)
       const succeeded = results.filter((r) => r.status === 'fulfilled');
       expect(succeeded.length).toBeGreaterThan(0);
-    }, 15000);
+    }, 60000); // 15s was too tight for vitest 4's import overhead on Windows
   });
 
   describe('Resource exhaustion', () => {

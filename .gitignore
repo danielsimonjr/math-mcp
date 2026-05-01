@@ -51,3 +51,7 @@ Thumbs.db
 
 # Debug
 *.map
+# Added by post-migration audit (2026-05-01)
+.venv/
+venv/
+__pycache__/
