@@ -152,6 +152,16 @@ export class WorkerPool {
   private idleCheckInterval?: NodeJS.Timeout;
 
   /**
+   * Maximum time (ms) to wait for a freshly-spawned worker to post its
+   * `{type:'ready'}` message after async WASM init. If exceeded, the
+   * worker is treated as wedged: its readyPromise rejects, the in-flight
+   * dispatch fails fast, and the worker is recycled so capacity is
+   * restored. 5s is generous compared to typical WASM init (~50–200ms)
+   * but tight enough that wedged workers don't tie up tasks for long.
+   */
+  private static readonly READY_TIMEOUT_MS = 5000;
+
+  /**
    * Creates a new worker pool.
    *
    * @param {Partial<WorkerPoolConfig>} [config] - Pool configuration
@@ -258,6 +268,70 @@ export class WorkerPool {
     // Create worker
     const worker = new Worker(workerPath);
 
+    // Wire the ready-gate BEFORE installing the regular message handler.
+    // The worker posts `{type:'ready'}` after `await initWASM()` resolves
+    // (see math-worker.ts:main). We capture that exactly once here and
+    // resolve readyPromise; any later messages flow to handleWorkerMessage
+    // as task responses. A 5s timeout ensures a wedged worker (one that
+    // never finishes WASM init) fails fast instead of indefinitely
+    // blocking dispatch.
+    let resolveReady!: () => void;
+    let rejectReady!: (reason: Error) => void;
+    const readyPromise = new Promise<void>((resolve, reject) => {
+      resolveReady = resolve;
+      rejectReady = reject;
+    });
+
+    const readyTimer = setTimeout(() => {
+      rejectReady(
+        new Error(
+          `Worker ${workerId} did not signal ready within ${WorkerPool.READY_TIMEOUT_MS}ms`
+        )
+      );
+    }, WorkerPool.READY_TIMEOUT_MS);
+
+    // Single 'message' listener for this worker's lifetime. Filters
+    // bootstrap protocol frames (`{type:'init'}` and `{type:'ready'}`)
+    // and forwards genuine task-response messages to the task handler.
+    //
+    // Why filter `init` too: math-worker.ts emits `{type:'init',success:T/F}`
+    // before `{type:'ready'}`. If `init` reaches handleWorkerMessage it
+    // resets the worker's BUSY status back to IDLE and clears
+    // currentTaskId — which makes dispatchWhenReady skip the postMessage
+    // because the task no longer "belongs" to the worker. Result: task
+    // hangs until taskTimeout fires. Filter both frames here.
+    //
+    // Genuine task responses always carry an `id` (matching the
+    // WorkerRequest.id), never a `type`, so we use `'type' in msg` as
+    // the protocol-frame discriminator.
+    const onMessage = (msg: unknown): void => {
+      if (msg && typeof msg === 'object' && 'type' in (msg as object)) {
+        const type = (msg as { type?: unknown }).type;
+        if (type === 'ready') {
+          clearTimeout(readyTimer);
+          resolveReady();
+          return;
+        }
+        if (type === 'init' || type === 'fatal_error') {
+          // `init` is informational; success/failure is reflected in the
+          // ready promise (worker only emits ready when wasmInitialized
+          // becomes true). `fatal_error` will be followed by worker exit
+          // which the 'exit' handler picks up.
+          return;
+        }
+        // Unknown protocol frame — log and drop rather than misroute it
+        // through handleWorkerMessage (which would call failTask/
+        // completeTask with an undefined id).
+        logger.warn('Worker emitted unknown protocol frame', {
+          workerId,
+          type: String(type),
+        });
+        return;
+      }
+      this.handleWorkerMessage(workerId, msg as WorkerResponse);
+    };
+    worker.on('message', onMessage);
+
     // Create metadata
     const metadata: WorkerMetadata = {
       id: workerId,
@@ -267,9 +341,22 @@ export class WorkerPool {
       tasksFailed: 0,
       lastActivity: Date.now(),
       createdAt: Date.now(),
+      readyPromise,
+      abandonReady: (reason: Error) => {
+        clearTimeout(readyTimer);
+        rejectReady(reason);
+      },
     };
 
-    // Set up event handlers
+    // Surface readyPromise rejections so unhandled-rejection warnings
+    // don't leak into test output. The dispatcher (scheduleNextTask) is
+    // the official awaiter; this attach is purely defensive for the case
+    // where a worker is recycled before it ever gets a task.
+    readyPromise.catch(() => {
+      // intentionally swallowed — recycle path logs the underlying reason
+    });
+
+    // Set up the rest of the event handlers (error/exit/task responses).
     this.setupWorkerEventHandlers(metadata);
 
     // Add to pool
@@ -289,10 +376,11 @@ export class WorkerPool {
   private setupWorkerEventHandlers(metadata: WorkerMetadata): void {
     const { worker, id: workerId } = metadata;
 
-    // Handle messages from worker
-    worker.on('message', (response: WorkerResponse) => {
-      this.handleWorkerMessage(workerId, response);
-    });
+    // NOTE: the 'message' handler is intentionally installed in
+    // createWorker() (the ready-gate path) — that handler consumes the
+    // one-shot `{type:'ready'}` frame and forwards every subsequent
+    // message to handleWorkerMessage. Adding another listener here
+    // would double-process task responses.
 
     // Handle worker errors
     worker.on('error', (error: Error) => {
@@ -396,6 +484,12 @@ export class WorkerPool {
     if (!metadata) {
       return;
     }
+
+    // Settle the readyPromise so any pending dispatcher waiting on this
+    // worker fails fast instead of hanging until the 5s ready timeout.
+    metadata.abandonReady?.(
+      new Error(`Worker ${workerId} recycled before/while ready`)
+    );
 
     // Remove all event listeners to prevent memory leaks
     metadata.worker.removeAllListeners('message');
@@ -551,7 +645,10 @@ export class WorkerPool {
       }
     }
 
-    // Send tasks to workers
+    // Send tasks to workers. Each postMessage is gated on the worker's
+    // readyPromise so the very first task on a freshly-spawned worker
+    // doesn't race the worker's async WASM init. For warm workers the
+    // promise is already resolved, so the await is effectively free.
     for (const metadata of workers) {
       if (metadata.status === WorkerStatus.BUSY && metadata.currentTaskId) {
         const taskInfo = this.taskQueue.getTaskInfo(metadata.currentTaskId);
@@ -563,10 +660,81 @@ export class WorkerPool {
             trackPerformance: taskInfo.task.trackPerformance,
           };
 
-          metadata.worker.postMessage(workerRequest);
+          this.dispatchWhenReady(metadata, workerRequest);
         }
       }
     }
+  }
+
+  /**
+   * Posts a task message to a worker once it has signaled ready.
+   *
+   * For warm workers (readyPromise already resolved) this awaits a
+   * pre-settled promise — essentially a microtask. For freshly-spawned
+   * workers it blocks until `{type:'ready'}` arrives or the 5s ready
+   * timeout fires. On timeout, the in-flight task is failed and the
+   * wedged worker is recycled so capacity is restored.
+   *
+   * @param metadata - Worker the request is bound for
+   * @param request - The task payload to post
+   * @private
+   */
+  private dispatchWhenReady(
+    metadata: WorkerMetadata,
+    request: WorkerRequest
+  ): void {
+    metadata.readyPromise.then(
+      () => {
+        // Re-check the world: while we awaited ready, the worker may
+        // have been recycled or its task aborted/cancelled. Skip the
+        // post if either is true to avoid postMessage on a dead worker
+        // or duplicate dispatch on a reused slot.
+        if (!this.workers.has(metadata.id)) {
+          return;
+        }
+        if (metadata.currentTaskId !== request.id) {
+          return;
+        }
+        try {
+          metadata.worker.postMessage(request);
+        } catch (err) {
+          logger.error('Failed to postMessage to worker after ready', {
+            workerId: metadata.id,
+            taskId: request.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          this.taskQueue.failTask(
+            request.id,
+            err instanceof Error ? err : new Error(String(err))
+          );
+          this.recycleWorker(metadata.id).catch((e) => {
+            logger.error('Failed to recycle worker after postMessage failure', {
+              workerId: metadata.id,
+              error: e instanceof Error ? e.message : String(e),
+            });
+          });
+        }
+      },
+      (err: Error) => {
+        // Ready timed out (or was abandoned by recycle/shutdown). Fail
+        // the task that was queued onto this worker and recycle so a
+        // fresh worker can pick up future work.
+        logger.error('Worker readyPromise rejected before dispatch', {
+          workerId: metadata.id,
+          taskId: request.id,
+          error: err.message,
+        });
+        this.taskQueue.failTask(request.id, err);
+        if (this.workers.has(metadata.id)) {
+          this.recycleWorker(metadata.id).catch((e) => {
+            logger.error('Failed to recycle worker after ready timeout', {
+              workerId: metadata.id,
+              error: e instanceof Error ? e.message : String(e),
+            });
+          });
+        }
+      }
+    );
   }
 
   /**
@@ -598,6 +766,12 @@ export class WorkerPool {
             workerId,
             idleTime: `${idleTime}ms`,
           });
+
+          // Settle readyPromise (no-op if already resolved) before
+          // tearing down listeners so any awaiter fails fast.
+          metadata.abandonReady?.(
+            new Error(`Worker ${workerId} terminated for idleness`)
+          );
 
           // Remove event listeners to prevent memory leaks
           metadata.worker.removeAllListeners('message');
@@ -690,6 +864,11 @@ export class WorkerPool {
     // Terminate all workers (clean up event listeners first)
     const terminatePromises: Promise<number>[] = [];
     for (const metadata of this.workers.values()) {
+      // Settle readyPromise so any straggler dispatcher unblocks.
+      metadata.abandonReady?.(
+        new Error(`Worker ${metadata.id} terminated during shutdown`)
+      );
+
       // Remove all event listeners to prevent memory leaks
       metadata.worker.removeAllListeners('message');
       metadata.worker.removeAllListeners('error');

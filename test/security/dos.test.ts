@@ -450,16 +450,11 @@ describe('DoS Protection', () => {
       expect(aborted).toBe(false);
     });
 
-    // Skipped: the worker-pool path-resolution bug + recycle-timing bug are
-    // both fixed (see worker-pool.ts: resolveWorkerPath() and the
-    // delete-before-terminate change in recycleWorker()). The abort path now
-    // frees the slot in <100ms. The remaining blocker is a pre-existing
-    // race: the pool dispatches tasks to freshly-created workers BEFORE the
-    // worker's async WASM init completes, surfacing as
-    // "WASM not initialized in worker" on the sanity follow-up task.
-    // The pool ignores the worker's `{ type: 'ready' }` message; wiring a
-    // ready-gate is a separate fix outside the scope of this pass.
-    it.skip('WorkerPool: abort signal frees worker slot immediately', async () => {
+    // Wave 1.2: ready-gate wired up. Pool now awaits worker
+    // `{type:'ready'}` before dispatching the first task per worker, so
+    // the previous race ("WASM not initialized in worker" on the sanity
+    // follow-up) is closed. See worker-pool.ts:dispatchWhenReady().
+    it('WorkerPool: abort signal frees worker slot immediately', async () => {
       // Direct-pool test that exercises the full abort wiring without
       // needing a real >30s computation. We submit a task that the worker
       // picks up, then abort it via signal. The pool MUST recycle the

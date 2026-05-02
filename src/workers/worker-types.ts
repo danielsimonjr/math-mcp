@@ -347,6 +347,25 @@ export interface WorkerMetadata {
 
   /** Worker creation timestamp */
   createdAt: number;
+
+  /**
+   * Resolves once the worker thread posts `{ type: 'ready' }` after its
+   * async WASM initialization completes. The pool MUST await this before
+   * dispatching the worker's first task — otherwise the postMessage races
+   * the worker's `await initWASM()` and the task lands on an
+   * uninitialized WASM module ("WASM not initialized in worker").
+   *
+   * Settled exactly once per worker lifetime (one-shot). On terminate /
+   * recycle / shutdown the readyPromise is rejected to break any awaiter
+   * still holding it.
+   */
+  readyPromise: Promise<void>;
+
+  /**
+   * Internal: rejects readyPromise on terminate/recycle/shutdown so a
+   * dispatch awaiting a wedged worker fails fast instead of hanging.
+   */
+  abandonReady?: (reason: Error) => void;
 }
 
 /**

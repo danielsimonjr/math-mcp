@@ -22,6 +22,35 @@ Documentation in reverse chronological order (latest first).
   context name in the message, and acceptance at ~7.5MB.
 
 ### Fixed
+- **Workers: gate task dispatch on worker `{type:'ready'}` init message**
+  (`src/workers/worker-pool.ts`, `src/workers/worker-types.ts`,
+  `test/unit/workers/worker-pool.test.ts`,
+  `test/security/dos.test.ts`). The pool was posting the very first task
+  to a freshly-spawned worker before the worker's async `initWASM()`
+  resolved, racing the worker bootstrap and surfacing as "WASM not
+  initialized in worker" on the first dispatch (the unblocked tail of
+  Wave 1.1's `a0200a4`). `math-worker.ts` already emits a one-shot
+  `{type:'ready'}` after init, but `worker-pool.ts` ignored it.
+  Fix: each `WorkerMetadata` now carries a `readyPromise` resolved by a
+  single `'message'` listener that filters protocol frames
+  (`{type:'init'}`, `{type:'ready'}`, `{type:'fatal_error'}`) and
+  forwards genuine task responses to `handleWorkerMessage`. The new
+  `dispatchWhenReady()` helper awaits `readyPromise` before
+  `worker.postMessage(request)`; for warm workers the promise is
+  pre-resolved so the await is a microtask. A 5s `READY_TIMEOUT_MS`
+  guard rejects `readyPromise` if a worker wedges, which fails the
+  in-flight task and recycles the worker so capacity is restored.
+  `recycleWorker()`, the idle-monitor, and `shutdown()` all settle the
+  readyPromise (via `metadata.abandonReady`) so straggler dispatchers
+  unblock instead of hanging until the 5s timeout.
+  Tests: added `test/unit/workers/worker-pool.test.ts` with two cases —
+  immediate `pool.execute()` after `initialize()` returns the correct
+  result (RED before the fix: "WASM not initialized in worker"), and
+  back-to-back tasks on the same worker stay sub-2s (no re-await of a
+  one-shot promise). Unskipped the previously-blocked
+  `WorkerPool: abort signal frees worker slot immediately` test at
+  `test/security/dos.test.ts:460`.
+
 - **Telemetry: `avgExecutionTime` reported nonsense values**
   (`src/workers/worker-pool.ts`, `src/workers/task-queue.ts`,
   `test/unit/workers/task-queue.test.ts`). `WorkerPool.getStats()`
