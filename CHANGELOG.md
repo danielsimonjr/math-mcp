@@ -7,6 +7,9 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Documentation
+- Add CycloneDX SBOM (sbom.json).
+
 ### Security
 - **Hardening: tightened `safeJsonParse` size cap from 20MB to 8MB**
   (`src/validation.ts`, `test/unit/validation.test.ts`). The previous
