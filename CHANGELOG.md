@@ -7,6 +7,25 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Fixed
+- **Telemetry: `avgExecutionTime` reported nonsense values**
+  (`src/workers/worker-pool.ts`, `src/workers/task-queue.ts`,
+  `test/unit/workers/task-queue.test.ts`). `WorkerPool.getStats()`
+  computed `avgTime = this.createdAt / totalCompleted` — i.e. the pool's
+  creation epoch-millis (~1.7×10^12) divided by the completion count.
+  The result over-reported by roughly twelve orders of magnitude and
+  poisoned every dashboard sourced from `pool-manager.getAggregateStats()`.
+  Fix: `TaskQueue` now sums per-task wall-clock duration into
+  `totalExecutionTimeMs` inside `completeTask()` (the existing local
+  `duration` was already computed; we now retain it). `getStats()`
+  exposes `avgExecutionTimeMs = totalExecutionTimeMs / totalCompleted`,
+  guarded against div-by-zero. `WorkerPool.getStats()` reads that
+  field directly. Failed/timed-out tasks are intentionally excluded so
+  the metric reflects healthy throughput.
+  Tests: added two regressions in `task-queue.test.ts > getStats` —
+  one asserting mean of `[100, 200, 300]ms` ≈ 200ms via fake timers,
+  one pinning the empty-state value to 0.
+
 ### Security
 - **DoS: `withTimeout` did not abort the underlying work, leaking worker
   slots**

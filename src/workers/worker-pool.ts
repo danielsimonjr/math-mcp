@@ -627,9 +627,11 @@ export class WorkerPool {
 
     const queueStats = this.taskQueue.getStats();
 
-    // Calculate average execution time (rough estimate)
-    const totalTasks = queueStats.totalCompleted;
-    const avgTime = totalTasks > 0 ? this.createdAt / totalTasks : 0;
+    // Mean of completed-task durations sourced from TaskQueue, which sums
+    // per-task wall-clock time inside completeTask(). Replaces the prior
+    // `this.createdAt / totalTasks` calculation, which divided an epoch
+    // timestamp by a counter and produced values ~10^12 too large.
+    const avgTime = queueStats.avgExecutionTimeMs;
 
     return {
       totalWorkers: this.workers.size,

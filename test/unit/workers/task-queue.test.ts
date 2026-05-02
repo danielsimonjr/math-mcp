@@ -729,6 +729,38 @@ describe('workers/task-queue', () => {
       expect(stats.totalTimedOut).toBe(1);
       expect(stats.totalFailed).toBe(1);
     });
+
+    it('should report avgExecutionTimeMs close to actual duration', () => {
+      // Bug-fix regression: prior code used `createdAt / totalCompleted`
+      // (epoch-millis ÷ count), which silently over-reports by ~10^12.
+      // This test asserts the metric is the *mean of completed task durations*.
+      const worker = createMockWorker('worker-1');
+
+      const task1 = createMockTask('task-1');
+      queue.assignTask(task1, worker);
+      vi.advanceTimersByTime(100);
+      queue.completeTask('task-1', {});
+
+      const task2 = createMockTask('task-2');
+      queue.assignTask(task2, worker);
+      vi.advanceTimersByTime(200);
+      queue.completeTask('task-2', {});
+
+      const task3 = createMockTask('task-3');
+      queue.assignTask(task3, worker);
+      vi.advanceTimersByTime(300);
+      queue.completeTask('task-3', {});
+
+      const stats = queue.getStats();
+      expect(stats.totalCompleted).toBe(3);
+      // Mean of [100, 200, 300] = 200ms
+      expect(stats.avgExecutionTimeMs).toBeCloseTo(200, 0);
+    });
+
+    it('should report avgExecutionTimeMs as 0 when no tasks completed', () => {
+      const stats = queue.getStats();
+      expect(stats.avgExecutionTimeMs).toBe(0);
+    });
   });
 
   describe('resetStats', () => {

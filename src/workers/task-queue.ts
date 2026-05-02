@@ -62,6 +62,13 @@ export class TaskQueue {
     totalCompleted: 0,
     totalFailed: 0,
     totalTimedOut: 0,
+    /**
+     * Cumulative wall-clock duration of all *successfully completed* tasks
+     * in milliseconds. Used to compute a stable mean execution time.
+     * Only completion durations are summed here — failed/timed-out tasks
+     * are excluded so the metric reflects healthy throughput.
+     */
+    totalExecutionTimeMs: 0,
   };
 
   /**
@@ -240,6 +247,9 @@ export class TaskQueue {
     // Resolve the task
     task.resolve(result);
 
+    // Accumulate execution time *before* incrementing the completed counter
+    // so any consumer reading getStats() sees a coherent (sum, count) pair.
+    this.stats.totalExecutionTimeMs += duration;
     this.stats.totalCompleted++;
 
     logger.debug('Task completed', {
@@ -494,9 +504,19 @@ export class TaskQueue {
     totalFailed: number;
     totalTimedOut: number;
     successRate: string;
+    avgExecutionTimeMs: number;
   } {
     const total = this.stats.totalCompleted + this.stats.totalFailed;
     const successRate = total > 0 ? (this.stats.totalCompleted / total) * 100 : 0;
+
+    // Mean of completed-task durations. Guarded by max(1, …) to avoid
+    // div-by-zero before any task has finished. Prior implementation in
+    // worker-pool.ts used `createdAt / totalCompleted` (epoch-millis ÷
+    // count), which over-reported by ~10^12 — see CHANGELOG entry.
+    const avgExecutionTimeMs =
+      this.stats.totalCompleted > 0
+        ? this.stats.totalExecutionTimeMs / this.stats.totalCompleted
+        : 0;
 
     return {
       pending: this.queue.length,
@@ -506,6 +526,7 @@ export class TaskQueue {
       totalFailed: this.stats.totalFailed,
       totalTimedOut: this.stats.totalTimedOut,
       successRate: successRate.toFixed(1) + '%',
+      avgExecutionTimeMs,
     };
   }
 
@@ -518,6 +539,7 @@ export class TaskQueue {
       totalCompleted: 0,
       totalFailed: 0,
       totalTimedOut: 0,
+      totalExecutionTimeMs: 0,
     };
 
     logger.debug('Queue statistics reset');
