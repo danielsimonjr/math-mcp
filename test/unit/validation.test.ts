@@ -105,6 +105,26 @@ describe('validation', () => {
       const result = safeJsonParse('{"a":{"b":{"c":1}}}', 'test');
       expect(result).toEqual({ a: { b: { c: 1 } } });
     });
+
+    it('should reject payloads larger than 8MB and name the cap', () => {
+      // 9 MiB string of digits — valid JSON-token characters,
+      // exceeds the 8MB cap.
+      const oversized = '1'.repeat(9 * 1024 * 1024);
+      expect(() => safeJsonParse(oversized, 'big_payload')).toThrow(ValidationError);
+      expect(() => safeJsonParse(oversized, 'big_payload')).toThrow(/8MB|8 ?MB|8388608/);
+      expect(() => safeJsonParse(oversized, 'big_payload')).toThrow(/big_payload/);
+    });
+
+    it('should still accept payloads just under the 8MB cap', () => {
+      // Build a valid JSON array that serializes to ~7.5MB
+      // ("1," = 2 chars per element). 3.75M elements ≈ 7.5MB.
+      const arr = new Array(3_750_000).fill(1);
+      const json = JSON.stringify(arr);
+      expect(json.length).toBeGreaterThan(7 * 1024 * 1024);
+      expect(json.length).toBeLessThan(8 * 1024 * 1024);
+      const result = safeJsonParse<number[]>(json, 'under_cap');
+      expect(result).toHaveLength(3_750_000);
+    });
   });
 
   describe('validateMatrix', () => {

@@ -69,6 +69,7 @@ export const LIMITS = {
  *
  * Note: Uses synchronous JSON.parse(). This is acceptable because:
  * - JSON.parse is extremely fast in V8 (millions of ops/sec)
+ * - Input size is hard-capped at 8MB (see MAX_JSON_STRING_LENGTH below)
  * - Input size is limited by MAX_MATRIX_SIZE (1000x1000) and MAX_ARRAY_SIZE
  * - Typical payloads parse in <1ms, max payloads parse in <10ms
  * - Early size check prevents oversized inputs from blocking event loop
@@ -97,13 +98,17 @@ export function safeJsonParse<T = unknown>(jsonString: string, context: string):
     throw new ValidationError(`${context} cannot be empty`);
   }
 
-  // Early size check: prevent parsing of oversized inputs that could block event loop
-  // Max reasonable size: 1000x1000 matrix = ~1M numbers * ~10 chars each = ~10MB
-  const MAX_JSON_STRING_LENGTH = 20 * 1024 * 1024; // 20MB limit
+  // Early size check: prevent parsing of oversized inputs that could block
+  // the event loop. Cap is 8MB — well above the largest *legitimate* payload
+  // (1000x1000 dense matrix of 6-digit numbers ≈ 7MB) but tight enough to
+  // foil OOM/parse-stall DoS via JSON-RPC. Was previously 20MB, which was
+  // over-permissive for a math server.
+  const MAX_JSON_STRING_LENGTH = 8 * 1024 * 1024; // 8MB limit (8388608 bytes)
 
   if (jsonString.length > MAX_JSON_STRING_LENGTH) {
     throw new ValidationError(
-      `${context} exceeds maximum size of ${MAX_JSON_STRING_LENGTH} characters (got ${jsonString.length})`
+      `${context} exceeds maximum JSON payload size of 8MB ` +
+        `(${MAX_JSON_STRING_LENGTH} characters; got ${jsonString.length})`
     );
   }
 

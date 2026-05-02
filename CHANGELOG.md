@@ -7,6 +7,20 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Security
+- **Hardening: tightened `safeJsonParse` size cap from 20MB to 8MB**
+  (`src/validation.ts`, `test/unit/validation.test.ts`). The previous
+  20 MiB cap was over-permissive for a math server taking JSON-RPC
+  requests and gave attackers a generous ceiling for OOM / parse-stall
+  DoS. 8 MiB still admits the largest *legitimate* payload (a 1000x1000
+  dense matrix of 6-digit numbers serializes to ≈7 MiB) but cuts the
+  worst-case parse work by 60%. The error message now names the cap
+  explicitly ("exceeds maximum JSON payload size of 8MB"). Existing
+  `test/security/dos.test.ts` "should reject oversized JSON" continues
+  to pass (its 22MB fixture is rejected against either cap). Two new
+  unit tests pin the new boundary: rejection at 9MB with "8MB" /
+  context name in the message, and acceptance at ~7.5MB.
+
 ### Fixed
 - **Telemetry: `avgExecutionTime` reported nonsense values**
   (`src/workers/worker-pool.ts`, `src/workers/task-queue.ts`,
