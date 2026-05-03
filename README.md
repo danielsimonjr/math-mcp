@@ -1086,6 +1086,10 @@ ISC License - see [LICENSE](LICENSE) file for details.
 - **AssemblyScript** - TypeScript-to-WASM compiler
 - **MCP SDK** - Model Context Protocol implementation
 
+## Recent updates
+
+See [CHANGELOG.md](CHANGELOG.md) for recent changes — telemetry init fix, 8MB JSON response cap, and worker-pool ready-gate.
+
 ---
 
 Made with ❤️ by the math-mcp contributors
