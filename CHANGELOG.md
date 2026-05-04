@@ -7,6 +7,8 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [3.5.1] - 2026-05-01
+
 ### Documentation
 - Add CycloneDX SBOM (sbom.json).
 
