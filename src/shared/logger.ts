@@ -2,8 +2,9 @@
  * @file logger.ts
  * @description Centralized logging utility (Layer 1 - No dependencies)
  *
- * This module provides a simple, level-based logging system with proper
- * stream separation (stderr for errors/warnings, stdout for info/debug).
+ * All log levels write to stderr. This server uses stdio transport for MCP,
+ * which reserves stdout for the JSON-RPC channel — any non-JSON byte on
+ * stdout corrupts the protocol stream and disconnects the client.
  *
  * **Dependency Layer:** 1 (No internal dependencies)
  *
@@ -91,81 +92,33 @@ function formatLogMessage(
 
 /**
  * Simple logger utility with log levels.
- * Uses appropriate streams: stderr for errors/warnings, stdout for info/debug.
+ * All levels write to stderr; stdout is reserved for MCP JSON-RPC traffic.
  *
  * @constant
  * @type {Object}
  */
 export const logger = {
-  /**
-   * Logs an error message. Always logged regardless of log level.
-   * Outputs to stderr (console.error).
-   *
-   * @param {string} message - The error message
-   * @param {Record<string, unknown>} [metadata] - Optional metadata
-   *
-   * @example
-   * ```typescript
-   * logger.error('Failed to parse matrix', { input: matrixStr });
-   * ```
-   */
   error(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.ERROR)) {
       console.error(formatLogMessage(LogLevel.ERROR, message, metadata));
     }
   },
 
-  /**
-   * Logs a warning message.
-   * Outputs to stderr (console.warn).
-   *
-   * @param {string} message - The warning message
-   * @param {Record<string, unknown>} [metadata] - Optional metadata
-   *
-   * @example
-   * ```typescript
-   * logger.warn('WASM module not initialized, using mathjs fallback');
-   * ```
-   */
   warn(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.WARN)) {
-      console.warn(formatLogMessage(LogLevel.WARN, message, metadata));
+      console.error(formatLogMessage(LogLevel.WARN, message, metadata));
     }
   },
 
-  /**
-   * Logs an informational message.
-   * Outputs to stdout (console.log).
-   *
-   * @param {string} message - The info message
-   * @param {Record<string, unknown>} [metadata] - Optional metadata
-   *
-   * @example
-   * ```typescript
-   * logger.info('MCP Server started', { version: '2.1.0' });
-   * ```
-   */
   info(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.INFO)) {
-      console.log(formatLogMessage(LogLevel.INFO, message, metadata));
+      console.error(formatLogMessage(LogLevel.INFO, message, metadata));
     }
   },
 
-  /**
-   * Logs a debug message. Only logged when LOG_LEVEL=debug.
-   * Outputs to stdout (console.log).
-   *
-   * @param {string} message - The debug message
-   * @param {Record<string, unknown>} [metadata] - Optional metadata
-   *
-   * @example
-   * ```typescript
-   * logger.debug('Matrix operation routed to WASM', { size: '20x20' });
-   * ```
-   */
   debug(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.DEBUG)) {
-      console.log(formatLogMessage(LogLevel.DEBUG, message, metadata));
+      console.error(formatLogMessage(LogLevel.DEBUG, message, metadata));
     }
   },
 };
