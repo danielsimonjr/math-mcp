@@ -36,7 +36,7 @@ jobs:
         run: |
           cd wasm
           npm install
-          npx gulp
+          npm run asbuild
 
       - name: Run integration tests
         run: node test/integration-test.js
@@ -83,7 +83,7 @@ jobs:
         run: |
           cd wasm
           npm install
-          npx gulp
+          npm run asbuild
 
       - name: Verify WASM output
         run: |
