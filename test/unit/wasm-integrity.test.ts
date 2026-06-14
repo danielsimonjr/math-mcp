@@ -36,7 +36,7 @@ const VALID_MANIFEST = {
   },
 };
 
-function setHashOutput(hex: string) {
+function setHashOutput(hex: string): void {
   cryptoMock.createHash.mockReturnValue({
     update: vi.fn(),
     digest: vi.fn().mockReturnValue(hex),

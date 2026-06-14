@@ -17,6 +17,7 @@ import {
   errorResponse,
   executeHandler,
   withErrorHandling,
+  type ToolResponse,
 } from '../../src/handler-utils.js';
 import { ValidationError, MathMCPError } from '../../src/errors.js';
 
@@ -112,14 +113,14 @@ describe('handler-utils', () => {
 
   describe('withErrorHandling', () => {
     it('returns the handler response on success', async () => {
-      const handler = async (n: number) => successResponse(n * 2);
+      const handler = async (n: number): Promise<ToolResponse> => successResponse(n * 2);
       const r = await withErrorHandling(handler, 5);
       expect(r.isError).toBe(false);
       expect(JSON.parse(r.content[0].text)).toEqual({ result: 10 });
     });
 
     it('converts a thrown handler error into an error response', async () => {
-      const handler = async (_n: number) => { throw new ValidationError('nope'); };
+      const handler = async (_n: number): Promise<ToolResponse> => { throw new ValidationError('nope'); };
       const r = await withErrorHandling(handler, 0);
       expect(r.isError).toBe(true);
       const parsed = JSON.parse(r.content[0].text);
@@ -128,7 +129,7 @@ describe('handler-utils', () => {
     });
 
     it('handles non-Error throws (string) without crashing', async () => {
-      const handler = async () => { throw 'string-throw'; };
+      const handler = async (): Promise<ToolResponse> => { throw 'string-throw'; };
       const r = await withErrorHandling(handler, undefined);
       expect(r.isError).toBe(true);
       expect(JSON.parse(r.content[0].text).error).toBe('string-throw');

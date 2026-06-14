@@ -3,12 +3,11 @@
  * @description Unit tests for health check module
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   getHealthStatus,
   getLiveness,
   getReadiness,
-  type HealthResponse,
   type HealthStatus,
   type CheckStatus,
 } from '../../src/health.js';

@@ -12,7 +12,7 @@
  * @module security/dos-tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   handleEvaluate,
   handleMatrixOperations,
@@ -138,7 +138,7 @@ describe('DoS Protection', () => {
 
       try {
         await handleEvaluate({ expression: expr });
-      } catch (error: unknown) {
+      } catch {
         const elapsed = Date.now() - start;
         // Should either complete quickly or timeout
         expect(elapsed).toBeLessThan(32000);
@@ -227,7 +227,7 @@ describe('DoS Protection', () => {
       // Start many operations simultaneously
       const operations = Array(50)
         .fill(null)
-        .map((_, i) =>
+        .map(() =>
           handleMatrixOperations({
             operation: 'multiply',
             matrix_a: JSON.stringify([[1, 2], [3, 4]]),
@@ -534,7 +534,7 @@ describe('DoS Protection', () => {
       // Synthetic worker metadata (no real Worker thread needed)
       const workerStub = {
         id: 'worker-stub-0',
-        status: WorkerStatus.IDLE as WorkerStatus,
+        status: WorkerStatus.IDLE,
         worker: {} as never,
         tasksCompleted: 0,
         tasksFailed: 0,

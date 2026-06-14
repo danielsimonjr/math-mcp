@@ -8,8 +8,6 @@ import {
   BackpressureQueue,
   BackpressureStrategy,
   BackpressureError,
-  type BackpressureConfig,
-  type EnqueueOptions,
 } from '../../../src/workers/backpressure.js';
 import type { Task } from '../../../src/workers/worker-types.js';
 

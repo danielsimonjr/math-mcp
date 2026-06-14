@@ -1,0 +1,12 @@
+{
+  // Lint-only TypeScript project. The build tsconfig (tsconfig.json) excludes
+  // test/ so it does not emit test files into dist/, but the ESLint flat config
+  // applies typed linting to both src/ and test/. Typed linting requires every
+  // linted file to belong to a tsconfig "project"; pointing ESLint at the build
+  // tsconfig produced "file was not found in any of the provided project(s)"
+  // parse errors for all test files. This project widens "include" to cover the
+  // test tree for linting purposes only, without changing build output.
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

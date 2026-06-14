@@ -78,7 +78,7 @@ describe('utils', () => {
     });
 
     it('should work with async functions', async () => {
-      const asyncFn = async () => {
+      const asyncFn = async (): Promise<number> => {
         await new Promise(resolve => setTimeout(resolve, 10));
         return 42;
       };

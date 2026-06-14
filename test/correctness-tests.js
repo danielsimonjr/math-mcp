@@ -37,11 +37,23 @@ let passedTests = 0;
 let failedTests = 0;
 
 /**
- * Asserts two numbers are close within tolerance
+ * Asserts two numbers are close within tolerance.
+ *
+ * Uses a combined absolute + relative tolerance:
+ *   |actual - expected| <= tolerance * max(1, |expected|, |actual|)
+ *
+ * The relative scaling is required because the WASM and mathjs floating-point
+ * paths legitimately diverge in the last few bits. For a large-magnitude
+ * result like a determinant near 1e22, a single ULP is ~1e6, so a purely
+ * absolute threshold (e.g. 1e-6) can never hold even though the values agree
+ * to full double precision. Scaling by the operand magnitude makes the check
+ * a true relative-error test for large values while preserving the original
+ * absolute behavior for values with magnitude <= 1.
  */
 function assertClose(actual, expected, tolerance = FLOAT_TOLERANCE, context = '') {
   const diff = Math.abs(actual - expected);
-  if (diff > tolerance) {
+  const scale = Math.max(1, Math.abs(expected), Math.abs(actual));
+  if (diff > tolerance * scale) {
     throw new Error(
       `Assertion failed ${context}: Expected ${expected}, got ${actual} (diff: ${diff})`
     );

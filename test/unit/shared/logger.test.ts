@@ -77,11 +77,13 @@ describe('shared/logger', () => {
   });
 
   describe('logger.warn', () => {
+    // All levels write to stderr (console.error). stdout is reserved for the
+    // MCP JSON-RPC channel — any non-JSON byte on stdout corrupts the protocol.
     it('should log warning messages to stderr', () => {
       logger.warn('Test warning');
 
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-      const call = consoleWarnSpy.mock.calls[0][0];
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('WARN');
       expect(call).toContain('Test warning');
     });
@@ -89,7 +91,7 @@ describe('shared/logger', () => {
     it('should include metadata in warning logs', () => {
       logger.warn('Deprecation warning', { feature: 'old-api' });
 
-      const call = consoleWarnSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('WARN');
       expect(call).toContain('Deprecation warning');
       expect(call).toContain('"feature":"old-api"');
@@ -97,11 +99,11 @@ describe('shared/logger', () => {
   });
 
   describe('logger.info', () => {
-    it('should log info messages to stdout', () => {
+    it('should log info messages to stderr', () => {
       logger.info('Test info');
 
-      expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const call = consoleLogSpy.mock.calls[0][0];
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('INFO');
       expect(call).toContain('Test info');
     });
@@ -109,7 +111,7 @@ describe('shared/logger', () => {
     it('should include metadata in info logs', () => {
       logger.info('Server started', { port: 3000, version: '1.0.0' });
 
-      const call = consoleLogSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('INFO');
       expect(call).toContain('Server started');
       expect(call).toContain('"port":3000');
@@ -118,11 +120,11 @@ describe('shared/logger', () => {
   });
 
   describe('logger.debug', () => {
-    it('should log debug messages to stdout', () => {
+    it('should log debug messages to stderr', () => {
       logger.debug('Test debug');
 
-      expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-      const call = consoleLogSpy.mock.calls[0][0];
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('DEBUG');
       expect(call).toContain('Test debug');
     });
@@ -130,7 +132,7 @@ describe('shared/logger', () => {
     it('should include metadata in debug logs', () => {
       logger.debug('Processing request', { requestId: '123', operation: 'matrix_multiply' });
 
-      const call = consoleLogSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('DEBUG');
       expect(call).toContain('Processing request');
       expect(call).toContain('"requestId":"123"');
@@ -142,7 +144,7 @@ describe('shared/logger', () => {
     it('should format messages with timestamp, level, and message', () => {
       logger.info('Formatted message');
 
-      const call = consoleLogSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       // Format: [timestamp] LEVEL: message
       expect(call).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] INFO: Formatted message/);
     });
@@ -150,7 +152,7 @@ describe('shared/logger', () => {
     it('should handle empty metadata gracefully', () => {
       logger.info('No metadata', {});
 
-      const call = consoleLogSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('INFO');
       expect(call).toContain('No metadata');
       // Should have metadata object even if empty
@@ -163,7 +165,7 @@ describe('shared/logger', () => {
         settings: { theme: 'dark', notifications: true }
       });
 
-      const call = consoleLogSpy.mock.calls[0][0];
+      const call = consoleErrorSpy.mock.calls[0][0];
       expect(call).toContain('INFO');
       expect(call).toContain('Complex data');
       expect(call).toContain('"user"');
@@ -173,21 +175,23 @@ describe('shared/logger', () => {
   });
 
   describe('stream separation', () => {
+    // The logger routes every level to stderr; stdout (console.log) must never
+    // be touched so the MCP stdio JSON-RPC channel stays uncorrupted.
     it('should use stderr for error and warn levels', () => {
       logger.error('Error message');
       logger.warn('Warning message');
 
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
       expect(consoleLogSpy).not.toHaveBeenCalled();
     });
 
-    it('should use stdout for info and debug levels', () => {
+    it('should use stderr (not stdout) for info and debug levels', () => {
       logger.info('Info message');
       logger.debug('Debug message');
 
-      expect(consoleLogSpy).toHaveBeenCalledTimes(2);
-      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+      expect(consoleLogSpy).not.toHaveBeenCalled();
       expect(consoleWarnSpy).not.toHaveBeenCalled();
     });
   });

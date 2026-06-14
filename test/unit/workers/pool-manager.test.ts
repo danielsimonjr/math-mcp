@@ -3,7 +3,7 @@
  * @description Unit tests for WorkerPoolManager
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorkerPoolManager } from '../../../src/workers/pool-manager.js';
 import type { WorkerPoolConfig } from '../../../src/workers/worker-types.js';
 

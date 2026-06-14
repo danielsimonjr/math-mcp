@@ -28,7 +28,9 @@ export default [
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
-        project: './tsconfig.json',
+        // Lint-only project: the build tsconfig excludes test/, so typed
+        // linting of test files needs a project that includes them.
+        project: './tsconfig.eslint.json',
       },
       globals: {
         ...globals.node,

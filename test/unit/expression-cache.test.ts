@@ -458,8 +458,9 @@ describe('expression-cache', () => {
       const computeFn1 = vi.fn(() => 'result1');
       const computeFn2 = vi.fn(() => 'result2');
 
-      const result1 = getCachedExpression('expr', computeFn1, { x: 1 });
-      const result2 = getCachedExpression('expr', computeFn2, { y: 1 });
+      // Different scopes, same expression: each must be computed (not shared).
+      getCachedExpression('expr', computeFn1, { x: 1 });
+      getCachedExpression('expr', computeFn2, { y: 1 });
 
       // Different scopes, both computed
       expect(computeFn1).toHaveBeenCalledTimes(1);

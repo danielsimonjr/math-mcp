@@ -3,10 +3,9 @@
  * @description Unit tests for AccelerationRouter dependency injection
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AccelerationRouter } from '../../src/acceleration-router.js';
 import { WorkerPool } from '../../src/workers/worker-pool.js';
-import type { WorkerPoolConfig } from '../../src/workers/worker-types.js';
 
 describe('AccelerationRouter - Dependency Injection', () => {
   let router: AccelerationRouter;

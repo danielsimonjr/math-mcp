@@ -9,6 +9,53 @@ Documentation in reverse chronological order (latest first).
 
 ## [3.5.1] - 2026-05-01
 
+### Security
+- **Publish-prep dependency audit: resolved all high/critical advisories
+  at the root cause** (`package.json`, `package-lock.json`). `npm audit`
+  reported 3 vulnerabilities (1 moderate, 2 high):
+  - **esbuild (high, GHSA-gv7w-rqvm-qjhr + GHSA-g7r4-m6w7-qqqr)** reached
+    transitively via `tsx@4.21.0 → esbuild@0.27.7`. Bumped the `tsx`
+    devDependency to `^4.22.4` (pulls patched `esbuild ~0.28.0`) and added
+    a forward `esbuild: "^0.28.1"` override so every esbuild in the tree
+    (also under `vitest → vite`) resolves to the patched line.
+  - **brace-expansion (moderate, GHSA-jxxr-4gwj-5jf2)** at `5.0.5` via
+    `@typescript-eslint → minimatch@10`. Added a scoped override
+    `"minimatch@^10.0.0": { "brace-expansion": "^5.0.6" }` that pins only
+    the vulnerable 5.x branch to the patched `5.0.6`, leaving the
+    unaffected `1.x` consumers (minimatch@3 under eslint) untouched.
+  Regenerated `package-lock.json` to force the overrides tree-wide.
+  `npm audit` now reports **0 vulnerabilities**.
+
+### Fixed
+- **Tests: `correctness-tests.js` determinant checks failed on large
+  matrices** (`test/correctness-tests.js`). `assertClose` used a purely
+  *absolute* tolerance, so for large-magnitude results (e.g. random
+  determinants near 1e22, where one ULP is ~1e6) the legitimate last-bit
+  divergence between the WASM and mathjs paths blew past a fixed `1e-6`
+  threshold, failing ~46-48 of 232 tests nondeterministically. Switched
+  `assertClose` to a combined absolute + relative tolerance
+  (`|diff| <= tol * max(1, |expected|, |actual|)`), which is a true
+  relative-error test for large values while preserving the original
+  absolute behavior for magnitudes <= 1. All 232 correctness tests now
+  pass stably.
+- **Tests: stale `logger.test.ts` asserted the pre-3.1.1 stdout contract**
+  (`test/unit/shared/logger.test.ts`). The logger was correctly changed to
+  route **every** level to stderr (stdout is reserved for the MCP stdio
+  JSON-RPC channel), but the unit test still expected info/debug on
+  `console.log` and warn on `console.warn`, failing 11 cases. Updated the
+  assertions to the current stderr-only contract.
+
+### Build
+- **Lint: enabled typed ESLint on the test tree** (`eslint.config.js`,
+  new `tsconfig.eslint.json`). The flat config type-lints `test/**/*.ts`,
+  but pointed at the build `tsconfig.json` which *excludes* `test/`,
+  producing "file was not found in any of the provided project(s)" parse
+  errors for all 26 test files. Added a lint-only `tsconfig.eslint.json`
+  (extends the build config, includes `src` + `test`) referenced by the
+  ESLint `parserOptions.project`. Fixed the real lint errors this exposed
+  in test files (unused imports/vars, missing explicit return types, a
+  redundant `as WorkerStatus` cast). `npm run lint` is now error-free.
+
 ### Documentation
 - Add CycloneDX SBOM (sbom.json).
 

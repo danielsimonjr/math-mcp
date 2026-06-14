@@ -15,7 +15,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   RateLimiter,
-  RateLimiterConfig,
   withRateLimit,
   globalRateLimiter,
 } from '../../src/rate-limiter.js';
