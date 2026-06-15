@@ -11,7 +11,7 @@
     "test": "node --experimental-wasm-modules bindings/test.js"
   },
   "devDependencies": {
-    "@assemblyscript/loader": "^0.28.9",
+    "@assemblyscript/loader": "^0.28.19",
     "assemblyscript": "^0.28.9"
   }
 }
