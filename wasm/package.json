@@ -12,6 +12,6 @@
   },
   "devDependencies": {
     "@assemblyscript/loader": "^0.28.9",
-    "assemblyscript": "^0.28.9"
+    "assemblyscript": "^0.28.19"
   }
 }
