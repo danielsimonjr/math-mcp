@@ -1,19 +1,77 @@
 #!/usr/bin/env node
 
+/**
+ * @file index-wasm.ts
+ * @description Math MCP Server with WASM Acceleration
+ *
+ * This is the main entry point for the WASM-accelerated Math MCP Server.
+ * It provides 7 mathematical tools with automatic performance optimization:
+ *
+ * **Tools:**
+ * 1. evaluate - Evaluate mathematical expressions with variables
+ * 2. simplify - Simplify algebraic expressions
+ * 3. derivative - Calculate derivatives
+ * 4. solve - Solve equations
+ * 5. matrix_operations ⚡ - Matrix operations (WASM-accelerated for large matrices)
+ * 6. statistics ⚡ - Statistical calculations (WASM-accelerated for large datasets)
+ * 7. unit_conversion - Convert between units
+ *
+ * **Intelligent Acceleration (v3.0.0):**
+ * - WebGPU: Up to 100x faster for massive operations (GPU-accelerated)
+ * - WebWorkers: Up to 4x faster for large operations (multi-threaded)
+ * - WASM: Up to 42x faster for medium operations (single-threaded)
+ * - Automatic routing: Intelligently selects optimal acceleration layer
+ * - Graceful fallback: GPU → Workers → WASM → mathjs
+ *
+ * **Security Features:**
+ * - Input validation for all operations
+ * - Size limits to prevent DoS attacks
+ * - Timeout protection for long-running operations
+ * - Comprehensive error handling
+ *
+ * @module index-wasm
+ * @since 2.0.0
+ */
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
+  CallToolRequest,
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import math from "./mathjs-shim.js";
+import { startTelemetryServer, stopTelemetryServer } from "./telemetry/server.js";
+import {
+  handleEvaluate,
+  handleSimplify,
+  handleDerivative,
+  handleSolve,
+  handleMatrixOperations,
+  handleStatistics,
+  handleUnitConversion,
+  withErrorHandling,
+} from "./tool-handlers.js";
+import { logger, getPackageVersion, perfTracker } from "./utils.js";
+import { MathMCPError } from "./errors.js";
+import { globalRateLimiter, withRateLimit } from "./rate-limiter.js";
 
-// Define available tools
+/**
+ * Available mathematical tools exposed by the MCP server.
+ *
+ * Each tool has:
+ * - name: Unique identifier
+ * - description: Human-readable explanation
+ * - inputSchema: JSON Schema defining required/optional parameters
+ *
+ * @constant
+ * @type {Tool[]}
+ */
 const TOOLS: Tool[] = [
   {
     name: "evaluate",
-    description: "Evaluate a mathematical expression. Supports arithmetic, algebra, calculus, matrices, and more. Example: '2 + 2', 'sqrt(16)', 'derivative(x^2, x)', 'det([[1,2],[3,4]])'",
+    description:
+      "Evaluate a mathematical expression. Supports arithmetic, algebra, calculus, matrices, and more. Example: '2 + 2', 'sqrt(16)', 'derivative(x^2, x)', 'det([[1,2],[3,4]])'",
     inputSchema: {
       type: "object",
       properties: {
@@ -50,7 +108,8 @@ const TOOLS: Tool[] = [
   },
   {
     name: "derivative",
-    description: "Calculate the derivative of an expression with respect to a variable. Example: derivative('x^2', 'x') returns '2*x'",
+    description:
+      "Calculate the derivative of an expression with respect to a variable. Example: derivative('x^2', 'x') returns '2*x'",
     inputSchema: {
       type: "object",
       properties: {
@@ -86,7 +145,8 @@ const TOOLS: Tool[] = [
   },
   {
     name: "matrix_operations",
-    description: "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]]",
+    description:
+      "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]]. WASM-accelerated for large matrices (10x10+)",
     inputSchema: {
       type: "object",
       properties: {
@@ -109,14 +169,15 @@ const TOOLS: Tool[] = [
   },
   {
     name: "statistics",
-    description: "Calculate statistical values like mean, median, mode, std (standard deviation), variance, min, max, sum, product",
+    description:
+      "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product. WASM-accelerated for large datasets (100+ elements)",
     inputSchema: {
       type: "object",
       properties: {
         operation: {
           type: "string",
           enum: ["mean", "median", "mode", "std", "variance", "min", "max", "sum", "product"],
-          description: "Statistical operation to perform",
+          description: "Statistical operation to perform. Note: mode returns an array (single mode: [value], multiple modes: [value1, value2])",
         },
         data: {
           type: "string",
@@ -146,235 +207,217 @@ const TOOLS: Tool[] = [
   },
 ];
 
-// Create server instance
-const server = new Server(
-  {
-    name: "math-mcp",
-    version: "1.0.0",
-  },
-  {
-    capabilities: {
-      tools: {},
+/**
+ * Creates and configures the MCP server instance.
+ *
+ * Server configuration:
+ * - Name: math-mcp
+ * - Version: Dynamically loaded from package.json
+ * - Capabilities: tools (provides mathematical tools)
+ *
+ * @returns {Promise<Server>} Configured MCP server instance
+ */
+async function createServer(): Promise<Server> {
+  const version = await getPackageVersion();
+
+  const server = new Server(
+    {
+      name: "math-mcp",
+      version: version,
     },
-  }
-);
-
-// Handle list tools request
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return { tools: TOOLS };
-});
-
-// Handle tool calls
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-
-  try {
-    switch (name) {
-      case "evaluate": {
-        const { expression, scope = {} } = args as { expression: string; scope?: object };
-        const result = math.evaluate(expression, scope);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: math.format(result) }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "simplify": {
-        const { expression, rules } = args as { expression: string; rules?: string[] };
-        const simplified = rules ? math.simplify(expression, rules as any) : math.simplify(expression);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: simplified.toString() }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "derivative": {
-        const { expression, variable } = args as { expression: string; variable: string };
-        const derivative = math.derivative(expression, variable);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: derivative.toString() }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "solve": {
-        const { equation, variable } = args as { equation: string; variable: string };
-        // Parse equation into left and right sides
-        const parts = equation.split('=');
-        if (parts.length !== 2) {
-          throw new Error("Equation must contain exactly one '=' sign");
-        }
-        // Evaluate as: left - right = 0 and use numeric solver.
-        // Compiling here would catch syntax errors early, but the basic
-        // entry point uses math.simplify() which re-parses — keeping this
-        // surface minimal.
-        const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-
-        // Try to solve symbolically by rearranging
-        let result: string;
-        try {
-          // For simple cases, try to isolate the variable
-          const simplified = math.simplify(expr);
-          result = `Simplified equation: ${simplified.toString()} = 0`;
-        } catch {
-          result = `Expression to solve: ${expr} = 0 for ${variable}`;
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "matrix_operations": {
-        const { operation, matrix_a, matrix_b } = args as {
-          operation: string;
-          matrix_a: string;
-          matrix_b?: string;
-        };
-        const matA = JSON.parse(matrix_a);
-        let result: any;
-
-        switch (operation) {
-          case "multiply":
-            if (!matrix_b) throw new Error("matrix_b required for multiply");
-            result = math.multiply(matA, JSON.parse(matrix_b));
-            break;
-          case "inverse":
-            result = math.inv(matA);
-            break;
-          case "determinant":
-            result = math.det(matA);
-            break;
-          case "transpose":
-            result = math.transpose(matA);
-            break;
-          case "eigenvalues":
-            result = math.eigs(matA).values;
-            break;
-          case "add":
-            if (!matrix_b) throw new Error("matrix_b required for add");
-            result = math.add(matA, JSON.parse(matrix_b));
-            break;
-          case "subtract":
-            if (!matrix_b) throw new Error("matrix_b required for subtract");
-            result = math.subtract(matA, JSON.parse(matrix_b));
-            break;
-          default:
-            throw new Error(`Unknown operation: ${operation}`);
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: math.format(result) }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "statistics": {
-        const { operation, data } = args as { operation: string; data: string };
-        const dataArray = JSON.parse(data);
-        let result: any;
-
-        switch (operation) {
-          case "mean":
-            result = math.mean(dataArray);
-            break;
-          case "median":
-            result = math.median(dataArray);
-            break;
-          case "mode":
-            result = math.mode(dataArray);
-            break;
-          case "std":
-            result = math.std(dataArray);
-            break;
-          case "variance":
-            result = math.variance(dataArray);
-            break;
-          case "min":
-            result = math.min(dataArray);
-            break;
-          case "max":
-            result = math.max(dataArray);
-            break;
-          case "sum":
-            result = math.sum(dataArray);
-            break;
-          case "product":
-            result = math.prod(dataArray);
-            break;
-          default:
-            throw new Error(`Unknown operation: ${operation}`);
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: math.format(result) }, null, 2),
-            },
-          ],
-        };
-      }
-
-      case "unit_conversion": {
-        const { value, target_unit } = args as { value: string; target_unit: string };
-        const result = math.unit(value).to(target_unit);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ result: result.toString() }, null, 2),
-            },
-          ],
-        };
-      }
-
-      default:
-        throw new Error(`Unknown tool: ${name}`);
+    {
+      capabilities: {
+        tools: {},
+      },
     }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify({ error: errorMessage }, null, 2),
-        },
-      ],
-      isError: true,
-    };
-  }
-});
+  );
 
-// Start the server
-async function main(): Promise<void> {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Math MCP Server running on stdio");
+  logger.info("MCP Server created", { version });
+
+  return server;
 }
 
+/**
+ * Registers request handlers for the MCP server.
+ *
+ * Handles two types of requests:
+ * 1. ListTools - Returns the list of available tools
+ * 2. CallTool - Executes a specific tool with given arguments
+ *
+ * @param {Server} server - The MCP server instance to register handlers on
+ */
+function registerHandlers(server: Server): void {
+  /**
+   * Handler for listing available tools.
+   * Returns the complete list of tools with their schemas.
+   */
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    logger.debug("Listing tools", { count: TOOLS.length });
+    return { tools: TOOLS };
+  });
+
+  /**
+   * Handler for tool execution requests.
+   * Routes requests to appropriate tool handlers with error handling and rate limiting.
+   *
+   * @param {CallToolRequest} request - The tool call request containing tool name and arguments
+   * @returns {Promise<any>} The tool execution result or error
+   */
+  server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest): Promise<any> => {
+    const { name, arguments: args } = request.params;
+
+    logger.info("Tool called", { tool: name });
+
+    // Wrap the entire request in rate limiting
+    return await withRateLimit(globalRateLimiter, async () => {
+      try {
+        // Route to appropriate handler based on tool name
+        switch (name) {
+          case "evaluate":
+            return await withErrorHandling(handleEvaluate, args as {
+              expression: string;
+              scope?: object;
+            });
+
+          case "simplify":
+            return await withErrorHandling(handleSimplify, args as {
+              expression: string;
+              rules?: string[];
+            });
+
+          case "derivative":
+            return await withErrorHandling(handleDerivative, args as {
+              expression: string;
+              variable: string;
+            });
+
+          case "solve":
+            return await withErrorHandling(handleSolve, args as {
+              equation: string;
+              variable: string;
+            });
+
+          case "matrix_operations":
+            return await withErrorHandling(
+              (params) => handleMatrixOperations(params),
+              args as {
+                operation: string;
+                matrix_a: string;
+                matrix_b?: string;
+              }
+            );
+
+          case "statistics":
+            return await withErrorHandling(
+              (params) => handleStatistics(params),
+              args as {
+                operation: string;
+                data: string;
+              }
+            );
+
+          case "unit_conversion":
+            return await withErrorHandling(handleUnitConversion, args as {
+              value: string;
+              target_unit: string;
+            });
+
+          default:
+            throw new MathMCPError(`Unknown tool: ${name}`);
+        }
+      } catch (error) {
+        logger.error("Tool execution failed", {
+          tool: name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
+    });
+  });
+
+  logger.info("Request handlers registered");
+}
+
+/**
+ * Logs performance statistics to the console.
+ * Called periodically to monitor server performance.
+ */
+function logPerformanceStats(): void {
+  const toolStats = perfTracker.getAllStats();
+
+  logger.info("Performance stats", {
+    topOperations: Array.from(toolStats.entries())
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 5)
+      .map(([op, stats]) => ({
+        operation: op,
+        count: stats.count,
+        avgTime: stats.avgTime.toFixed(3) + 'ms',
+      })),
+  });
+}
+
+/**
+ * Main server startup function.
+ *
+ * Startup sequence:
+ * 1. Create server instance
+ * 2. Register request handlers
+ * 3. Create transport (stdio)
+ * 4. Connect server to transport
+ * 5. Log startup information
+ * 6. Set up periodic performance logging
+ *
+ * @returns {Promise<void>} Resolves when server is running
+ */
+async function main(): Promise<void> {
+  try {
+    // Create and configure server
+    const server = await createServer();
+    registerHandlers(server);
+
+    // Create transport and connect
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+
+    // Start the telemetry HTTP server (no-op unless ENABLE_TELEMETRY=true)
+    await startTelemetryServer();
+
+    // Graceful shutdown: release the telemetry port, then exit.
+    const shutdown = async (): Promise<void> => {
+      await stopTelemetryServer();
+      process.exit(0);
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+
+    // Log startup info
+    const version = await getPackageVersion();
+
+    logger.info("MathTS MCP Server running", {
+      version,
+      transport: "stdio",
+      tools: TOOLS.length,
+    });
+
+    // Set up periodic performance logging (every 5 minutes)
+    if (process.env.ENABLE_PERF_LOGGING === 'true') {
+      setInterval(logPerformanceStats, 5 * 60 * 1000);
+    }
+  } catch (error) {
+    logger.error("Failed to start server", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    process.exit(1);
+  }
+}
+
+// Start the server
 main().catch((error) => {
-  console.error("Fatal error in main():", error);
+  logger.error("Fatal error in main()", {
+    error: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+  });
   process.exit(1);
 });

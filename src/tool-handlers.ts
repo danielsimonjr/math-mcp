@@ -9,7 +9,7 @@
  * @since 2.1.0 (refactored 3.3.0)
  */
 
-import math from './mathjs-shim.js';
+import math from './math-engine.js';
 import {
   validateExpression,
   validateScope,
@@ -34,9 +34,6 @@ import {
 
 // Re-export for backward compatibility
 export { ToolResponse, withErrorHandling } from './handler-utils.js';
-export type { AccelerationWrapper } from './types.js';
-
-import type { AccelerationWrapper } from './types.js';
 
 // ============================================================================
 // Safe Expression Evaluation
@@ -193,75 +190,43 @@ export async function handleSolve(args: {
 
 type MatrixOp = 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
 
-/**
- * Helper: dispatch an accelerated operation with timeout + abort wiring.
- *
- * Creates an AbortController, passes the signal into the accelerated
- * operation (so the worker pool can cancel in-flight tasks), and wires
- * `withTimeout`'s `abortFn` to fire the abort on timeout. Without this
- * abort path, a timed-out operation only frees the *Promise wrapper* —
- * the underlying worker thread keeps consuming CPU and the worker slot
- * leaks, which is a DoS vector (worker pool exhaustion).
- */
-function runAccelerated<T>(
-  op: (signal: AbortSignal) => Promise<T>,
-  operationName: string
-): Promise<T> {
-  const ac = new AbortController();
-  return withTimeout(op(ac.signal), DEFAULT_OPERATION_TIMEOUT, operationName, () => ac.abort());
-}
-
-const matrixOps: Record<MatrixOp, (
-  a: number[][],
-  b: number[][] | undefined,
-  accel?: AccelerationWrapper
-) => Promise<unknown>> = {
-  multiply: async (a, b, accel) => {
+// Matrix operations call MathTS directly; MathTS performs its own internal
+// tier dispatch (WASM → ComputePool → JS) per operation/size, so math-mcp no
+// longer wires a bespoke acceleration layer.
+const matrixOps: Record<MatrixOp, (a: number[][], b: number[][] | undefined) => unknown> = {
+  multiply: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for multiply');
     validateMatrixCompatibility(a, b, 'multiply');
-    return accel
-      ? runAccelerated((sig) => accel.matrixMultiply(a, b, sig), 'matrix_multiply')
-      : math.multiply(a, b);
+    return math.multiply(a, b);
   },
-  inverse: async (a) => {
+  inverse: (a) => {
     validateSquareMatrix(a, 'matrix_a');
     return math.inv(a);
   },
-  determinant: async (a, _, accel) => {
+  determinant: (a) => {
     validateSquareMatrix(a, 'matrix_a');
-    return accel
-      ? runAccelerated((sig) => accel.matrixDeterminant(a, sig), 'matrix_determinant')
-      : math.det(a);
+    return math.det(a);
   },
-  transpose: async (a, _, accel) => {
-    return accel
-      ? runAccelerated((sig) => accel.matrixTranspose(a, sig), 'matrix_transpose')
-      : math.transpose(a);
-  },
-  eigenvalues: async (a) => {
+  transpose: (a) => math.transpose(a),
+  eigenvalues: (a) => {
     validateSquareMatrix(a, 'matrix_a');
     return math.eigs(a).values;
   },
-  add: async (a, b, accel) => {
+  add: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for add');
     validateMatrixCompatibility(a, b, 'add');
-    return accel
-      ? runAccelerated((sig) => accel.matrixAdd(a, b, sig), 'matrix_add')
-      : math.add(a, b);
+    return math.add(a, b);
   },
-  subtract: async (a, b, accel) => {
+  subtract: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for subtract');
     validateMatrixCompatibility(a, b, 'subtract');
-    return accel
-      ? runAccelerated((sig) => accel.matrixSubtract(a, b, sig), 'matrix_subtract')
-      : math.subtract(a, b);
+    return math.subtract(a, b);
   },
 };
 
 /** Performs matrix operations */
 export async function handleMatrixOperations(
-  args: { operation: string; matrix_a: string; matrix_b?: string },
-  accelerationWrapper?: AccelerationWrapper
+  args: { operation: string; matrix_a: string; matrix_b?: string }
 ): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(matrixOps) as MatrixOp[], 'operation');
 
@@ -276,7 +241,7 @@ export async function handleMatrixOperations(
         ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'), 'matrix_b')
         : undefined;
 
-      const result = await matrixOps[op](matrixA, matrixB, accelerationWrapper);
+      const result = matrixOps[op](matrixA, matrixB);
       return successResponse(math.format(result));
     }
   );
@@ -288,34 +253,24 @@ export async function handleMatrixOperations(
 
 type StatsOp = 'mean' | 'median' | 'mode' | 'std' | 'variance' | 'min' | 'max' | 'sum' | 'product';
 
-const statsOps: Record<StatsOp, (data: number[], accel?: AccelerationWrapper) => Promise<unknown>> = {
-  mean: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMean(data, sig), 'stats_mean') : math.mean(data),
-  median: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMedian(data, sig), 'stats_median') : math.median(data),
-  mode: async (data, accel) => {
-    const result = accel
-      ? await runAccelerated((sig) => accel.statsMode(data, sig), 'stats_mode')
-      : math.mode(data);
+const statsOps: Record<StatsOp, (data: number[]) => unknown> = {
+  mean: (data) => math.mean(data),
+  median: (data) => math.median(data),
+  mode: (data) => {
+    const result = math.mode(data);
     return Array.isArray(result) ? result : [result];
   },
-  std: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsStd(data, sig), 'stats_std') : math.std(data),
-  variance: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsVariance(data, sig), 'stats_variance') : math.variance(data),
-  min: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMin(data, sig), 'stats_min') : math.min(data),
-  max: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMax(data, sig), 'stats_max') : math.max(data),
-  sum: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsSum(data, sig), 'stats_sum') : math.sum(data),
-  product: async (data) => math.prod(data),
+  std: (data) => math.std(data),
+  variance: (data) => math.variance(data),
+  min: (data) => math.min(data),
+  max: (data) => math.max(data),
+  sum: (data) => math.sum(data),
+  product: (data) => math.prod(data),
 };
 
 /** Performs statistical calculations */
 export async function handleStatistics(
-  args: { operation: string; data: string },
-  accelerationWrapper?: AccelerationWrapper
+  args: { operation: string; data: string }
 ): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(statsOps) as StatsOp[], 'operation');
 
@@ -326,7 +281,7 @@ export async function handleStatistics(
         validateNumberArray(safeJsonParse(args.data, 'data'), 'data'),
         'data'
       );
-      const result = await statsOps[op](data, accelerationWrapper);
+      const result = statsOps[op](data);
       return successResponse(math.format(result));
     }
   );
