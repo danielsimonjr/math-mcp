@@ -199,7 +199,7 @@ const TOOLS: Tool[] = [
         },
         target_unit: {
           type: "string",
-          description: "Target unit to convert to (e.g., 'cm', 'mph')",
+          description: "Target unit to convert to (e.g., 'cm', 'mi/h'). Use compound forms like 'mi/h' / 'km/h' for speed; 'mph'/'kph'/'knot' are not recognized (same as mathjs).",
         },
       },
       required: ["value", "target_unit"],

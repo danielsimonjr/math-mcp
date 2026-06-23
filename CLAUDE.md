@@ -7,6 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 As of v4.0.0 the compute engine is **MathTS** (`@danielsimonjr/mathts-*`), not
 mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed.
 
+**v4.1.0** adds a real `solve`: exact roots for polynomials of degree ≤ 3
+(incl. complex) and a numeric real-root fallback for degree ≥ 4 / transcendental
+equations. It is self-contained in `tool-handlers.ts` (uses only `math.parse` +
+`math.derivative`), deliberately **not** the engine's `polynomialRoot` — that
+function's cubic branch fails through the compat `create(all)` instance because
+the injected `add` loses its variadic signature. See `CHANGELOG.md` (4.1.0).
+
 - **Engine:** `src/math-engine.ts` builds the instance via
   `@danielsimonjr/mathts-compat` `create(all)` (mathjs-compatible API). Every
   module imports its default export. mathjs and the hand-rolled acceleration
@@ -28,6 +35,12 @@ mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed
   - The old mathjs fork's custom astronomical/nautical/typography units
     (`lightyear`, `parsec`, `AU`, `nauticalMile`, `fathom`, …) are **not** in
     MathTS's unit set; the unit tool returns `Unit "X" not found.` for them.
+  - Speed shorthands `mph` / `kph` / `knot` are **not** units — use the compound
+    forms `mi/h` and `km/h` instead. This is **not** a cutover regression:
+    stock mathjs (verified against v15.0.0) also errors on these
+    (`Undefined symbol mph`); the `unit_conversion` description used to give
+    `'mph'` as an example, which never worked on either engine — corrected to
+    `'mi/h'` on 2026-06-23.
 - **The "WASM modules" build steps below are obsolete** (no `wasm/` project; no
   `build:wasm`/`build:all`/`generate:hashes`). Use `npm run build` (tsc) only.
 
