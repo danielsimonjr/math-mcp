@@ -7,6 +7,32 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-06-23
+
+### Changed (BREAKING — internal only; the 7 MCP tools keep identical I/O contracts)
+- **Compute engine swapped from mathjs to MathTS** (`@danielsimonjr/mathts-compat`,
+  a mathjs-API-compatible TypeScript rewrite). `src/mathjs-shim.ts` →
+  `src/math-engine.ts`; all tool handlers call MathTS directly.
+- **Deleted the hand-rolled acceleration stack** (acceleration router/adapter,
+  degradation policy, wasm-executor/wrapper/integrity, `gpu/`, `workers/`, the
+  `wasm/` AssemblyScript project) and **mathjs**. MathTS performs its own
+  internal tier dispatch (WASM → parallel → JS).
+- **Single entrypoint**: `dist/index.js` (was `dist/index-wasm.js`).
+- Dependencies are hybrid: local-linked to `../mathts` for development; pin
+  published `@danielsimonjr/mathts-*` versions for release.
+
+### Fixed (in MathTS, required by this migration)
+- compat array dispatch for multiply/add/subtract; transpose array-out;
+  std/variance sample (unbiased) default; Fraction `mul`/`sub`/`div` aliases
+  (affine unit conversions, e.g. celsius→fahrenheit); AS-WASM packaging.
+- Dense matmul perf: 800×800 multiply ~114s → ~21s (direct Float64Array loops).
+
+### Known limitations
+- Large dense-matrix ops are slower than the old WASM path (Rust WASM not yet
+  built/packaged); small matrices are fast. DoS is enforced by size limits.
+- The old fork's custom astronomical/nautical/typography units
+  (`lightyear`, `parsec`, `AU`, `nauticalMile`, …) are not in MathTS's unit set.
+
 ## [3.5.1] - 2026-05-01
 
 ### Security
