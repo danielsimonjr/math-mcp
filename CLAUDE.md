@@ -2,6 +2,35 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## v4 — MathTS engine (READ FIRST)
+
+As of v4.0.0 the compute engine is **MathTS** (`@danielsimonjr/mathts-*`), not
+mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed.
+
+- **Engine:** `src/math-engine.ts` builds the instance via
+  `@danielsimonjr/mathts-compat` `create(all)` (mathjs-compatible API). Every
+  module imports its default export. mathjs and the hand-rolled acceleration
+  stack (router/adapter/wasm-executor/gpu/workers, the `wasm/` AS project) were
+  **deleted** — MathTS does its own internal tier dispatch. Entry point is
+  `dist/index.js` (the old `index-wasm.js` is gone).
+- **Dependencies (hybrid):** dev uses local links —
+  `npm install file:../mathts/compat file:../mathts/matrix` — so changes to the
+  local `~/Github/mathts` monorepo are picked up after a `npm install` refresh +
+  `npm run build`. For a committed/published release, pin the published
+  `@danielsimonjr/mathts-*@^x.y.z` versions (after the MathTS packages are
+  published to npm) and `npm install`.
+- **Known limitations:**
+  - Large dense matrices are slower than the old WASM path: MathTS's JS matmul
+    does ~21s for 800×800 (was 114s before a perf fix; Rust WASM is not yet
+    built/packaged). Small matrices — the normal tool use — are fast. DoS for
+    huge inputs is enforced by **size limits**, not timeouts (synchronous JS
+    can't be interrupted).
+  - The old mathjs fork's custom astronomical/nautical/typography units
+    (`lightyear`, `parsec`, `AU`, `nauticalMile`, `fathom`, …) are **not** in
+    MathTS's unit set; the unit tool returns `Unit "X" not found.` for them.
+- **The "WASM modules" build steps below are obsolete** (no `wasm/` project; no
+  `build:wasm`/`build:all`/`generate:hashes`). Use `npm run build` (tsc) only.
+
 ## Build Commands
 
 ```bash
