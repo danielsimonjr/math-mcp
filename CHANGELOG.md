@@ -7,6 +7,22 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-06-23
+
+### Changed
+- No handler changes — but `math.solve` (in `@danielsimonjr/mathts-functions`
+  ≥ 0.2.10) now computes degree-≤3 roots via the engine's Algebra solver
+  `polynomialRoot` instead of hand-rolled formulas. Equation-solving output is
+  unchanged (verified: solver/correctness/integration suites green).
+
+### Fixed (diagnosis correction)
+- The 4.1.1 "Known issues" note blamed a forked-`typed-function` nested-dispatch
+  bug for `polynomialRoot`'s broken cubic. **That was a misdiagnosis** —
+  typed-function was correct. The real cause was MathTS's `add`/`multiply`
+  declaring only a `number`-variadic, so `add(number, Complex, Complex)` (which
+  `polynomialRoot`'s cubic performs) had no matching signature. Fixed upstream in
+  `@danielsimonjr/mathts-functions@0.2.10` (`'any, any, ...any'` variadics).
+
 ## [4.1.1] - 2026-06-23
 
 ### Changed
@@ -53,9 +69,11 @@ Documentation in reverse chronological order (latest first).
   (same as mathjs); use `mi/h` / `km/h`.
 
 ### Known issues
-- The engine's built-in `polynomialRoot` is reachable but its cubic branch fails
-  through the compat `create(all)` instance (the injected `add` lacks its
-  variadic signature). The solver does not use it; tracked for a future fix.
+- ~~The engine's built-in `polynomialRoot` cubic branch fails through the compat
+  `create(all)` instance (the injected `add` lacks its variadic signature).~~
+  **SUPERSEDED by 4.1.2** — this was a misdiagnosis; the real cause was MathTS's
+  `add`/`multiply` number-only variadic, fixed in functions 0.2.10.
+  `polynomialRoot` works and `solve` now uses it.
 
 ## [4.0.0] - 2026-06-23
 

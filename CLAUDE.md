@@ -9,15 +9,21 @@ mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed
 
 **v4.1.x** has a real `solve`: exact roots for polynomials of degree ≤ 3
 (incl. complex) and a numeric real-root fallback for degree ≥ 4 / transcendental
-equations. As of **4.1.1** the root-finding lives in MathTS as a first-class
-function — `math.solve(equation, variable)` in `@danielsimonjr/mathts-functions`
-(an enhancement of the existing CAS solver) — and `handleSolve` only validates
-input, detects degenerate cases, and formats the roots. It deliberately does
-**not** use the engine's `polynomialRoot`: that function's cubic branch is
-blocked by a forked-`typed-function` nested-dispatch bug (3-arg `add` fails
-under nested dispatch) **and** a missing `cbrt` `allRoots` (2-arg) signature.
-Those are tracked MathTS issues; `solve` sidesteps them with plain arithmetic.
-See `CHANGELOG.md` (4.1.1).
+equations. The root-finding lives in MathTS as a first-class function —
+`math.solve(equation, variable)` in `@danielsimonjr/mathts-functions` — and
+`handleSolve` only validates input, detects degenerate cases, and formats the
+roots. As of **4.1.2** (MathTS functions ≥ 0.2.10) `math.solve` delegates its
+degree-≤3 closed form to the engine's Algebra solver `polynomialRoot`.
+
+> **Correction (2026-06-23):** earlier notes here claimed `polynomialRoot` was
+> avoided due to a forked-`typed-function` "nested-dispatch" bug. **That was a
+> misdiagnosis.** typed-function was correct. The real bug was MathTS's
+> `add`/`multiply` declaring only a `number`-variadic, so `add(number, Complex,
+> Complex)` (polynomialRoot's `add(b, C, …)` with a complex cube root) had no
+> matching signature. Fixed in `@danielsimonjr/mathts-functions@0.2.10` by making
+> the variadics `'any, any, ...any'`; `polynomialRoot` now works and `solve` uses
+> it. (A minor, non-blocking gap remains: `cbrt(number, allRoots=true)` is still
+> unimplemented; the `Complex` allRoots path polynomialRoot needs works.)
 
 - **Engine:** `src/math-engine.ts` builds the instance via
   `@danielsimonjr/mathts-compat` `create(all)` (mathjs-compatible API). Every
