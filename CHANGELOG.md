@@ -7,6 +7,100 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-06-23
+
+### Changed
+- No handler changes — but `math.solve` (in `@danielsimonjr/mathts-functions`
+  ≥ 0.2.10) now computes degree-≤3 roots via the engine's Algebra solver
+  `polynomialRoot` instead of hand-rolled formulas. Equation-solving output is
+  unchanged (verified: solver/correctness/integration suites green).
+
+### Fixed (diagnosis correction)
+- The 4.1.1 "Known issues" note blamed a forked-`typed-function` nested-dispatch
+  bug for `polynomialRoot`'s broken cubic. **That was a misdiagnosis** —
+  typed-function was correct. The real cause was MathTS's `add`/`multiply`
+  declaring only a `number`-variadic, so `add(number, Complex, Complex)` (which
+  `polynomialRoot`'s cubic performs) had no matching signature. Fixed upstream in
+  `@danielsimonjr/mathts-functions@0.2.10` (`'any, any, ...any'` variadics).
+
+## [4.1.1] - 2026-06-23
+
+### Changed
+- **`solve` now delegates to MathTS's first-class `math.solve`** instead of
+  carrying its own root-finding. The bespoke analytic/numeric solver added in
+  4.1.0 was moved into MathTS (`@danielsimonjr/mathts-functions` `solve`, an
+  enhancement of the existing CAS solver), so the engine owns the math and this
+  handler only validates input, detects degenerate cases (identity /
+  contradiction / extra unknowns) for clear messaging, and formats the roots.
+- Behavioural refinements that follow from MathTS's solver: real roots are
+  sorted ascending (`x^2-4=0` → `x = -2, x = 2`) and repeated roots are deduped
+  (`x^2-2x+1=0` → `x = 1`).
+- Requires `@danielsimonjr/mathts-functions` ≥ 0.2.9 (adds `solve`).
+
+## [4.1.0] - 2026-06-23
+
+### Added
+- **Real equation solver.** `solve` now returns actual roots instead of the
+  rearranged `expr = 0` form:
+  - Polynomials of degree ≤ 3 (linear / quadratic / cubic) → exact closed-form
+    roots, including complex conjugates (`x^2 + 1 = 0` → `x = i, x = -i`;
+    `x^3 - 8 = 0` → `x = 2, x = -1 ± 1.732i`).
+  - Degree ≥ 4 and transcendental equations → numeric scan for **real** roots in
+    `[-100, 100]` (sign-change bisection + Newton polish), capped at 10 reported
+    roots (nearest the origin) with an "and N more" note for periodic equations.
+  - Identities (`x = x`), contradictions, and equations with extra unknowns are
+    reported honestly. Implemented self-contained in `tool-handlers.ts` (plain
+    TypeScript) using only `math.parse` + `math.derivative`; does not depend on
+    the engine's `polynomialRoot` (unreliable through the compat instance).
+- 13 solver unit tests (`test/unit/solver.test.ts`).
+
+### Fixed (in MathTS, surfaced by the solver work)
+- **compat `add`/`subtract`/`multiply` are now variadic** (fold over all args).
+  They previously dropped the 3rd+ operand silently (`add(1,2,3)` returned `3`).
+- **Complex arithmetic short/long-name aliases.** `core` Complex gained
+  `sub`/`mul`/`div`/`neg`; `functions` Complex gained
+  `subtract`/`multiply`/`divide`/`negate`, so a Complex of either origin
+  satisfies either calling convention (`sqrt(-4)` flowing into `subtract` no
+  longer throws `x.sub is not a function`).
+- **1-D matrix handling** in `MathJSDenseMatrix` (`toArray`/`map`/`forEach`/
+  `clone`) — `cbrt(x, true)` and similar 1-D results no longer throw
+  `row2 is not iterable`.
+- **`unit_conversion` description** corrected: `mph`/`kph`/`knot` are not units
+  (same as mathjs); use `mi/h` / `km/h`.
+
+### Known issues
+- ~~The engine's built-in `polynomialRoot` cubic branch fails through the compat
+  `create(all)` instance (the injected `add` lacks its variadic signature).~~
+  **SUPERSEDED by 4.1.2** — this was a misdiagnosis; the real cause was MathTS's
+  `add`/`multiply` number-only variadic, fixed in functions 0.2.10.
+  `polynomialRoot` works and `solve` now uses it.
+
+## [4.0.0] - 2026-06-23
+
+### Changed (BREAKING — internal only; the 7 MCP tools keep identical I/O contracts)
+- **Compute engine swapped from mathjs to MathTS** (`@danielsimonjr/mathts-compat`,
+  a mathjs-API-compatible TypeScript rewrite). `src/mathjs-shim.ts` →
+  `src/math-engine.ts`; all tool handlers call MathTS directly.
+- **Deleted the hand-rolled acceleration stack** (acceleration router/adapter,
+  degradation policy, wasm-executor/wrapper/integrity, `gpu/`, `workers/`, the
+  `wasm/` AssemblyScript project) and **mathjs**. MathTS performs its own
+  internal tier dispatch (WASM → parallel → JS).
+- **Single entrypoint**: `dist/index.js` (was `dist/index-wasm.js`).
+- Dependencies are hybrid: local-linked to `../mathts` for development; pin
+  published `@danielsimonjr/mathts-*` versions for release.
+
+### Fixed (in MathTS, required by this migration)
+- compat array dispatch for multiply/add/subtract; transpose array-out;
+  std/variance sample (unbiased) default; Fraction `mul`/`sub`/`div` aliases
+  (affine unit conversions, e.g. celsius→fahrenheit); AS-WASM packaging.
+- Dense matmul perf: 800×800 multiply ~114s → ~21s (direct Float64Array loops).
+
+### Known limitations
+- Large dense-matrix ops are slower than the old WASM path (Rust WASM not yet
+  built/packaged); small matrices are fast. DoS is enforced by size limits.
+- The old fork's custom astronomical/nautical/typography units
+  (`lightyear`, `parsec`, `AU`, `nauticalMile`, …) are not in MathTS's unit set.
+
 ## [3.5.1] - 2026-05-01
 
 ### Security

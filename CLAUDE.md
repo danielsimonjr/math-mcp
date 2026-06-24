@@ -2,6 +2,59 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## v4 — MathTS engine (READ FIRST)
+
+As of v4.0.0 the compute engine is **MathTS** (`@danielsimonjr/mathts-*`), not
+mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed.
+
+**v4.1.x** has a real `solve`: exact roots for polynomials of degree ≤ 3
+(incl. complex) and a numeric real-root fallback for degree ≥ 4 / transcendental
+equations. The root-finding lives in MathTS as a first-class function —
+`math.solve(equation, variable)` in `@danielsimonjr/mathts-functions` — and
+`handleSolve` only validates input, detects degenerate cases, and formats the
+roots. As of **4.1.2** (MathTS functions ≥ 0.2.10) `math.solve` delegates its
+degree-≤3 closed form to the engine's Algebra solver `polynomialRoot`.
+
+> **Correction (2026-06-23):** earlier notes here claimed `polynomialRoot` was
+> avoided due to a forked-`typed-function` "nested-dispatch" bug. **That was a
+> misdiagnosis.** typed-function was correct. The real bug was MathTS's
+> `add`/`multiply` declaring only a `number`-variadic, so `add(number, Complex,
+> Complex)` (polynomialRoot's `add(b, C, …)` with a complex cube root) had no
+> matching signature. Fixed in `@danielsimonjr/mathts-functions@0.2.10` by making
+> the variadics `'any, any, ...any'`; `polynomialRoot` now works and `solve` uses
+> it. (A minor, non-blocking gap remains: `cbrt(number, allRoots=true)` is still
+> unimplemented; the `Complex` allRoots path polynomialRoot needs works.)
+
+- **Engine:** `src/math-engine.ts` builds the instance via
+  `@danielsimonjr/mathts-compat` `create(all)` (mathjs-compatible API). Every
+  module imports its default export. mathjs and the hand-rolled acceleration
+  stack (router/adapter/wasm-executor/gpu/workers, the `wasm/` AS project) were
+  **deleted** — MathTS does its own internal tier dispatch. Entry point is
+  `dist/index.js` (the old `index-wasm.js` is gone).
+- **Dependencies (hybrid):** dev uses local links —
+  `npm install file:../mathts/compat file:../mathts/matrix` — so changes to the
+  local `~/Github/mathts` monorepo are picked up after a `npm install` refresh +
+  `npm run build`. For a committed/published release, pin the published
+  `@danielsimonjr/mathts-*@^x.y.z` versions (after the MathTS packages are
+  published to npm) and `npm install`.
+- **Known limitations:**
+  - Large dense matrices are slower than the old WASM path: MathTS's JS matmul
+    does ~21s for 800×800 (was 114s before a perf fix; Rust WASM is not yet
+    built/packaged). Small matrices — the normal tool use — are fast. DoS for
+    huge inputs is enforced by **size limits**, not timeouts (synchronous JS
+    can't be interrupted).
+  - The old mathjs fork's custom astronomical/nautical/typography units
+    (`lightyear`, `parsec`, `AU`, `nauticalMile`, `fathom`, …) are **not** in
+    MathTS's unit set; the unit tool returns `Unit "X" not found.` for them.
+  - Speed shorthands `mph` / `kph` / `knot` are **not** units — use the compound
+    forms `mi/h` and `km/h` instead. This is **not** a cutover regression:
+    stock mathjs (verified against v15.0.0) also errors on these
+    (`Undefined symbol mph`); the `unit_conversion` description used to give
+    `'mph'` as an example, which never worked on either engine — corrected to
+    `'mi/h'` on 2026-06-23.
+- **The "WASM modules" build steps below are obsolete** (no `wasm/` project; no
+  `build:wasm`/`build:all`/`generate:hashes`). Use `npm run build` (tsc) only.
+
 ## Build Commands
 
 ```bash

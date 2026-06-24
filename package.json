@@ -1,8 +1,8 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "3.5.1",
-  "description": "MCP server for mathematical computations with WASM acceleration - up to 42x faster, with comprehensive input validation, security features, rate limiting, and expression caching",
-  "main": "dist/index-wasm.js",
+  "version": "4.1.2",
+  "description": "MCP server for mathematical computations powered by MathTS (TypeScript rewrite of mathjs with native WASM/parallel acceleration), with comprehensive input validation, security features, rate limiting, and expression caching",
+  "main": "dist/index.js",
   "scripts": {
     "test": "node test/integration-test.js",
     "test:correctness": "node test/correctness-tests.js",
@@ -11,16 +11,10 @@
     "test:coverage": "vitest --coverage",
     "test:security": "vitest run test/security/",
     "build": "tsc",
-    "build:wasm": "cd wasm && npm run asbuild",
-    "build:all": "npm run build && npm run build:wasm",
-    "build:verify": "npm run verify:dist && npm run verify:wasm && npm run verify:hashes",
-    "verify:dist": "test -d dist && test -f dist/index-wasm.js || (echo 'Error: dist/ directory missing or incomplete' && exit 1)",
-    "verify:wasm": "test -f wasm/build/release.wasm && test -f wasm/build/debug.wasm || (echo 'Error: WASM modules not built' && exit 1)",
-    "verify:hashes": "test -f wasm-hashes.json || (echo 'Error: wasm-hashes.json missing' && exit 1)",
-    "generate:hashes": "node scripts/generate-wasm-hashes.js",
+    "verify:dist": "test -d dist && test -f dist/index.js || (echo 'Error: dist/ directory missing or incomplete' && exit 1)",
     "check:deps": "node scripts/check-dependencies.js",
-    "start": "node dist/index-wasm.js",
-    "dev": "tsc && node dist/index-wasm.js",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -28,7 +22,7 @@
     "type-check": "tsc --noEmit",
     "graph": "tsx tools/generate-dependency-graph.ts",
     "prepare": "husky install",
-    "prepublishOnly": "npm run type-check && npm run build:all && npm run generate:hashes && npm test && npm run build:verify"
+    "prepublishOnly": "npm run type-check && npm run build && npm test && npm run test:correctness"
   },
   "keywords": [
     "mcp",
@@ -56,8 +50,9 @@
   "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
+    "@danielsimonjr/mathts-compat": "file:../mathts/compat",
+    "@danielsimonjr/mathts-matrix": "file:../mathts/matrix",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "mathjs": "file:./vendor/mathjs-15.2.0.tgz",
     "prom-client": "^15.1.3"
   },
   "devDependencies": {
@@ -86,7 +81,7 @@
     ]
   },
   "bin": {
-    "math-mcp": "./dist/index-wasm.js"
+    "math-mcp": "./dist/index.js"
   },
   "engines": {
     "node": ">=18.0.0"

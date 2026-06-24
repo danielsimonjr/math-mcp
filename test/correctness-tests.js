@@ -9,22 +9,62 @@
  * @since 3.1.1
  */
 
-import * as mathNs from 'mathjs';
-const math = mathNs.default ?? mathNs;
-import {
-  matrixMultiply,
-  matrixDeterminant,
-  matrixTranspose,
-  matrixAdd,
-  matrixSubtract,
-  statsMean,
-  statsMedian,
-  statsStd,
-  statsVariance,
-  statsMin,
-  statsMax,
-  statsSum,
-} from '../dist/wasm-wrapper.js';
+// Subject under test: the MathTS compute engine (compat) behind every tool.
+import mathEngine from '../dist/math-engine.js';
+
+const matrixMultiply = async (a, b) => mathEngine.multiply(a, b);
+const matrixDeterminant = async (a) => mathEngine.det(a);
+const matrixTranspose = async (a) => mathEngine.transpose(a);
+const matrixAdd = async (a, b) => mathEngine.add(a, b);
+const matrixSubtract = async (a, b) => mathEngine.subtract(a, b);
+const statsMean = async (d) => mathEngine.mean(d);
+const statsMedian = async (d) => mathEngine.median(d);
+const statsStd = async (d) => mathEngine.std(d);
+const statsVariance = async (d) => mathEngine.variance(d);
+const statsMin = async (d) => mathEngine.min(d);
+const statsMax = async (d) => mathEngine.max(d);
+const statsSum = async (d) => mathEngine.sum(d);
+
+// Independent naive reference oracle (replaces the former mathjs oracle) so the
+// random-input correctness checks stay meaningful without a second library.
+// std/variance use sample (÷(N-1)) to match MathTS/mathjs unbiased defaults.
+const math = {
+  mean: (a) => a.reduce((s, x) => s + x, 0) / a.length,
+  sum: (a) => a.reduce((s, x) => s + x, 0),
+  min: (a) => Math.min(...a),
+  max: (a) => Math.max(...a),
+  variance: (a) => {
+    const m = math.mean(a);
+    return a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1);
+  },
+  std: (a) => Math.sqrt(math.variance(a)),
+  multiply: (A, B) => A.map((row) => B[0].map((_, j) => row.reduce((s, _v, k) => s + row[k] * B[k][j], 0))),
+  add: (A, B) => A.map((r, i) => r.map((v, j) => v + B[i][j])),
+  subtract: (A, B) => A.map((r, i) => r.map((v, j) => v - B[i][j])),
+  transpose: (A) => A[0].map((_, j) => A.map((r) => r[j])),
+  // O(n^3) determinant via Gaussian elimination with partial pivoting —
+  // the random det test uses up to 12x12, where naive cofactor (O(n!)) hangs.
+  det: (M) => {
+    const n = M.length;
+    const a = M.map((r) => r.slice());
+    let d = 1;
+    for (let i = 0; i < n; i++) {
+      let p = i;
+      for (let r = i + 1; r < n; r++) if (Math.abs(a[r][i]) > Math.abs(a[p][i])) p = r;
+      if (Math.abs(a[p][i]) < 1e-15) return 0;
+      if (p !== i) {
+        [a[i], a[p]] = [a[p], a[i]];
+        d = -d;
+      }
+      d *= a[i][i];
+      for (let r = i + 1; r < n; r++) {
+        const f = a[r][i] / a[i][i];
+        for (let c = i; c < n; c++) a[r][c] -= f * a[i][c];
+      }
+    }
+    return d;
+  },
+};
 
 // Test configuration
 const FLOAT_TOLERANCE = 1e-10;

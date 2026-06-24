@@ -55,7 +55,11 @@ describe('Bounds Testing', () => {
         const message = (error as Error).message;
         expect(message).not.toMatch(/size limit|too large/i);
       }
-    }, 30000);
+      // Generous timeout: a 1000x1000 transpose computes fast (~1.5s) but
+      // formatting a 1,000,000-element result to text is the slow part on the
+      // JS path (no Rust WASM yet). The assertion is about size-limit
+      // acceptance, not speed.
+    }, 90000);
 
     it('should handle single element matrix', async () => {
       const single = [[42]];

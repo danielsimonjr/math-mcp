@@ -9,7 +9,7 @@
  * @since 2.1.0 (refactored 3.3.0)
  */
 
-import math from './mathjs-shim.js';
+import math from './math-engine.js';
 import {
   validateExpression,
   validateScope,
@@ -34,9 +34,6 @@ import {
 
 // Re-export for backward compatibility
 export { ToolResponse, withErrorHandling } from './handler-utils.js';
-export type { AccelerationWrapper } from './types.js';
-
-import type { AccelerationWrapper } from './types.js';
 
 // ============================================================================
 // Safe Expression Evaluation
@@ -147,7 +144,70 @@ export async function handleDerivative(args: {
   );
 }
 
-/** Solves equations */
+// ============================================================================
+// Equation Solver
+//
+// Root-finding is delegated to MathTS's `math.solve` — a first-class algebra
+// function in @danielsimonjr/mathts-functions. It returns exact closed-form
+// roots for polynomials of degree <= 3 (including complex conjugates) and falls
+// back to a numeric real-root scan in [-100, 100] for degree >= 4 /
+// transcendental equations. This handler validates input, detects degenerate
+// cases for clearer messaging, and formats the roots for display.
+// ============================================================================
+
+const SOLVE_WINDOW_LO = -100;
+const SOLVE_WINDOW_HI = 100;
+const MAX_REPORTED_ROOTS = 10;
+
+interface ComplexRoot {
+  re: number;
+  im: number;
+}
+
+function isComplexRoot(r: unknown): r is ComplexRoot {
+  return typeof r === 'object' && r !== null && 'im' in r && 're' in r;
+}
+
+/** Format a real number: collapse near-integers, trim float noise. */
+function fmtReal(x: number): string {
+  if (!Number.isFinite(x)) return String(x);
+  const rounded = Math.round(x);
+  if (Math.abs(x - rounded) < 1e-9) return String(rounded);
+  return parseFloat(x.toFixed(10)).toString();
+}
+
+/** Format a root (real number or Complex) as a + bi. */
+function fmtRoot(r: number | ComplexRoot): string {
+  if (!isComplexRoot(r)) return fmtReal(r as number);
+  const reZero = Math.abs(r.re) < 1e-9;
+  const imAbs = Math.abs(r.im);
+  const imMag = Math.abs(imAbs - 1) < 1e-9 ? '' : fmtReal(imAbs);
+  if (reZero) return `${r.im < 0 ? '-' : ''}${imMag}i`;
+  return `${fmtReal(r.re)} ${r.im < 0 ? '-' : '+'} ${imMag}i`;
+}
+
+/**
+ * Cheap polynomial-degree check (Newton forward differences on the grid 0..4),
+ * used ONLY to choose the "exact" vs "numeric (bounded)" label honestly. It
+ * never computes roots — solving is delegated entirely to math.solve.
+ */
+function isLowDegreePolynomial(node: { evaluate: (s: Record<string, number>) => unknown }, varName: string): boolean {
+  const at = (x: number): number => {
+    try {
+      const v = node.evaluate({ [varName]: x });
+      return typeof v === 'number' ? v : NaN;
+    } catch {
+      return NaN;
+    }
+  };
+  const f = [0, 1, 2, 3, 4].map(at);
+  if (f.some((v) => !Number.isFinite(v))) return false;
+  const d4 = f[4] - 4 * f[3] + 6 * f[2] - 4 * f[1] + f[0];
+  const scale = Math.max(1, ...f.map((v) => Math.abs(v)));
+  return Math.abs(d4) <= 1e-7 * scale;
+}
+
+/** Solves equations (delegates root-finding to math.solve) */
 export async function handleSolve(args: {
   equation: string;
   variable: string;
@@ -162,27 +222,91 @@ export async function handleSolve(args: {
       if (parts.length !== 2) {
         throw new ValidationError("Equation must contain exactly one '=' sign");
       }
-
       const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
 
-      // Validate compilable — must run validateNode inside the cache
-      // compute closure so the same cache key (no-scope) used by
-      // handleEvaluate is never primed with an unvalidated compile.
-      getCachedExpression(expr, () => {
-        const node = math.parse(expr);
-        validateNode(node);
-        return node.compile();
-      });
+      // Parse + security-validate, priming the shared cache with a validated compile.
+      const node = math.parse(expr);
+      validateNode(node);
+      getCachedExpression(expr, () => node.compile());
 
-      let result: string;
-      try {
-        const simplified = math.simplify(expr);
-        result = `Simplified equation: ${simplified.toString()} = 0`;
-      } catch {
-        result = `Expression to solve: ${expr} = 0 for ${varName}`;
+      const standardForm = (): string => {
+        try {
+          return `${math.simplify(expr).toString()} = 0`;
+        } catch {
+          return `${expr} = 0`;
+        }
+      };
+
+      // Detect non-univariate / non-real-evaluable equations for a clear message.
+      const probe = (x: number): { ok: boolean; undefinedSymbol: boolean } => {
+        try {
+          const v = node.evaluate({ [varName]: x });
+          return { ok: typeof v === 'number' && Number.isFinite(v), undefinedSymbol: false };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          return {
+            ok: false,
+            undefinedSymbol: /undefined symbol|not defined|undefined variable/i.test(msg),
+          };
+        }
+      };
+      const probes = [0.37, 1.51, -0.91, 2.73].map(probe);
+      if (probes.every((p) => !p.ok)) {
+        if (probes.some((p) => p.undefinedSymbol)) {
+          return successResponse(
+            `Cannot solve: the equation contains unknowns other than '${varName}'. ` +
+              `This solver handles a single variable. Standard form: ${standardForm()}`
+          );
+        }
+        return successResponse(
+          `Could not evaluate the equation as a real function of '${varName}'. ` +
+            `Standard form: ${standardForm()}`
+        );
       }
 
-      return successResponse(result);
+      // Delegate root-finding to MathTS's first-class solver.
+      const roots = math.solve(expr, varName) as Array<number | ComplexRoot>;
+
+      if (roots.length === 0) {
+        // No isolated roots: identity (f ≡ 0) or contradiction (f ≡ const ≠ 0).
+        const samples = [0.37, 1.51, -0.91, 2.73].map(
+          (x) => node.evaluate({ [varName]: x }) as number
+        );
+        const allZero = samples.every((v) => Math.abs(v) < 1e-9);
+        return successResponse(
+          allZero
+            ? `All real numbers are solutions of ${varName} (identity).`
+            : `No solution: the equation reduces to a non-zero constant.`
+        );
+      }
+
+      const label = roots.length === 1 ? 'Solution' : 'Solutions';
+
+      // Degree <= 3 polynomials are solved exactly (closed form); everything else
+      // comes from the bounded numeric real-root scan — label honestly.
+      if (isLowDegreePolynomial(node, varName)) {
+        return successResponse(
+          `${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(', ')}`
+        );
+      }
+
+      const shown =
+        roots.length <= MAX_REPORTED_ROOTS
+          ? roots
+          : [...roots]
+              .sort((a, b) => Math.abs(a as number) - Math.abs(b as number))
+              .slice(0, MAX_REPORTED_ROOTS)
+              .sort((a, b) => (a as number) - (b as number));
+      const omitted = roots.length - shown.length;
+      let msg =
+        `${label} (numeric, real roots in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}]): ` +
+        shown.map((r) => `${varName} ≈ ${fmtRoot(r)}`).join(', ');
+      if (omitted > 0) {
+        msg +=
+          ` … and ${omitted} more (the equation has many roots in this window — ` +
+          `likely periodic; showing the first ${MAX_REPORTED_ROOTS}).`;
+      }
+      return successResponse(msg);
     }
   );
 }
@@ -193,75 +317,43 @@ export async function handleSolve(args: {
 
 type MatrixOp = 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
 
-/**
- * Helper: dispatch an accelerated operation with timeout + abort wiring.
- *
- * Creates an AbortController, passes the signal into the accelerated
- * operation (so the worker pool can cancel in-flight tasks), and wires
- * `withTimeout`'s `abortFn` to fire the abort on timeout. Without this
- * abort path, a timed-out operation only frees the *Promise wrapper* —
- * the underlying worker thread keeps consuming CPU and the worker slot
- * leaks, which is a DoS vector (worker pool exhaustion).
- */
-function runAccelerated<T>(
-  op: (signal: AbortSignal) => Promise<T>,
-  operationName: string
-): Promise<T> {
-  const ac = new AbortController();
-  return withTimeout(op(ac.signal), DEFAULT_OPERATION_TIMEOUT, operationName, () => ac.abort());
-}
-
-const matrixOps: Record<MatrixOp, (
-  a: number[][],
-  b: number[][] | undefined,
-  accel?: AccelerationWrapper
-) => Promise<unknown>> = {
-  multiply: async (a, b, accel) => {
+// Matrix operations call MathTS directly; MathTS performs its own internal
+// tier dispatch (WASM → ComputePool → JS) per operation/size, so math-mcp no
+// longer wires a bespoke acceleration layer.
+const matrixOps: Record<MatrixOp, (a: number[][], b: number[][] | undefined) => unknown> = {
+  multiply: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for multiply');
     validateMatrixCompatibility(a, b, 'multiply');
-    return accel
-      ? runAccelerated((sig) => accel.matrixMultiply(a, b, sig), 'matrix_multiply')
-      : math.multiply(a, b);
+    return math.multiply(a, b);
   },
-  inverse: async (a) => {
+  inverse: (a) => {
     validateSquareMatrix(a, 'matrix_a');
     return math.inv(a);
   },
-  determinant: async (a, _, accel) => {
+  determinant: (a) => {
     validateSquareMatrix(a, 'matrix_a');
-    return accel
-      ? runAccelerated((sig) => accel.matrixDeterminant(a, sig), 'matrix_determinant')
-      : math.det(a);
+    return math.det(a);
   },
-  transpose: async (a, _, accel) => {
-    return accel
-      ? runAccelerated((sig) => accel.matrixTranspose(a, sig), 'matrix_transpose')
-      : math.transpose(a);
-  },
-  eigenvalues: async (a) => {
+  transpose: (a) => math.transpose(a),
+  eigenvalues: (a) => {
     validateSquareMatrix(a, 'matrix_a');
     return math.eigs(a).values;
   },
-  add: async (a, b, accel) => {
+  add: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for add');
     validateMatrixCompatibility(a, b, 'add');
-    return accel
-      ? runAccelerated((sig) => accel.matrixAdd(a, b, sig), 'matrix_add')
-      : math.add(a, b);
+    return math.add(a, b);
   },
-  subtract: async (a, b, accel) => {
+  subtract: (a, b) => {
     if (!b) throw new ValidationError('matrix_b is required for subtract');
     validateMatrixCompatibility(a, b, 'subtract');
-    return accel
-      ? runAccelerated((sig) => accel.matrixSubtract(a, b, sig), 'matrix_subtract')
-      : math.subtract(a, b);
+    return math.subtract(a, b);
   },
 };
 
 /** Performs matrix operations */
 export async function handleMatrixOperations(
-  args: { operation: string; matrix_a: string; matrix_b?: string },
-  accelerationWrapper?: AccelerationWrapper
+  args: { operation: string; matrix_a: string; matrix_b?: string }
 ): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(matrixOps) as MatrixOp[], 'operation');
 
@@ -276,7 +368,7 @@ export async function handleMatrixOperations(
         ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'), 'matrix_b')
         : undefined;
 
-      const result = await matrixOps[op](matrixA, matrixB, accelerationWrapper);
+      const result = matrixOps[op](matrixA, matrixB);
       return successResponse(math.format(result));
     }
   );
@@ -288,34 +380,24 @@ export async function handleMatrixOperations(
 
 type StatsOp = 'mean' | 'median' | 'mode' | 'std' | 'variance' | 'min' | 'max' | 'sum' | 'product';
 
-const statsOps: Record<StatsOp, (data: number[], accel?: AccelerationWrapper) => Promise<unknown>> = {
-  mean: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMean(data, sig), 'stats_mean') : math.mean(data),
-  median: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMedian(data, sig), 'stats_median') : math.median(data),
-  mode: async (data, accel) => {
-    const result = accel
-      ? await runAccelerated((sig) => accel.statsMode(data, sig), 'stats_mode')
-      : math.mode(data);
+const statsOps: Record<StatsOp, (data: number[]) => unknown> = {
+  mean: (data) => math.mean(data),
+  median: (data) => math.median(data),
+  mode: (data) => {
+    const result = math.mode(data);
     return Array.isArray(result) ? result : [result];
   },
-  std: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsStd(data, sig), 'stats_std') : math.std(data),
-  variance: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsVariance(data, sig), 'stats_variance') : math.variance(data),
-  min: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMin(data, sig), 'stats_min') : math.min(data),
-  max: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsMax(data, sig), 'stats_max') : math.max(data),
-  sum: async (data, accel) =>
-    accel ? runAccelerated((sig) => accel.statsSum(data, sig), 'stats_sum') : math.sum(data),
-  product: async (data) => math.prod(data),
+  std: (data) => math.std(data),
+  variance: (data) => math.variance(data),
+  min: (data) => math.min(data),
+  max: (data) => math.max(data),
+  sum: (data) => math.sum(data),
+  product: (data) => math.prod(data),
 };
 
 /** Performs statistical calculations */
 export async function handleStatistics(
-  args: { operation: string; data: string },
-  accelerationWrapper?: AccelerationWrapper
+  args: { operation: string; data: string }
 ): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(statsOps) as StatsOp[], 'operation');
 
@@ -326,7 +408,7 @@ export async function handleStatistics(
         validateNumberArray(safeJsonParse(args.data, 'data'), 'data'),
         'data'
       );
-      const result = await statsOps[op](data, accelerationWrapper);
+      const result = statsOps[op](data);
       return successResponse(math.format(result));
     }
   );
