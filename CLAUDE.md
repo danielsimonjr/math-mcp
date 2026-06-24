@@ -7,12 +7,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 As of v4.0.0 the compute engine is **MathTS** (`@danielsimonjr/mathts-*`), not
 mathjs. The 7 MCP tools keep identical I/O contracts; only the internals changed.
 
-**v4.1.0** adds a real `solve`: exact roots for polynomials of degree ≤ 3
+**v4.1.x** has a real `solve`: exact roots for polynomials of degree ≤ 3
 (incl. complex) and a numeric real-root fallback for degree ≥ 4 / transcendental
-equations. It is self-contained in `tool-handlers.ts` (uses only `math.parse` +
-`math.derivative`), deliberately **not** the engine's `polynomialRoot` — that
-function's cubic branch fails through the compat `create(all)` instance because
-the injected `add` loses its variadic signature. See `CHANGELOG.md` (4.1.0).
+equations. As of **4.1.1** the root-finding lives in MathTS as a first-class
+function — `math.solve(equation, variable)` in `@danielsimonjr/mathts-functions`
+(an enhancement of the existing CAS solver) — and `handleSolve` only validates
+input, detects degenerate cases, and formats the roots. It deliberately does
+**not** use the engine's `polynomialRoot`: that function's cubic branch is
+blocked by a forked-`typed-function` nested-dispatch bug (3-arg `add` fails
+under nested dispatch) **and** a missing `cbrt` `allRoots` (2-arg) signature.
+Those are tracked MathTS issues; `solve` sidesteps them with plain arithmetic.
+See `CHANGELOG.md` (4.1.1).
 
 - **Engine:** `src/math-engine.ts` builds the instance via
   `@danielsimonjr/mathts-compat` `create(all)` (mathjs-compatible API). Every

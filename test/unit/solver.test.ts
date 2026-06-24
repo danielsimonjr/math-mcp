@@ -25,12 +25,12 @@ describe('handleSolve — analytic (polynomial degree <= 3)', () => {
     expect(await solve('2*x - 10 = 0')).toBe('Solution: x = 5');
   });
 
-  it('solves quadratics with two real roots', async () => {
-    expect(await solve('x^2 - 4 = 0')).toBe('Solutions: x = 2, x = -2');
+  it('solves quadratics with two real roots (sorted ascending)', async () => {
+    expect(await solve('x^2 - 4 = 0')).toBe('Solutions: x = -2, x = 2');
   });
 
-  it('solves quadratics with a repeated real root', async () => {
-    expect(await solve('x^2 - 2*x + 1 = 0')).toBe('Solutions: x = 1, x = 1');
+  it('solves quadratics with a repeated real root (deduped)', async () => {
+    expect(await solve('x^2 - 2*x + 1 = 0')).toBe('Solution: x = 1');
   });
 
   it('solves quadratics with complex conjugate roots', async () => {

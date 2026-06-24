@@ -7,6 +7,20 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-06-23
+
+### Changed
+- **`solve` now delegates to MathTS's first-class `math.solve`** instead of
+  carrying its own root-finding. The bespoke analytic/numeric solver added in
+  4.1.0 was moved into MathTS (`@danielsimonjr/mathts-functions` `solve`, an
+  enhancement of the existing CAS solver), so the engine owns the math and this
+  handler only validates input, detects degenerate cases (identity /
+  contradiction / extra unknowns) for clear messaging, and formats the roots.
+- Behavioural refinements that follow from MathTS's solver: real roots are
+  sorted ascending (`x^2-4=0` → `x = -2, x = 2`) and repeated roots are deduped
+  (`x^2-2x+1=0` → `x = 1`).
+- Requires `@danielsimonjr/mathts-functions` ≥ 0.2.9 (adds `solve`).
+
 ## [4.1.0] - 2026-06-23
 
 ### Added

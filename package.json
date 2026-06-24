@@ -1,6 +1,6 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "MCP server for mathematical computations powered by MathTS (TypeScript rewrite of mathjs with native WASM/parallel acceleration), with comprehensive input validation, security features, rate limiting, and expression caching",
   "main": "dist/index.js",
   "scripts": {

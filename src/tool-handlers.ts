@@ -145,27 +145,28 @@ export async function handleDerivative(args: {
 }
 
 // ============================================================================
-// Equation Solver (self-contained)
+// Equation Solver
 //
-// MathTS/mathjs provide no general symbolic solver, and the engine's built-in
-// `polynomialRoot` is not reliably reachable through the compat instance (its
-// cubic branch needs a variadic `add` that create(all) does not wire into the
-// dependency graph). So solving is done here in plain TypeScript:
-//   • polynomials of degree <= 3   -> exact closed-form roots (real + complex)
-//   • degree >= 4 / transcendental -> numeric real-root scan over a bounded
-//     window (sign-change bisection + Newton polish)
-// Coefficient extraction uses only `math.parse` + `math.derivative` (verified
-// working); no dependence on the engine's variadic arithmetic or Complex type.
+// Root-finding is delegated to MathTS's `math.solve` — a first-class algebra
+// function in @danielsimonjr/mathts-functions. It returns exact closed-form
+// roots for polynomials of degree <= 3 (including complex conjugates) and falls
+// back to a numeric real-root scan in [-100, 100] for degree >= 4 /
+// transcendental equations. This handler validates input, detects degenerate
+// cases for clearer messaging, and formats the roots for display.
 // ============================================================================
 
-interface SolverRoot {
+const SOLVE_WINDOW_LO = -100;
+const SOLVE_WINDOW_HI = 100;
+const MAX_REPORTED_ROOTS = 10;
+
+interface ComplexRoot {
   re: number;
   im: number;
 }
 
-const SOLVE_WINDOW_LO = -100;
-const SOLVE_WINDOW_HI = 100;
-const SOLVE_SCAN_STEP = 0.05;
+function isComplexRoot(r: unknown): r is ComplexRoot {
+  return typeof r === 'object' && r !== null && 'im' in r && 're' in r;
+}
 
 /** Format a real number: collapse near-integers, trim float noise. */
 function fmtReal(x: number): string {
@@ -175,193 +176,38 @@ function fmtReal(x: number): string {
   return parseFloat(x.toFixed(10)).toString();
 }
 
-/** Format a (possibly complex) root as a + bi. */
-function fmtRoot(root: SolverRoot): string {
-  const reZero = Math.abs(root.re) < 1e-9;
-  const imZero = Math.abs(root.im) < 1e-9;
-  if (imZero) return fmtReal(root.re);
-  const imAbs = Math.abs(root.im);
+/** Format a root (real number or Complex) as a + bi. */
+function fmtRoot(r: number | ComplexRoot): string {
+  if (!isComplexRoot(r)) return fmtReal(r as number);
+  const reZero = Math.abs(r.re) < 1e-9;
+  const imAbs = Math.abs(r.im);
   const imMag = Math.abs(imAbs - 1) < 1e-9 ? '' : fmtReal(imAbs);
-  if (reZero) return `${root.im < 0 ? '-' : ''}${imMag}i`;
-  return `${fmtReal(root.re)} ${root.im < 0 ? '-' : '+'} ${imMag}i`;
-}
-
-/** Real-valued cube root (handles negatives). */
-function realCbrt(x: number): number {
-  return x < 0 ? -Math.pow(-x, 1 / 3) : Math.pow(x, 1 / 3);
-}
-
-/** Exact roots of a x^2 + b x + c (a != 0). */
-function solveQuadratic(a: number, b: number, c: number): SolverRoot[] {
-  const disc = b * b - 4 * a * c;
-  if (disc >= 0) {
-    const s = Math.sqrt(disc);
-    return [
-      { re: (-b + s) / (2 * a), im: 0 },
-      { re: (-b - s) / (2 * a), im: 0 },
-    ];
-  }
-  const s = Math.sqrt(-disc);
-  return [
-    { re: -b / (2 * a), im: s / (2 * a) },
-    { re: -b / (2 * a), im: -s / (2 * a) },
-  ];
-}
-
-/** Exact roots of a x^3 + b x^2 + c x + d (a != 0), via Cardano/trig. */
-function solveCubic(a: number, b: number, c: number, d: number): SolverRoot[] {
-  const B = b / a;
-  const C = c / a;
-  const D = d / a;
-  // Depressed cubic t^3 + p t + q with substitution x = t - B/3.
-  const p = C - (B * B) / 3;
-  const q = (2 * B * B * B) / 27 - (B * C) / 3 + D;
-  const shift = -B / 3;
-  const disc = (q * q) / 4 + (p * p * p) / 27;
-
-  if (Math.abs(disc) < 1e-12) {
-    // Repeated real roots.
-    if (Math.abs(p) < 1e-12 && Math.abs(q) < 1e-12) {
-      return [{ re: shift, im: 0 }];
-    }
-    const u = realCbrt(-q / 2);
-    return [
-      { re: 2 * u + shift, im: 0 },
-      { re: -u + shift, im: 0 },
-    ];
-  }
-
-  if (disc > 0) {
-    // One real root, two complex conjugates.
-    const sq = Math.sqrt(disc);
-    const u = realCbrt(-q / 2 + sq);
-    const v = realCbrt(-q / 2 - sq);
-    const realPart = -(u + v) / 2 + shift;
-    const imagPart = ((u - v) * Math.sqrt(3)) / 2;
-    return [
-      { re: u + v + shift, im: 0 },
-      { re: realPart, im: imagPart },
-      { re: realPart, im: -imagPart },
-    ];
-  }
-
-  // disc < 0: three distinct real roots (trigonometric form, p < 0 here).
-  const m = 2 * Math.sqrt(-p / 3);
-  let arg = ((3 * q) / (2 * p)) * Math.sqrt(-3 / p);
-  arg = Math.max(-1, Math.min(1, arg));
-  const theta = Math.acos(arg) / 3;
-  return [0, 1, 2].map((k) => ({
-    re: m * Math.cos(theta - (2 * Math.PI * k) / 3) + shift,
-    im: 0,
-  }));
+  if (reZero) return `${r.im < 0 ? '-' : ''}${imMag}i`;
+  return `${fmtReal(r.re)} ${r.im < 0 ? '-' : '+'} ${imMag}i`;
 }
 
 /**
- * Try to read polynomial coefficients [c0, c1, c2, c3] of f in `varName`,
- * confirming degree <= 3. Returns null if f is not a polynomial of degree <= 3
- * (or derivatives can't be taken). Uses Taylor coefficients f^(k)(0)/k! and
- * validates by reconstructing f at sample points.
+ * Cheap polynomial-degree check (Newton forward differences on the grid 0..4),
+ * used ONLY to choose the "exact" vs "numeric (bounded)" label honestly. It
+ * never computes roots — solving is delegated entirely to math.solve.
  */
-function extractPolyCoeffs(exprNode: unknown, varName: string): number[] | null {
-  const evalAt = (node: any, x: number): number => {
-    const v = node.evaluate({ [varName]: x });
-    return typeof v === 'number' ? v : NaN;
-  };
-  try {
-    const derivs: any[] = [exprNode];
-    for (let k = 1; k <= 4; k++) {
-      derivs.push(math.derivative(derivs[k - 1], varName));
-    }
-    // The 4th derivative must vanish everywhere for degree <= 3.
-    for (const x of [-3.1, -1.3, 0.7, 2.9, 5.3]) {
-      if (Math.abs(evalAt(derivs[4], x)) > 1e-6) return null;
-    }
-    const fact = [1, 1, 2, 6];
-    const coeffs = [0, 1, 2, 3].map((k) => evalAt(derivs[k], 0) / fact[k]);
-    if (coeffs.some((c) => !Number.isFinite(c))) return null;
-    // Validate reconstruction against the original function.
-    for (const x of [-2.5, -0.7, 1.3, 3.1, 4.7]) {
-      const recon = coeffs[0] + coeffs[1] * x + coeffs[2] * x * x + coeffs[3] * x * x * x;
-      const actual = evalAt(exprNode, x);
-      if (!Number.isFinite(actual)) return null;
-      const tol = 1e-6 * (1 + Math.abs(actual));
-      if (Math.abs(recon - actual) > tol) return null;
-    }
-    return coeffs;
-  } catch {
-    return null;
-  }
-}
-
-/** Numeric real-root finder over the bounded window (sign change + bisection + Newton). */
-function numericRealRoots(exprNode: unknown, varName: string): number[] {
-  const f = (x: number): number => {
+function isLowDegreePolynomial(node: { evaluate: (s: Record<string, number>) => unknown }, varName: string): boolean {
+  const at = (x: number): number => {
     try {
-      const v = (exprNode as any).evaluate({ [varName]: x });
+      const v = node.evaluate({ [varName]: x });
       return typeof v === 'number' ? v : NaN;
     } catch {
       return NaN;
     }
   };
-  const found: number[] = [];
-  const addRoot = (r: number): void => {
-    if (!Number.isFinite(r) || r < SOLVE_WINDOW_LO - 1 || r > SOLVE_WINDOW_HI + 1) return;
-    if (found.some((e) => Math.abs(e - r) < 1e-6)) return;
-    found.push(r);
-  };
-  const newton = (x0: number): number => {
-    let x = x0;
-    for (let i = 0; i < 20; i++) {
-      const fx = f(x);
-      if (!Number.isFinite(fx)) break;
-      const h = 1e-6 * (1 + Math.abs(x));
-      const dfx = (f(x + h) - f(x - h)) / (2 * h);
-      if (!Number.isFinite(dfx) || Math.abs(dfx) < 1e-14) break;
-      const next = x - fx / dfx;
-      if (!Number.isFinite(next)) break;
-      if (Math.abs(next - x) < 1e-12) return next;
-      x = next;
-    }
-    return x;
-  };
-
-  let prevX = SOLVE_WINDOW_LO;
-  let prevY = f(prevX);
-  for (let x = SOLVE_WINDOW_LO + SOLVE_SCAN_STEP; x <= SOLVE_WINDOW_HI + 1e-9; x += SOLVE_SCAN_STEP) {
-    const y = f(x);
-    if (prevY === 0) addRoot(prevX);
-    if (Number.isFinite(prevY) && Number.isFinite(y) && prevY * y < 0) {
-      let a = prevX;
-      let b = x;
-      let fa = prevY;
-      for (let i = 0; i < 100 && Math.abs(b - a) > 1e-12; i++) {
-        const mid = (a + b) / 2;
-        const fm = f(mid);
-        if (fm === 0) {
-          a = mid;
-          b = mid;
-          break;
-        }
-        if (fa * fm < 0) {
-          b = mid;
-        } else {
-          a = mid;
-          fa = fm;
-        }
-      }
-      const refined = newton((a + b) / 2);
-      // Accept the Newton result only if it stays a root and inside the bracket-ish region.
-      addRoot(Math.abs(f(refined)) <= Math.abs(f((a + b) / 2)) + 1e-9 ? refined : (a + b) / 2);
-    }
-    prevX = x;
-    prevY = y;
-  }
-  if (prevY === 0) addRoot(prevX);
-  found.sort((p, q) => p - q);
-  return found;
+  const f = [0, 1, 2, 3, 4].map(at);
+  if (f.some((v) => !Number.isFinite(v))) return false;
+  const d4 = f[4] - 4 * f[3] + 6 * f[2] - 4 * f[1] + f[0];
+  const scale = Math.max(1, ...f.map((v) => Math.abs(v)));
+  return Math.abs(d4) <= 1e-7 * scale;
 }
 
-/** Solves equations */
+/** Solves equations (delegates root-finding to math.solve) */
 export async function handleSolve(args: {
   equation: string;
   variable: string;
@@ -376,12 +222,9 @@ export async function handleSolve(args: {
       if (parts.length !== 2) {
         throw new ValidationError("Equation must contain exactly one '=' sign");
       }
-
       const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
 
-      // Parse + security-validate, and prime the shared expression cache with a
-      // validated compile (same key handleEvaluate uses) so it is never primed
-      // with an unvalidated compile.
+      // Parse + security-validate, priming the shared cache with a validated compile.
       const node = math.parse(expr);
       validateNode(node);
       getCachedExpression(expr, () => node.compile());
@@ -394,16 +237,17 @@ export async function handleSolve(args: {
         }
       };
 
-      // Detect free variables other than the one being solved for: if the
-      // equation cannot be evaluated numerically in `varName` alone, we can't
-      // solve it — report the standard form instead.
+      // Detect non-univariate / non-real-evaluable equations for a clear message.
       const probe = (x: number): { ok: boolean; undefinedSymbol: boolean } => {
         try {
           const v = node.evaluate({ [varName]: x });
           return { ok: typeof v === 'number' && Number.isFinite(v), undefinedSymbol: false };
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          return { ok: false, undefinedSymbol: /undefined symbol|not defined|undefined variable/i.test(msg) };
+          return {
+            ok: false,
+            undefinedSymbol: /undefined symbol|not defined|undefined variable/i.test(msg),
+          };
         }
       };
       const probes = [0.37, 1.51, -0.91, 2.73].map(probe);
@@ -420,64 +264,49 @@ export async function handleSolve(args: {
         );
       }
 
-      // --- Analytic path: polynomial of degree <= 3 ------------------------
-      const coeffs = extractPolyCoeffs(node, varName);
-      if (coeffs) {
-        const [c0, c1, c2, c3] = coeffs;
-        const eps = 1e-9;
-        let degree = 0;
-        if (Math.abs(c3) > eps) degree = 3;
-        else if (Math.abs(c2) > eps) degree = 2;
-        else if (Math.abs(c1) > eps) degree = 1;
+      // Delegate root-finding to MathTS's first-class solver.
+      const roots = math.solve(expr, varName) as Array<number | ComplexRoot>;
 
-        if (degree === 0) {
-          return successResponse(
-            Math.abs(c0) < eps
-              ? `All real numbers are solutions of ${varName} (identity).`
-              : `No solution: the equation reduces to a non-zero constant.`
-          );
-        }
-
-        let roots: SolverRoot[];
-        if (degree === 1) roots = [{ re: -c0 / c1, im: 0 }];
-        else if (degree === 2) roots = solveQuadratic(c2, c1, c0);
-        else roots = solveCubic(c3, c2, c1, c0);
-
-        const label = roots.length === 1 ? 'Solution' : 'Solutions';
-        return successResponse(`${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(', ')}`);
+      if (roots.length === 0) {
+        // No isolated roots: identity (f ≡ 0) or contradiction (f ≡ const ≠ 0).
+        const samples = [0.37, 1.51, -0.91, 2.73].map(
+          (x) => node.evaluate({ [varName]: x }) as number
+        );
+        const allZero = samples.every((v) => Math.abs(v) < 1e-9);
+        return successResponse(
+          allZero
+            ? `All real numbers are solutions of ${varName} (identity).`
+            : `No solution: the equation reduces to a non-zero constant.`
+        );
       }
 
-      // --- Numeric path: degree >= 4 or transcendental ---------------------
-      const numeric = numericRealRoots(node, varName);
-      if (numeric.length > 0) {
-        const MAX_REPORTED = 10;
-        const label = numeric.length === 1 ? 'Solution' : 'Solutions';
-        // When capping, prefer the roots nearest the origin (most useful for
-        // periodic equations), then present them in ascending order.
-        const shown =
-          numeric.length <= MAX_REPORTED
-            ? numeric
-            : [...numeric]
-                .sort((a, b) => Math.abs(a) - Math.abs(b))
-                .slice(0, MAX_REPORTED)
-                .sort((a, b) => a - b);
-        const omitted = numeric.length - shown.length;
-        let msg =
-          `${label} (numeric, real roots in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}]): ` +
-          shown.map((r) => `${varName} ≈ ${fmtReal(r)}`).join(', ');
-        if (omitted > 0) {
-          msg +=
-            ` … and ${omitted} more (the equation has many roots in this window — ` +
-            `likely periodic; showing the first ${MAX_REPORTED}).`;
-        }
-        return successResponse(msg);
+      const label = roots.length === 1 ? 'Solution' : 'Solutions';
+
+      // Degree <= 3 polynomials are solved exactly (closed form); everything else
+      // comes from the bounded numeric real-root scan — label honestly.
+      if (isLowDegreePolynomial(node, varName)) {
+        return successResponse(
+          `${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(', ')}`
+        );
       }
 
-      return successResponse(
-        `No real solutions found in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}] ` +
-          `(complex or out-of-range roots are not searched for non-polynomial equations). ` +
-          `Standard form: ${standardForm()}`
-      );
+      const shown =
+        roots.length <= MAX_REPORTED_ROOTS
+          ? roots
+          : [...roots]
+              .sort((a, b) => Math.abs(a as number) - Math.abs(b as number))
+              .slice(0, MAX_REPORTED_ROOTS)
+              .sort((a, b) => (a as number) - (b as number));
+      const omitted = roots.length - shown.length;
+      let msg =
+        `${label} (numeric, real roots in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}]): ` +
+        shown.map((r) => `${varName} ≈ ${fmtRoot(r)}`).join(', ');
+      if (omitted > 0) {
+        msg +=
+          ` … and ${omitted} more (the equation has many roots in this window — ` +
+          `likely periodic; showing the first ${MAX_REPORTED_ROOTS}).`;
+      }
+      return successResponse(msg);
     }
   );
 }
