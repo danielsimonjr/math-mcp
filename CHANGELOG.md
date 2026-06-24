@@ -7,6 +7,17 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.3] - 2026-06-24
+
+### Changed
+- **Pin MathTS dependencies to published npm versions** instead of local `file:`
+  links: `@danielsimonjr/mathts-compat@^0.1.9` and
+  `@danielsimonjr/mathts-matrix@^0.1.7` (pulling `core@0.1.5`, `functions@0.2.10`
+  transitively). The package is now installable from npm/git without a sibling
+  `../mathts` monorepo checkout. Behavior unchanged — full suite green against the
+  published packages (correctness 232, integration 12, unit 490, security 118).
+  For local MathTS development, switch these back to `file:../mathts/*`.
+
 ## [4.1.2] - 2026-06-23
 
 ### Changed
