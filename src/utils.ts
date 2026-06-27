@@ -231,7 +231,7 @@ export async function getPackageVersion(): Promise<string> {
     // In development (src/), package.json is one level up
     const packageJsonPath = new URL('../package.json', import.meta.url);
     const packageJson = await import(packageJsonPath.href, {
-      assert: { type: 'json' },
+      with: { type: 'json' },
     });
     return packageJson.default.version || '2.0.1';
   } catch (error) {

@@ -7,6 +7,12 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Changed
+- **Upgraded dev tooling to current majors** (consolidating Dependabot PRs #65/#66/#68/#69/#70/#71): typescript 5.9.3 → 6.0.3, eslint 9.39.1 → 10.5.0, @eslint/js → 10.0.1, lint-staged → 17.0.7, @types/node → 25.9.3, eslint-plugin-jsdoc → 63.0.2.
+
+### Fixed
+- **TypeScript 6 migration**: added `"types": ["node"]` to `tsconfig.json` (TS6 + @types/node 25 no longer auto-resolved Node globals `clearTimeout`/`URL`/`import.meta.url`), and switched the JSON dynamic import in `src/utils.ts` from the removed `assert: { type: 'json' }` syntax to `with: { type: 'json' }`. type-check, build, lint (0 errors), and the full test suite (integration + correctness + 490 unit) pass.
+
 ## [4.1.3] - 2026-06-24
 
 ### Changed
