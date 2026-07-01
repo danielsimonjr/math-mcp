@@ -141,7 +141,12 @@ function parseFile(filePath: string, baseDir: string) {
     const ast = parseSync(code, {
       sourceType: 'module',
       filename: filePath,
-      presets: isTS ? [['@babel/preset-typescript', { allExtensions: true }]] : [],
+      // babel 8 removed `allExtensions`/`isTSX`; `ignoreExtensions: true` is the
+      // replacement — parse as TS without extension-based JSX detection (this repo
+      // has no .tsx files, so JSX parsing is intentionally off).
+      presets: isTS
+        ? [['@babel/preset-typescript', { ignoreExtensions: true }]]
+        : [],
       plugins: [],
     });
 
