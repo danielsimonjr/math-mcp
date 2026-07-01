@@ -50,7 +50,7 @@
   "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
-    "@danielsimonjr/mathts-compat": "^0.1.9",
+    "@danielsimonjr/mathts-compat": "^0.2.5",
     "@danielsimonjr/mathts-matrix": "^0.1.7",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "prom-client": "^15.1.3"
