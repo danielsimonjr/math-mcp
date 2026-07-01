@@ -1,117 +1,8 @@
 {
   "files": {
-    "acceleration-adapter.ts": {
-      "path": "acceleration-adapter.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\acceleration-adapter.ts",
-      "imports": [
-        {
-          "source": "./acceleration-router-compat.js"
-        },
-        {
-          "source": "./types.js"
-        }
-      ],
-      "exports": [
-        "AccelerationAdapter",
-        "accelerationAdapter"
-      ],
-      "layer": 6,
-      "layerName": "L6"
-    },
-    "acceleration-router-compat.ts": {
-      "path": "acceleration-router-compat.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\acceleration-router-compat.ts",
-      "imports": [
-        {
-          "source": "./acceleration-router.js"
-        },
-        {
-          "source": "./wasm-wrapper.js"
-        }
-      ],
-      "exports": [
-        "routedMatrixMultiply",
-        "routedMatrixTranspose",
-        "routedMatrixAdd",
-        "routedMatrixSubtract",
-        "routedStatsMean",
-        "getRoutingStats",
-        "resetRoutingStats",
-        "shutdownAcceleration",
-        "routedMatrixDeterminant",
-        "routedStatsMedian",
-        "routedStatsStd",
-        "routedStatsVariance",
-        "routedStatsMin",
-        "routedStatsMax",
-        "routedStatsSum",
-        "routedStatsMode"
-      ],
-      "layer": 5,
-      "layerName": "L5"
-    },
-    "acceleration-router.ts": {
-      "path": "acceleration-router.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\acceleration-router.ts",
-      "imports": [
-        {
-          "source": "./mathjs-shim.js"
-        },
-        {
-          "source": "./wasm-wrapper.js"
-        },
-        {
-          "source": "./workers/parallel-matrix.js"
-        },
-        {
-          "source": "./workers/parallel-stats.js"
-        },
-        {
-          "source": "./workers/worker-pool.js"
-        },
-        {
-          "source": "./workers/worker-types.js"
-        },
-        {
-          "source": "./utils.js"
-        },
-        {
-          "source": "./degradation-policy.js"
-        },
-        {
-          "source": "./routing-utils.js"
-        }
-      ],
-      "exports": [
-        "AccelerationRouterConfig",
-        "AccelerationRouter"
-      ],
-      "layer": 5,
-      "layerName": "L5"
-    },
-    "degradation-policy.ts": {
-      "path": "degradation-policy.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\degradation-policy.ts",
-      "imports": [
-        {
-          "source": "./shared/logger.js"
-        }
-      ],
-      "exports": [
-        "DegradationPolicy",
-        "createDefaultPolicy",
-        "degradationPolicy",
-        "getDegradationPolicy",
-        "isTierEnabled",
-        "logDegradation",
-        "getConfigurationDescription"
-      ],
-      "layer": 2,
-      "layerName": "L2"
-    },
     "errors.ts": {
       "path": "errors.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\errors.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\errors.ts",
       "imports": [],
       "exports": [
         "MathMCPError",
@@ -122,12 +13,12 @@
         "ComplexityError",
         "RateLimitError"
       ],
-      "layer": 2,
-      "layerName": "L2"
+      "layer": 1,
+      "layerName": "L1"
     },
     "expression-cache.ts": {
       "path": "expression-cache.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\expression-cache.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\expression-cache.ts",
       "imports": [
         {
           "source": "./utils.js"
@@ -143,33 +34,9 @@
       "layer": 3,
       "layerName": "L3"
     },
-    "gpu/webgpu-wrapper.ts": {
-      "path": "gpu/webgpu-wrapper.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\gpu\\webgpu-wrapper.ts",
-      "imports": [
-        {
-          "source": "../utils.js"
-        },
-        {
-          "source": "../errors.js"
-        }
-      ],
-      "exports": [
-        "GPU_THRESHOLDS",
-        "gpuInitialized",
-        "initWebGPU",
-        "gpuMatrixMultiply",
-        "gpuStatsMean",
-        "getGPUPerfStats",
-        "resetGPUPerfCounters",
-        "shouldUseGPU"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
     "handler-utils.ts": {
       "path": "handler-utils.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\handler-utils.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\handler-utils.ts",
       "imports": [
         {
           "source": "./utils.js"
@@ -186,12 +53,12 @@
         "executeHandler",
         "withErrorHandling"
       ],
-      "layer": 6,
-      "layerName": "L6"
+      "layer": 3,
+      "layerName": "L3"
     },
     "health.ts": {
       "path": "health.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\health.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\health.ts",
       "imports": [
         {
           "source": "./utils.js"
@@ -209,12 +76,12 @@
         "getLiveness",
         "getReadiness"
       ],
-      "layer": 8,
-      "layerName": "L8"
+      "layer": 4,
+      "layerName": "L4"
     },
-    "index-wasm.ts": {
-      "path": "index-wasm.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\index-wasm.ts",
+    "index.ts": {
+      "path": "index.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\index.ts",
       "imports": [
         {
           "source": "@modelcontextprotocol/sdk/server/index.js"
@@ -224,12 +91,6 @@
         },
         {
           "source": "@modelcontextprotocol/sdk/types.js"
-        },
-        {
-          "source": "./acceleration-adapter.js"
-        },
-        {
-          "source": "./acceleration-router-compat.js"
         },
         {
           "source": "./telemetry/server.js"
@@ -248,45 +109,24 @@
         }
       ],
       "exports": [],
-      "layer": 8,
-      "layerName": "L8"
+      "layer": 7,
+      "layerName": "L7"
     },
-    "index.ts": {
-      "path": "index.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\index.ts",
+    "math-engine.ts": {
+      "path": "math-engine.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\math-engine.ts",
       "imports": [
         {
-          "source": "@modelcontextprotocol/sdk/server/index.js"
-        },
-        {
-          "source": "@modelcontextprotocol/sdk/server/stdio.js"
-        },
-        {
-          "source": "@modelcontextprotocol/sdk/types.js"
-        },
-        {
-          "source": "./mathjs-shim.js"
+          "source": "@danielsimonjr/mathts-compat"
         }
       ],
       "exports": [],
-      "layer": 8,
-      "layerName": "L8"
-    },
-    "mathjs-shim.ts": {
-      "path": "mathjs-shim.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\mathjs-shim.ts",
-      "imports": [
-        {
-          "source": "mathjs"
-        }
-      ],
-      "exports": [],
-      "layer": 2,
-      "layerName": "L2"
+      "layer": 1,
+      "layerName": "L1"
     },
     "rate-limiter.ts": {
       "path": "rate-limiter.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\rate-limiter.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\rate-limiter.ts",
       "imports": [
         {
           "source": "./utils.js"
@@ -304,32 +144,9 @@
       "layer": 3,
       "layerName": "L3"
     },
-    "routing-utils.ts": {
-      "path": "routing-utils.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\routing-utils.ts",
-      "imports": [
-        {
-          "source": "./utils.js"
-        },
-        {
-          "source": "./degradation-policy.js"
-        }
-      ],
-      "exports": [
-        "RoutingStats",
-        "createRoutingStats",
-        "incrementUsage",
-        "TierExecutor",
-        "RouteConfig",
-        "routeWithFallback",
-        "computeRoutingStatsSummary"
-      ],
-      "layer": 2,
-      "layerName": "L2"
-    },
     "shared/constants.ts": {
       "path": "shared/constants.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\shared\\constants.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\shared\\constants.ts",
       "imports": [],
       "exports": [
         "DEFAULT_OPERATION_TIMEOUT",
@@ -341,7 +158,7 @@
     },
     "shared/logger.ts": {
       "path": "shared/logger.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\shared\\logger.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\shared\\logger.ts",
       "imports": [],
       "exports": [
         "logger"
@@ -351,7 +168,7 @@
     },
     "telemetry/metrics.ts": {
       "path": "telemetry/metrics.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\telemetry\\metrics.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\telemetry\\metrics.ts",
       "imports": [
         {
           "source": "prom-client"
@@ -388,12 +205,12 @@
         "getMetricsJSON",
         "resetMetrics"
       ],
-      "layer": 8,
-      "layerName": "L8"
+      "layer": 3,
+      "layerName": "L3"
     },
     "telemetry/server.ts": {
       "path": "telemetry/server.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\telemetry\\server.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\telemetry\\server.ts",
       "imports": [
         {
           "source": "http"
@@ -415,15 +232,15 @@
         "stopTelemetryServer",
         "getTelemetryServer"
       ],
-      "layer": 8,
-      "layerName": "L8"
+      "layer": 5,
+      "layerName": "L5"
     },
     "tool-handlers.ts": {
       "path": "tool-handlers.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\tool-handlers.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\tool-handlers.ts",
       "imports": [
         {
-          "source": "./mathjs-shim.js"
+          "source": "./math-engine.js"
         },
         {
           "source": "./validation.js"
@@ -439,9 +256,6 @@
         },
         {
           "source": "./handler-utils.js"
-        },
-        {
-          "source": "./types.js"
         }
       ],
       "exports": [
@@ -453,22 +267,22 @@
         "handleStatistics",
         "handleUnitConversion"
       ],
-      "layer": 7,
-      "layerName": "L7"
+      "layer": 6,
+      "layerName": "L6"
     },
     "types.ts": {
       "path": "types.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\types.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\types.ts",
       "imports": [],
       "exports": [
         "AccelerationWrapper"
       ],
-      "layer": 2,
-      "layerName": "L2"
+      "layer": 1,
+      "layerName": "L1"
     },
     "utils.ts": {
       "path": "utils.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\utils.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\utils.ts",
       "imports": [
         {
           "source": "./errors.js"
@@ -493,7 +307,7 @@
     },
     "validation.ts": {
       "path": "validation.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\validation.ts",
+      "fullPath": "C:\\Users\\danie\\Github\\math-mcp\\src\\validation.ts",
       "imports": [
         {
           "source": "./errors.js"
@@ -513,390 +327,18 @@
         "validateScope",
         "validateEnum"
       ],
-      "layer": 3,
-      "layerName": "L3"
-    },
-    "wasm-executor.ts": {
-      "path": "wasm-executor.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\wasm-executor.ts",
-      "imports": [
-        {
-          "source": "./utils.js"
-        }
-      ],
-      "exports": [
-        "recordPerf",
-        "getPerfStats",
-        "resetPerfCounters",
-        "UnaryOperationConfig",
-        "BinaryOperationConfig",
-        "executeUnaryOp",
-        "executeBinaryOp"
-      ],
       "layer": 2,
       "layerName": "L2"
-    },
-    "wasm-integrity.ts": {
-      "path": "wasm-integrity.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\wasm-integrity.ts",
-      "imports": [
-        {
-          "source": "crypto"
-        },
-        {
-          "source": "fs/promises"
-        },
-        {
-          "source": "url"
-        },
-        {
-          "source": "path"
-        },
-        {
-          "source": "./errors.js"
-        },
-        {
-          "source": "./utils.js"
-        }
-      ],
-      "exports": [
-        "verifyWasmIntegrity",
-        "isIntegrityCheckEnabled",
-        "verifyAllWasmModules"
-      ],
-      "layer": 3,
-      "layerName": "L3"
-    },
-    "wasm-wrapper.ts": {
-      "path": "wasm-wrapper.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\wasm-wrapper.ts",
-      "imports": [
-        {
-          "source": "./mathjs-shim.js"
-        },
-        {
-          "source": "url"
-        },
-        {
-          "source": "path"
-        },
-        {
-          "source": "./utils.js"
-        },
-        {
-          "source": "./wasm-integrity.js"
-        },
-        {
-          "source": "./wasm-executor.js"
-        }
-      ],
-      "exports": [
-        "THRESHOLDS",
-        "ensureWasmInitialized",
-        "matrixMultiply",
-        "matrixDeterminant",
-        "matrixTranspose",
-        "matrixAdd",
-        "matrixSubtract",
-        "statsMean",
-        "statsMedian",
-        "statsStd",
-        "statsVariance",
-        "statsMin",
-        "statsMax",
-        "statsSum",
-        "statsMode",
-        "statsProduct",
-        "PerfStats",
-        "getPerfStats",
-        "resetPerfCounters"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/backpressure.ts": {
-      "path": "workers/backpressure.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\backpressure.ts",
-      "imports": [
-        {
-          "source": "events"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "../shared/logger.js"
-        }
-      ],
-      "exports": [
-        "BackpressureConfig",
-        "EnqueueOptions",
-        "BackpressureError",
-        "BackpressureQueue"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/chunk-utils.ts": {
-      "path": "workers/chunk-utils.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\chunk-utils.ts",
-      "imports": [
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "../utils.js"
-        }
-      ],
-      "exports": [
-        "chunkArray",
-        "chunkMatrixByRows",
-        "chunkMatrixByBlocks",
-        "getOptimalChunkCount",
-        "mergeArrayChunks",
-        "mergeMatrixRowChunks",
-        "validateChunks"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/math-worker.ts": {
-      "path": "workers/math-worker.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\math-worker.ts",
-      "imports": [
-        {
-          "source": "worker_threads"
-        },
-        {
-          "source": "url"
-        },
-        {
-          "source": "path"
-        },
-        {
-          "source": "url"
-        },
-        {
-          "source": "./worker-types.js"
-        }
-      ],
-      "exports": [],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/parallel-executor.ts": {
-      "path": "workers/parallel-executor.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\parallel-executor.ts",
-      "imports": [
-        {
-          "source": "./worker-pool.js"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "../utils.js"
-        }
-      ],
-      "exports": [
-        "ParallelOperationConfig",
-        "ChunkData",
-        "getOptimalChunkCount",
-        "executeParallel",
-        "chunkArray",
-        "chunkMatrixRows",
-        "mergeArrays",
-        "mergeMatrixRows",
-        "mergeSum",
-        "mergeMin",
-        "mergeMax"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/parallel-matrix.ts": {
-      "path": "workers/parallel-matrix.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\parallel-matrix.ts",
-      "imports": [
-        {
-          "source": "./worker-pool.js"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "./chunk-utils.js"
-        },
-        {
-          "source": "../utils.js"
-        }
-      ],
-      "exports": [
-        "PARALLEL_THRESHOLDS",
-        "parallelMatrixMultiply",
-        "parallelMatrixTranspose",
-        "parallelMatrixAdd",
-        "parallelMatrixSubtract",
-        "shouldUseParallel"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/parallel-stats.ts": {
-      "path": "workers/parallel-stats.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\parallel-stats.ts",
-      "imports": [
-        {
-          "source": "./worker-pool.js"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "./chunk-utils.js"
-        },
-        {
-          "source": "../utils.js"
-        }
-      ],
-      "exports": [
-        "PARALLEL_THRESHOLDS",
-        "parallelStatsMean",
-        "parallelStatsSum",
-        "parallelStatsMin",
-        "parallelStatsMax",
-        "parallelStatsVariance",
-        "parallelStatsStd",
-        "shouldUseParallel"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/pool-manager.ts": {
-      "path": "workers/pool-manager.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\pool-manager.ts",
-      "imports": [
-        {
-          "source": "./worker-pool.js"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "../shared/logger.js"
-        }
-      ],
-      "exports": [
-        "WorkerPoolManager"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/task-queue.ts": {
-      "path": "workers/task-queue.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\task-queue.ts",
-      "imports": [
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "../utils.js"
-        },
-        {
-          "source": "../errors.js"
-        }
-      ],
-      "exports": [
-        "TaskQueue"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/worker-pool.ts": {
-      "path": "workers/worker-pool.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\worker-pool.ts",
-      "imports": [
-        {
-          "source": "worker_threads"
-        },
-        {
-          "source": "os"
-        },
-        {
-          "source": "url"
-        },
-        {
-          "source": "path"
-        },
-        {
-          "source": "./worker-types.js"
-        },
-        {
-          "source": "./task-queue.js"
-        },
-        {
-          "source": "../utils.js"
-        },
-        {
-          "source": "../errors.js"
-        }
-      ],
-      "exports": [
-        "WorkerPool"
-      ],
-      "layer": 4,
-      "layerName": "L4"
-    },
-    "workers/worker-types.ts": {
-      "path": "workers/worker-types.ts",
-      "fullPath": "C:\\Users\\danie\\Dropbox\\Github\\math-mcp\\src\\workers\\worker-types.ts",
-      "imports": [
-        {
-          "source": "worker_threads"
-        }
-      ],
-      "exports": [
-        "WorkerRequest",
-        "MatrixOperationData",
-        "StatsOperationData",
-        "WorkerRequestData",
-        "WorkerResponseSuccess",
-        "WorkerResponseError",
-        "WorkerResponse",
-        "WorkerResult",
-        "PartialResult",
-        "Task",
-        "WorkerPoolConfig",
-        "WorkerPoolStats",
-        "WorkerMetadata",
-        "ChunkOptions",
-        "DataChunk",
-        "ResultCombiner",
-        "isSuccessResponse",
-        "isErrorResponse",
-        "isMatrixOperationData",
-        "isStatsOperationData"
-      ],
-      "layer": 4,
-      "layerName": "L4"
     }
   },
   "folders": {
     ".": [
       "shared",
-      "telemetry",
-      "workers"
-    ],
-    "gpu": [
-      "."
+      "telemetry"
     ],
     "shared": [],
     "telemetry": [
       "."
-    ],
-    "workers": [
-      ".",
-      "shared"
     ]
   },
   "tests": {
@@ -904,43 +346,19 @@
       "security/bounds.test.ts",
       "security/dos.test.ts",
       "security/fuzzing.test.ts",
-      "security/injection.test.ts"
+      "security/injection.test.ts",
+      "unit/solver.test.ts"
     ],
     "rate-limiter.ts": [
       "security/dos.test.ts",
       "unit/rate-limiter.test.ts"
-    ],
-    "acceleration-adapter.ts": [
-      "unit/acceleration-adapter.test.ts"
-    ],
-    "acceleration-router-compat.ts": [
-      "unit/acceleration-adapter.test.ts"
-    ],
-    "degradation-policy.ts": [
-      "unit/acceleration-adapter.test.ts",
-      "unit/degradation-policy.test.ts",
-      "unit/routing-utils.test.ts"
-    ],
-    "acceleration-router.ts": [
-      "unit/acceleration-router-di.test.ts"
-    ],
-    "workers/worker-pool.ts": [
-      "unit/acceleration-router-di.test.ts"
-    ],
-    "workers/worker-types.ts": [
-      "unit/acceleration-router-di.test.ts",
-      "unit/workers/backpressure.test.ts",
-      "unit/workers/pool-manager.test.ts",
-      "unit/workers/task-queue.test.ts"
     ],
     "errors.ts": [
       "unit/errors.test.ts",
       "unit/handler-utils.test.ts",
       "unit/rate-limiter.test.ts",
       "unit/utils.test.ts",
-      "unit/validation.test.ts",
-      "unit/wasm-integrity.test.ts",
-      "unit/workers/task-queue.test.ts"
+      "unit/validation.test.ts"
     ],
     "expression-cache.ts": [
       "unit/expression-cache.test.ts"
@@ -950,12 +368,6 @@
     ],
     "health.ts": [
       "unit/health.test.ts"
-    ],
-    "mathjs-shim.ts": [
-      "unit/mathjs-shim.test.ts"
-    ],
-    "routing-utils.ts": [
-      "unit/routing-utils.test.ts"
     ],
     "shared/constants.ts": [
       "unit/shared/constants.test.ts"
@@ -971,106 +383,74 @@
     ],
     "validation.ts": [
       "unit/validation.test.ts"
-    ],
-    "wasm-executor.ts": [
-      "unit/wasm-executor.test.ts"
-    ],
-    "wasm-integrity.ts": [
-      "unit/wasm-integrity.test.ts"
-    ],
-    "workers/backpressure.ts": [
-      "unit/workers/backpressure.test.ts"
-    ],
-    "workers/chunk-utils.ts": [
-      "unit/workers/chunk-utils.test.ts"
-    ],
-    "workers/pool-manager.ts": [
-      "unit/workers/pool-manager.test.ts"
-    ],
-    "workers/task-queue.ts": [
-      "unit/workers/task-queue.test.ts"
     ]
   },
   "layerViolations": [],
   "stats": {
-    "totalFiles": 60,
-    "srcFiles": 35,
-    "testFiles": 25,
-    "totalDependencies": 106,
-    "avgDependenciesPerFile": 3.03,
+    "totalFiles": 30,
+    "srcFiles": 15,
+    "testFiles": 15,
+    "totalDependencies": 32,
+    "avgDependenciesPerFile": 2.13,
     "mostDependedOn": [
       {
         "file": "utils.ts",
-        "count": 20
-      },
-      {
-        "file": "workers/worker-types.ts",
-        "count": 10
+        "count": 8
       },
       {
         "file": "errors.ts",
-        "count": 10
-      },
-      {
-        "file": "workers/worker-pool.ts",
-        "count": 5
-      },
-      {
-        "file": "mathjs-shim.ts",
-        "count": 4
-      },
-      {
-        "file": "shared/logger.ts",
-        "count": 4
-      },
-      {
-        "file": "acceleration-router-compat.ts",
-        "count": 2
-      },
-      {
-        "file": "types.ts",
-        "count": 2
-      },
-      {
-        "file": "wasm-wrapper.ts",
-        "count": 2
-      },
-      {
-        "file": "degradation-policy.ts",
-        "count": 2
+        "count": 6
       },
       {
         "file": "rate-limiter.ts",
         "count": 2
       },
       {
-        "file": "workers/chunk-utils.ts",
-        "count": 2
-      },
-      {
-        "file": "acceleration-router.ts",
+        "file": "telemetry/server.ts",
         "count": 1
       },
       {
-        "file": "workers/parallel-matrix.ts",
+        "file": "tool-handlers.ts",
         "count": 1
       },
       {
-        "file": "workers/parallel-stats.ts",
+        "file": "telemetry/metrics.ts",
+        "count": 1
+      },
+      {
+        "file": "health.ts",
+        "count": 1
+      },
+      {
+        "file": "math-engine.ts",
+        "count": 1
+      },
+      {
+        "file": "validation.ts",
+        "count": 1
+      },
+      {
+        "file": "expression-cache.ts",
+        "count": 1
+      },
+      {
+        "file": "handler-utils.ts",
+        "count": 1
+      },
+      {
+        "file": "shared/logger.ts",
+        "count": 1
+      },
+      {
+        "file": "shared/constants.ts",
         "count": 1
       }
     ],
     "untestedSrcFiles": [
-      "gpu/webgpu-wrapper.ts",
-      "index-wasm.ts",
       "index.ts",
+      "math-engine.ts",
       "telemetry/server.ts",
-      "types.ts",
-      "wasm-wrapper.ts",
-      "workers/math-worker.ts",
-      "workers/parallel-executor.ts",
-      "workers/parallel-matrix.ts",
-      "workers/parallel-stats.ts"
+      "types.ts"
     ]
   }
 }

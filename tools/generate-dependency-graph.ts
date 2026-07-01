@@ -41,48 +41,41 @@ const TEST_DIR = path.join(REPO_ROOT, 'test');
 const OUTPUT_DIR = __dirname;
 
 /**
- * Layer map from STRUCTURE-AUDIT-2026-04-29.md §2.
+ * Layer map for the v4 (MathTS) source tree, derived from the actual import
+ * graph (each file sits one layer above its deepest internal dependency).
  * Lower number = lower layer. Imports must point downward (from a higher
  * layer to a lower or equal layer). An import from layer N pointing to
  * something in layer M > N is a layering violation.
  *
  * Files not listed get layer 99 (treated as top-level/orchestrator).
  * Match is by relative path under src/, longest-prefix wins.
+ *
+ * NOTE: the pre-v4 acceleration stack (wasm/workers/gpu/router/adapter) was
+ * deleted in v4; those entries were removed here on 2026-07-01.
  */
 const LAYER_MAP: Array<{ pattern: string; layer: number; name: string }> = [
-  // L1 — primitives
+  // L1 — primitives / leaves (no internal imports)
   { pattern: 'shared/constants.ts', layer: 1, name: 'L1' },
   { pattern: 'shared/logger.ts', layer: 1, name: 'L1' },
-  // L2 — error/util/policy
-  { pattern: 'errors.ts', layer: 2, name: 'L2' },
+  { pattern: 'errors.ts', layer: 1, name: 'L1' },
+  { pattern: 'types.ts', layer: 1, name: 'L1' },
+  { pattern: 'math-engine.ts', layer: 1, name: 'L1' },
+  // L2 — core utilities (import only L1)
   { pattern: 'utils.ts', layer: 2, name: 'L2' },
-  { pattern: 'degradation-policy.ts', layer: 2, name: 'L2' },
-  { pattern: 'wasm-executor.ts', layer: 2, name: 'L2' },
-  { pattern: 'routing-utils.ts', layer: 2, name: 'L2' },
-  { pattern: 'mathjs-shim.ts', layer: 2, name: 'L2' },
-  { pattern: 'types.ts', layer: 2, name: 'L2' },
-  // L3 — validation, rate limiter, expression cache, integrity
-  { pattern: 'validation.ts', layer: 3, name: 'L3' },
-  { pattern: 'rate-limiter.ts', layer: 3, name: 'L3' },
+  { pattern: 'validation.ts', layer: 2, name: 'L2' },
+  // L3 — services built on utils
   { pattern: 'expression-cache.ts', layer: 3, name: 'L3' },
-  { pattern: 'wasm-integrity.ts', layer: 3, name: 'L3' },
-  // L4 — wasm wrapper, workers infra, gpu stub
-  { pattern: 'wasm-wrapper.ts', layer: 4, name: 'L4' },
-  { pattern: 'workers/', layer: 4, name: 'L4' },
-  { pattern: 'gpu/', layer: 4, name: 'L4' },
-  // L5 — acceleration router + compat
-  { pattern: 'acceleration-router.ts', layer: 5, name: 'L5' },
-  { pattern: 'acceleration-router-compat.ts', layer: 5, name: 'L5' },
-  // L6 — adapter, handler-utils
-  { pattern: 'acceleration-adapter.ts', layer: 6, name: 'L6' },
-  { pattern: 'handler-utils.ts', layer: 6, name: 'L6' },
-  // L7 — tool handlers
-  { pattern: 'tool-handlers.ts', layer: 7, name: 'L7' },
-  // L8 — orchestrators, telemetry, health
-  { pattern: 'index.ts', layer: 8, name: 'L8' },
-  { pattern: 'index-wasm.ts', layer: 8, name: 'L8' },
-  { pattern: 'health.ts', layer: 8, name: 'L8' },
-  { pattern: 'telemetry/', layer: 8, name: 'L8' },
+  { pattern: 'rate-limiter.ts', layer: 3, name: 'L3' },
+  { pattern: 'handler-utils.ts', layer: 3, name: 'L3' },
+  { pattern: 'telemetry/metrics.ts', layer: 3, name: 'L3' },
+  // L4 — health (uses rate-limiter)
+  { pattern: 'health.ts', layer: 4, name: 'L4' },
+  // L5 — telemetry server (uses health + metrics)
+  { pattern: 'telemetry/server.ts', layer: 5, name: 'L5' },
+  // L6 — tool handlers (orchestrate engine + validation + services)
+  { pattern: 'tool-handlers.ts', layer: 6, name: 'L6' },
+  // L7 — entry point / orchestrator
+  { pattern: 'index.ts', layer: 7, name: 'L7' },
 ];
 
 const graph = {
@@ -141,7 +134,12 @@ function parseFile(filePath: string, baseDir: string) {
     const ast = parseSync(code, {
       sourceType: 'module',
       filename: filePath,
-      presets: isTS ? [['@babel/preset-typescript', { allExtensions: true }]] : [],
+      // babel 8 removed `allExtensions`/`isTSX`; `ignoreExtensions: true` is the
+      // replacement — parse as TS without extension-based JSX detection (this repo
+      // has no .tsx files, so JSX parsing is intentionally off).
+      presets: isTS
+        ? [['@babel/preset-typescript', { ignoreExtensions: true }]]
+        : [],
       plugins: [],
     });
 
