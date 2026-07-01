@@ -1,6 +1,6 @@
 # math-mcp Dependency Graph
 
-Generated: 2026-07-01T12:53:20.076Z
+Generated: 2026-07-01T13:18:50.185Z
 
 ## Statistics
 
@@ -37,21 +37,21 @@ _None._ Every import points downward through the layer stack.
 
 | src file | layer | covered by |
 |----------|-------|------------|
-| `errors.ts` | L2 | `unit/errors.test.ts`<br>`unit/handler-utils.test.ts`<br>`unit/rate-limiter.test.ts`<br>`unit/utils.test.ts`<br>`unit/validation.test.ts` |
+| `errors.ts` | L1 | `unit/errors.test.ts`<br>`unit/handler-utils.test.ts`<br>`unit/rate-limiter.test.ts`<br>`unit/utils.test.ts`<br>`unit/validation.test.ts` |
 | `expression-cache.ts` | L3 | `unit/expression-cache.test.ts` |
-| `handler-utils.ts` | L6 | `unit/handler-utils.test.ts` |
-| `health.ts` | L8 | `unit/health.test.ts` |
-| `index.ts` | L8 | _(none)_ |
-| `math-engine.ts` | L? | _(none)_ |
+| `handler-utils.ts` | L3 | `unit/handler-utils.test.ts` |
+| `health.ts` | L4 | `unit/health.test.ts` |
+| `index.ts` | L7 | _(none)_ |
+| `math-engine.ts` | L1 | _(none)_ |
 | `rate-limiter.ts` | L3 | `security/dos.test.ts`<br>`unit/rate-limiter.test.ts` |
 | `shared/constants.ts` | L1 | `unit/shared/constants.test.ts` |
 | `shared/logger.ts` | L1 | `unit/shared/logger.test.ts` |
-| `telemetry/metrics.ts` | L8 | `unit/telemetry/metrics.test.ts` |
-| `telemetry/server.ts` | L8 | _(none)_ |
-| `tool-handlers.ts` | L7 | `security/bounds.test.ts`<br>`security/dos.test.ts`<br>`security/fuzzing.test.ts`<br>`security/injection.test.ts`<br>`unit/solver.test.ts` |
-| `types.ts` | L2 | _(none)_ |
+| `telemetry/metrics.ts` | L3 | `unit/telemetry/metrics.test.ts` |
+| `telemetry/server.ts` | L5 | _(none)_ |
+| `tool-handlers.ts` | L6 | `security/bounds.test.ts`<br>`security/dos.test.ts`<br>`security/fuzzing.test.ts`<br>`security/injection.test.ts`<br>`unit/solver.test.ts` |
+| `types.ts` | L1 | _(none)_ |
 | `utils.ts` | L2 | `unit/utils.test.ts` |
-| `validation.ts` | L3 | `unit/validation.test.ts` |
+| `validation.ts` | L2 | `unit/validation.test.ts` |
 
 ## Untested src Files
 
