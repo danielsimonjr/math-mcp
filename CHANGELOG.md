@@ -1,11 +1,17 @@
-# Math-MCP WASM Acceleration - Changelog
+# math-mcp - Changelog
 
-All notable changes to the WASM-accelerated math-mcp project.
+All notable changes to the math-mcp project (MathTS engine since v4).
 Documentation in reverse chronological order (latest first).
 
 ---
 
 ## [Unreleased]
+
+### Fixed
+- **CI green again (was red since the v4 cutover, 2026-06-24), unblocking all open Dependabot PRs.** `ci.yml` still ran `cd wasm && npm run asbuild` in the test job and kept a dedicated "WASM Build Verification" job, but the `wasm/` AssemblyScript project was deleted in v4 (`7ca99b6`). Every run failed at `cd wasm: No such file or directory`, so the required status checks blocked PRs #73–#77. Removed the dead wasm step and the wasm-build job. Verified on current master: `npm run build` and `tsc --noEmit` exit 0, integration tests 12/12 (these had never actually run under v4 CI — the wasm step aborted the job first).
+
+### Documentation
+- **Synced `CLAUDE.md` to the v4 (MathTS) reality**: removed references to the deleted `index-wasm.ts`, `acceleration-router.ts`, `acceleration-adapter.ts`, `wasm-wrapper.ts`, and `src/workers/`; corrected the entry point to `dist/index.js`; dropped obsolete `build:wasm`/`build:all`/`generate:hashes` commands and the dead `ENABLE_WORKERS`/`ENABLE_WASM`/`MIN_WORKERS`/`MAX_WORKERS`/`TASK_TIMEOUT` env vars (grep-verified absent from `src/`); fixed the tool-handler signature (typed `args` object, no `accelerator`). Also retitled this CHANGELOG (was "WASM Acceleration").
 
 ### Changed
 - **Upgraded dev tooling to current majors** (consolidating Dependabot PRs #65/#66/#68/#69/#70/#71): typescript 5.9.3 → 6.0.3, eslint 9.39.1 → 10.5.0, @eslint/js → 10.0.1, lint-staged → 17.0.7, @types/node → 25.9.3, eslint-plugin-jsdoc → 63.0.2.
