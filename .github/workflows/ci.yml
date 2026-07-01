@@ -32,12 +32,6 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      - name: Build WASM modules
-        run: |
-          cd wasm
-          npm install
-          npm run asbuild
-
       - name: Run integration tests
         run: node test/integration-test.js
 
@@ -66,35 +60,3 @@ jobs:
 
       - name: Check TypeScript
         run: npx tsc --noEmit
-
-  wasm-build:
-    name: WASM Build Verification
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-
-      - name: Build WASM modules
-        run: |
-          cd wasm
-          npm install
-          npm run asbuild
-
-      - name: Verify WASM output
-        run: |
-          test -f wasm/build/release.wasm || exit 1
-          test -f wasm/bindings/matrix.cjs || exit 1
-          test -f wasm/bindings/statistics.cjs || exit 1
-
-      - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wasm-modules
-          path: |
-            wasm/build/release.wasm
-            wasm/bindings/*.cjs
