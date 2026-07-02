@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "math-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bundle/index.mjs"
+      ],
+      "env": {
+        "_RETRY": "2026-06-22-mathts-v4"
+      }
+    }
+  }
+}
