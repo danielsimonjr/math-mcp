@@ -1,11 +1,11 @@
 ---
 name: math
-description: "Playbook for computing with the math-mcp server's 7 tools — evaluate, derivative, solve, simplify, matrix_operations, statistics, unit_conversion (mathjs-powered CAS/stats/units). Core rule: OFFLOAD non-trivial computation to these tools instead of doing mental math, which is error-prone. Use when the user says 'evaluate/compute this', 'what is <expression>', 'differentiate' or 'derivative of', 'solve for x', 'simplify', 'multiply/invert these matrices', 'determinant/eigenvalues', 'mean/median/std/variance of', 'convert X to Y units', or asks for any exact or non-trivial calculation. Steers toward the tool over self-computed arithmetic, picks evaluate vs. the specialized tools, and flags mathjs-syntax gotchas. Does NOT add tools; it is guidance over the math-mcp server. Not a plotting/graphing tool and not a proof assistant."
+description: "Playbook for computing with the math-mcp server's 7 tools — evaluate, derivative, solve, simplify, matrix_operations, statistics, unit_conversion (MathTS-powered, mathjs-compatible CAS/stats/units). Core rule: OFFLOAD non-trivial computation to these tools instead of doing mental math, which is error-prone. Use when the user says 'evaluate/compute this', 'what is <expression>', 'differentiate' or 'derivative of', 'solve for x', 'simplify', 'multiply/invert these matrices', 'determinant/eigenvalues', 'mean/median/std/variance of', 'convert X to Y units', or asks for any exact or non-trivial calculation. Steers toward the tool over self-computed arithmetic, picks evaluate vs. the specialized tools, and flags mathjs-compatible-syntax gotchas. Does NOT add tools; it is guidance over the math-mcp server. Not a plotting/graphing tool and not a proof assistant."
 ---
 
 # Math
 
-A judgment layer over the `math-mcp` server's 7 pure computation tools — expression evaluation, calculus, equation solving, simplification, matrix algebra, statistics, and unit conversion. This skill adds no tools of its own: every action below is one of the server's existing MCP tools. Its job is to steer you toward calling the tool instead of computing in your head, help you pick `evaluate` vs. a specialized tool, sequence multi-step workflows correctly, and flag the mathjs-syntax gotchas that produce wrong or confusing results.
+A judgment layer over the `math-mcp` server's 7 pure computation tools — expression evaluation, calculus, equation solving, simplification, matrix algebra, statistics, and unit conversion. This skill adds no tools of its own: every action below is one of the server's existing MCP tools. Its job is to steer you toward calling the tool instead of computing in your head, help you pick `evaluate` vs. a specialized tool, sequence multi-step workflows correctly, and flag the mathjs-compatible-syntax gotchas that produce wrong or confusing results. The compute engine is **MathTS** (`@danielsimonjr/mathts-*`), which keeps mathjs-compatible input syntax.
 
 **Skill root**: this skill ships inside the `math-mcp` plugin (repo `danielsimonjr/math-mcp`, `skills/math/`). Slash trigger: `/math`.
 
@@ -19,11 +19,11 @@ Where the line sits:
 
 ## Tool selection: `evaluate` vs. the 6 specialized tools
 
-The overlap between `evaluate` and the specialized tools is intentional. `evaluate` is the mathjs workhorse — it can inline `derivative(...)`, `det(...)`, and most of what the specialized tools do, all in one expression. Use `evaluate` for a one-off general expression or when combining several operations in a single call (pass a `scope` object to supply variables). Reach for a **specialized** tool when you want its narrower, validated result shape or its specific operation directly — e.g. a clean symbolic derivative string from `derivative`, or an enum-constrained matrix op from `matrix_operations`.
+The overlap between `evaluate` and the specialized tools is intentional. `evaluate` is the MathTS workhorse (mathjs-compatible syntax) — it can inline `derivative(...)`, `det(...)`, and most of what the specialized tools do, all in one expression. Use `evaluate` for a one-off general expression or when combining several operations in a single call (pass a `scope` object to supply variables). Reach for a **specialized** tool when you want its narrower, validated result shape or its specific operation directly — e.g. a clean symbolic derivative string from `derivative`, or an enum-constrained matrix op from `matrix_operations`.
 
 | Tool | Signature | Purpose |
 |---|---|---|
-| `evaluate` | `expression`, `scope?` | General mathjs eval: arithmetic, algebra, calculus, matrices. Ex: `2+2`, `sqrt(16)`, `derivative(x^2, x)`, `det([[1,2],[3,4]])`. `scope` supplies variables, e.g. `{x: 5}`. |
+| `evaluate` | `expression`, `scope?` | General mathjs-compatible eval: arithmetic, algebra, calculus, matrices. Ex: `2+2`, `sqrt(16)`, `derivative(x^2, x)`, `det([[1,2],[3,4]])`. `scope` supplies variables, e.g. `{x: 5}`. |
 | `derivative` | `expression`, `variable` | Symbolic d/d(var). `derivative("x^2","x") → "2*x"`. |
 | `solve` | `equation`, `variable` | Solve an equation. `solve("x^2 - 4 = 0","x")`. |
 | `simplify` | `expression`, `rules?` | Symbolic simplify. `"2*x + x" → "3*x"`. |
@@ -43,7 +43,7 @@ solve(equation, variable)
   → confirm each result is ~0
 ```
 
-`solve` can return multiple roots (including complex ones for higher-degree polynomials) — don't stop at the first. Substitute each root back into the original left-hand side via `evaluate` with `scope`, and confirm the result is zero (or numerically negligible for irrational/floating-point roots) before reporting it. Do not report a root as a solution unless it has been verified this way.
+`solve` can return multiple roots, so don't stop at the first. It returns exact roots (including complex) for polynomials of degree ≤ 3; for degree ≥ 4 or transcendental equations it falls back to numeric, real roots only. Substitute each root back into the original left-hand side via `evaluate` with `scope`, and confirm the result is zero (or numerically negligible for irrational/floating-point roots) before reporting it. Do not report a root as a solution unless it has been verified this way.
 
 ### 2. Calculus pipeline
 
@@ -88,4 +88,4 @@ These are usage-correctness notes, not safety rails — nothing in `math-mcp` is
 - **JSON-string inputs** — `matrix_operations` matrices and `statistics` data are **strings** containing JSON arrays (`"[[1,2],[3,4]]"`, `"[1,2,3]"`), not native arrays. Passing a real array/object instead of its JSON-string form will not work.
 - **Units** — use `mi/h`, `km/h`, `m/s`; `mph`/`kph`/`knot` are rejected. Confirmed live: `unit_conversion(value="60 mi/h", target_unit="mph")` errors with `Unit "mph" not found.`, while `target_unit="km/h"` succeeds (`96.56063999999999 km / h`).
 - **Results may be strings** — `evaluate` can return a string (e.g. `"60"`); parse it if a downstream step needs a number rather than text.
-- **mathjs syntax** — `^` for powers, function-call forms (`det(...)`, `sqrt(...)`), explicit `*` for multiplication (no implicit juxtaposition).
+- **mathjs-compatible syntax** — `^` for powers, function-call forms (`det(...)`, `sqrt(...)`), explicit `*` for multiplication (no implicit juxtaposition).
