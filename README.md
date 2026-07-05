@@ -6,6 +6,13 @@
 
 A high-performance, production-ready MCP (Model Context Protocol) server providing secure mathematical computation capabilities powered by mathjs, with **Multi-Tier Acceleration** through WebWorkers, WebAssembly (WASM), and comprehensive security features.
 
+## Companion skill
+
+The plugin also ships a `math` skill (`math-mcp:math`, `/math`) — a playbook
+that steers Claude to offload computation to these tools instead of doing
+mental math, with composed workflows for solving, calculus, matrices,
+statistics, and units. See [skills/math/SKILL.md](skills/math/SKILL.md).
+
 ## 🚀 Performance
 
 This server features intelligent multi-tier acceleration providing **up to 1920x speedup** compared to pure JavaScript:

@@ -21,6 +21,17 @@ Documentation in reverse chronological order (latest first).
 ### Fixed
 - **TypeScript 6 migration**: added `"types": ["node"]` to `tsconfig.json` (TS6 + @types/node 25 no longer auto-resolved Node globals `clearTimeout`/`URL`/`import.meta.url`), and switched the JSON dynamic import in `src/utils.ts` from the removed `assert: { type: 'json' }` syntax to `with: { type: 'json' }`. type-check, build, lint (0 errors), and the full test suite (integration + correctness + 490 unit) pass.
 
+## [4.2.0] - 2026-07-05
+
+### Added
+- **Companion `math` skill** (`skills/math/`, loads as `math-mcp:math`, slash
+  `/math`) — a guidance/playbook over the server's 7 tools: the core rule to
+  offload non-trivial computation to the tool instead of mental math, `evaluate`
+  vs. the six specialized tools, a 7-tool table, five workflow playbooks
+  (solve-and-verify, calculus, matrix, statistics, units), and mathjs-syntax
+  gotchas. No new tools; the server engine is unchanged (still reports 4.1.3;
+  `package.json` unchanged).
+
 ## [4.1.3] - 2026-06-24
 
 ### Changed
