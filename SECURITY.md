@@ -6,8 +6,8 @@ Currently supported versions with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.0.x   | :white_check_mark: |
-| 1.0.x   | :x:                |
+| 4.x     | :white_check_mark: |
+| < 4.0   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -41,14 +41,6 @@ If you discover a security vulnerability in math-mcp, please report it responsib
 
 ## Security Considerations
 
-### WASM Safety
-
-The WASM modules in this project:
-- Run in a sandboxed environment
-- Have no access to file system
-- Cannot make network requests
-- Use manual memory management (bounds checked)
-
 ### Input Validation
 
 All MCP tool inputs are validated:
@@ -66,14 +58,14 @@ All MCP tool inputs are validated:
 
 ### Known Limitations
 
-1. **Expression Evaluation**: Uses mathjs `evaluate()` which can execute arbitrary mathematical expressions. While safe for math operations, be cautious with user input in production environments.
+1. **Expression Evaluation**: Uses MathTS's `evaluate()` (a mathjs-compatible API) which can execute arbitrary mathematical expressions. While safe for math operations, be cautious with user input in production environments.
 
-2. **Memory Limits**: WASM operations on very large datasets (>100MB) may cause memory issues. Implement size limits in production.
+2. **Memory Limits**: Operations on very large datasets (>100MB) may cause memory issues. Size limits (`MAX_MATRIX_SIZE`, `MAX_ARRAY_LENGTH`) are enforced in `src/validation.ts`.
 
-3. **Denial of Service**: Complex expressions or very large matrices could cause CPU exhaustion. Consider implementing:
-   - Timeout limits
-   - Resource quotas
+3. **Denial of Service**: Complex expressions or very large matrices could cause CPU exhaustion. Because evaluation is synchronous JS (no WASM/worker offload), it cannot be interrupted mid-computation — protection relies on:
+   - Input size limits
    - Rate limiting
+   - Resource quotas
 
 ## Best Practices
 
@@ -132,27 +124,24 @@ try {
 
 ## Security Features
 
-### WASM Sandboxing
+### Expression Sandboxing
 
-WASM code runs in a memory-safe sandbox:
-- No direct memory access outside allocated regions
-- Type safety enforced at compile time
-- Runtime bounds checking
-- Automatic fallback to mathjs on errors
+Mathematical expressions are validated before evaluation (`src/validation.ts`):
+- AST-based validation / sanitization of expressions
+- Size limits on expressions, arrays, and matrices (`MAX_MATRIX_SIZE`, `MAX_ARRAY_LENGTH`)
+- Token-bucket rate limiting (`src/rate-limiter.ts`) to bound request volume
 
 ### Error Handling
 
 All errors are caught and logged:
-- WASM errors trigger mathjs fallback
 - Invalid inputs return error messages
 - No sensitive information in error messages
 - Stack traces sanitized in production
 
 ### Dependency Security
 
-- mathjs: Mature library with good security track record
+- MathTS (`@danielsimonjr/mathts-compat`, mathjs-compatible API): actively maintained
 - @modelcontextprotocol/sdk: Official MCP SDK
-- AssemblyScript: Memory-safe WASM compilation
 - Regular security audits
 
 ## Contact

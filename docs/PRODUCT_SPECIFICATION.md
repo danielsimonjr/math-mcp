@@ -4,52 +4,55 @@
 
 **Name:** math-mcp
 **Type:** Model Context Protocol (MCP) Server
-**Version:** 2.0.0-wasm
+**Version:** 4.1.3
 **Status:** Production Ready ✅
-**Last Updated:** November 2, 2025
 
-Math-MCP is a WASM-accelerated mathematical computation server that provides high-performance mathematical operations to Large Language Models through the Model Context Protocol. It offers seamless integration with Claude Desktop and Claude CLI, delivering up to 42x performance improvement for large-scale computations.
+Math-MCP is a mathematical computation server that provides mathematical
+operations to Large Language Models through the Model Context Protocol. It
+offers seamless integration with Claude Desktop and Claude CLI.
 
 ## Core Architecture
 
-### Three-Layer Architecture
+### Request Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     MCP Protocol Layer                       │
-│  (index-wasm.ts - Production Server)                        │
+│  (src/index.ts → dist/index.js)                              │
 │  - Request handling (JSON-RPC 2.0)                          │
-│  - Tool registration & dispatch                              │
+│  - Tool registration & dispatch (7 tool definitions)          │
 │  - Response formatting                                        │
 └──────────────────┬──────────────────────────────────────────┘
                    │
 ┌──────────────────▼──────────────────────────────────────────┐
-│              WASM Wrapper Layer                              │
-│  (wasm-wrapper.ts - Intelligent Routing)                    │
-│  - Threshold-based WASM/mathjs selection                    │
-│  - Automatic fallback on WASM failure                        │
-│  - Performance metrics tracking                              │
-│  - Size-based optimization decisions                         │
-└──────────────┬──────────────────────┬───────────────────────┘
-               │                       │
-    ┌──────────▼──────────┐   ┌───────▼────────────┐
-    │   WASM Layer         │   │  MathJS Layer      │
-    │  (AssemblyScript)    │   │  (JavaScript)      │
-    │  - Matrix ops        │   │  - All operations  │
-    │  - Statistics        │   │  - Fallback        │
-    │  - 14-42x faster     │   │  - Compatibility   │
-    └──────────────────────┘   └────────────────────┘
+│                Tool Handler Layer                             │
+│  (src/tool-handlers.ts)                                       │
+│  - Input validation (src/validation.ts)                       │
+│  - Rate limiting (src/rate-limiter.ts)                         │
+│  - Expression caching (src/expression-cache.ts)                │
+│  - Result formatting                                           │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────────┐
+│                 MathTS Compute Engine                         │
+│  (src/math-engine.ts)                                          │
+│  - @danielsimonjr/mathts-compat `create(all)` instance          │
+│  - mathjs-compatible expression/matrix/statistics API           │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### Design Philosophy
 
-**Wrapper Pattern Instead of Fork:**
-Unlike the original plan to clone and modify mathjs, the implemented solution uses a lightweight wrapper pattern that:
-- Keeps mathjs dependency unchanged
-- Adds WASM acceleration as an optional performance layer
-- Maintains 100% API compatibility
-- Provides automatic fallback to pure JavaScript
-- Enables independent WASM module updates
+**MathTS as the compute engine:**
+As of v4.0.0, the server computes via **MathTS** (`@danielsimonjr/mathts-*`),
+a TypeScript engine that exposes a mathjs-compatible API — it is not a fork
+or wrapper around mathjs, and it is not itself referred to as "mathjs." The
+hand-built acceleration stack from earlier versions (WASM/AssemblyScript,
+WebWorkers, WebGPU, a routing/adapter layer with automatic tiered fallback)
+was removed in the v4 cutover; MathTS does not use any of that machinery, and
+large-input protection is handled by size limits (see Security, below)
+rather than a fallback chain or timeouts, since synchronous JavaScript
+execution cannot be interrupted mid-computation.
 
 ## Product Features
 
@@ -57,18 +60,15 @@ Unlike the original plan to clone and modify mathjs, the implemented solution us
 
 #### 1. **evaluate** - Expression Evaluation
 - **Purpose:** Evaluate mathematical expressions with variables
-- **Acceleration:** Partial (delegates to other tools)
 - **Examples:**
   - `2 + 2` → `4`
   - `sqrt(144)` → `12`
   - `pi * 5^2` → `78.54`
-  - `derivative(x^2, x)` → `2*x`
 - **Input:** Expression string, optional scope object
 - **Output:** Computed result (formatted)
 
 #### 2. **simplify** - Algebraic Simplification
 - **Purpose:** Simplify algebraic expressions symbolically
-- **Acceleration:** No (pure mathjs)
 - **Examples:**
   - `2 * x + x` → `3 * x`
   - `(x + 2)^2` → `x^2 + 4*x + 4`
@@ -77,7 +77,6 @@ Unlike the original plan to clone and modify mathjs, the implemented solution us
 
 #### 3. **derivative** - Calculus Derivatives
 - **Purpose:** Calculate symbolic derivatives
-- **Acceleration:** No (pure mathjs)
 - **Examples:**
   - `derivative('x^2', 'x')` → `2*x`
   - `derivative('sin(x)', 'x')` → `cos(x)`
@@ -85,183 +84,78 @@ Unlike the original plan to clone and modify mathjs, the implemented solution us
 - **Output:** Derivative expression string
 
 #### 4. **solve** - Equation Solving
-- **Purpose:** Solve equations for variables
-- **Acceleration:** No (pure mathjs)
+- **Purpose:** Solve equations for a variable
+- **Behavior:** Exact roots, including complex roots, for polynomials of
+  degree ≤ 3; a numeric real-root-only fallback is used for degree ≥ 4 and
+  transcendental equations.
 - **Examples:**
-  - `solve('x^2 - 4 = 0', 'x')` → Solutions
+  - `solve('x^2 - 4 = 0', 'x')` → Exact roots
   - `solve('2x + 1 = 5', 'x')` → `x = 2`
 - **Input:** Equation string, variable name
-- **Output:** Simplified equation or solutions
+- **Output:** Root(s) of the equation
 
 #### 5. **matrix_operations** - Matrix Operations
-- **Purpose:** High-performance matrix computations
-- **Acceleration:** ✅ WASM (7-17x faster for large matrices)
-- **Operations:**
-  - `multiply` - Matrix multiplication (WASM ≥10×10)
-  - `inverse` - Matrix inversion
-  - `determinant` - Determinant calculation (WASM ≥5×5)
-  - `transpose` - Matrix transposition (WASM ≥20×20)
-  - `eigenvalues` - Eigenvalue computation
-  - `add` - Matrix addition (WASM ≥20×20)
-  - `subtract` - Matrix subtraction (WASM ≥20×20)
-- **Input:** Operation name, matrix_a (JSON), optional matrix_b
+- **Purpose:** Matrix computations
+- **Operations:** `multiply`, `inverse`, `determinant`, `transpose`,
+  `eigenvalues`, `add`, `subtract`
+- **Input:** Operation name, `matrix_a` as a JSON string (e.g.
+  `"[[1,2],[3,4]]"`), optional `matrix_b` as a JSON string
 - **Output:** Computed matrix or scalar result
 
 #### 6. **statistics** - Statistical Analysis
-- **Purpose:** High-performance statistical computations
-- **Acceleration:** ✅ WASM (15-42x faster for large datasets)
-- **Operations:**
-  - `mean` - Average (WASM ≥100 elements)
-  - `median` - Middle value (WASM ≥50 elements)
-  - `mode` - Most frequent value
-  - `std` - Standard deviation (WASM ≥100 elements)
-  - `variance` - Variance (WASM ≥100 elements)
-  - `min` - Minimum value (WASM ≥100 elements)
-  - `max` - Maximum value (WASM ≥100 elements)
-  - `sum` - Sum of all values (WASM ≥100 elements)
-  - `product` - Product of all values
-- **Input:** Operation name, data array (JSON)
-- **Output:** Computed statistical value
+- **Purpose:** Statistical computations
+- **Operations:** `mean`, `median`, `mode`, `std`, `variance`, `min`, `max`,
+  `sum`, `product`
+- **Input:** Operation name, `data` as a JSON string (e.g. `"[1,2,3]"`)
+- **Output:** Computed statistical value. Note: `mode` returns an array
+  (there can be more than one most-frequent value).
 
 #### 7. **unit_conversion** - Unit Conversions
 - **Purpose:** Convert between measurement units
-- **Acceleration:** No (pure mathjs)
 - **Examples:**
   - `('5 inches', 'cm')` → `12.7 cm`
   - `('100 fahrenheit', 'celsius')` → `37.78 celsius`
-  - `('50 mph', 'km/h')` → `80.47 km/h`
+  - `('50 mi/h', 'km/h')` → `80.47 km/h`
 - **Input:** Value with unit string, target unit string
 - **Output:** Converted value with unit
-
-### WASM Acceleration System
-
-#### Threshold-Based Routing
-
-The system automatically selects the optimal computation method based on input size:
-
-```typescript
-const THRESHOLDS = {
-  matrix_multiply: 10,    // Use WASM for matrices ≥10×10
-  matrix_det: 5,          // Use WASM for matrices ≥5×5
-  matrix_transpose: 20,   // Use WASM for matrices ≥20×20
-  matrix_add_sub: 20,     // Use WASM for matrices ≥20×20 (add/subtract)
-  statistics: 100,        // Use WASM for arrays ≥100 elements
-  median: 50,             // Use WASM for arrays ≥50 elements (sorting overhead)
-};
-```
-
-**Decision Logic:**
-1. Check input size against threshold
-2. Verify WASM is initialized
-3. If both true → Use WASM
-4. Otherwise → Use mathjs
-5. If WASM fails → Automatic fallback to mathjs
-
-#### Performance Characteristics
-
-**Achieved Benchmarks (Production):**
-
-| Operation | Small Input | Large Input | Speedup | WASM Usage |
-|-----------|-------------|-------------|---------|------------|
-| Matrix Multiply (10×10) | mathjs | WASM | 7x | 70% |
-| Matrix Multiply (20×20) | mathjs | WASM | 8x | 70% |
-| Matrix Det (50×50) | mathjs | WASM | 17x | 70% |
-| Statistics Mean (100) | mathjs | WASM | 7-12x | 70% |
-| Statistics Mean (1000) | mathjs | WASM | 15-42x | 70% |
-| Statistics Min (1000) | mathjs | WASM | 42x | 70% |
-| Statistics Max (1000) | mathjs | WASM | 42x | 70% |
-
-**Overall Metrics:**
-- Average Speedup: **14.30x**
-- Peak Speedup: **42x** (min/max operations)
-- WASM Usage Rate: **70%** (typical workloads)
-- Average WASM Execution Time: **0.207ms**
-
-#### Automatic Fallback
-
-Every WASM operation includes automatic fallback:
-
-```typescript
-try {
-  if (useWASM && wasmModule) {
-    result = wasmModule.operation(data);
-    perfCounters.wasmCalls++;
-    return result;
-  }
-} catch (error) {
-  console.error('[WASM] Operation failed, falling back to mathjs:', error);
-}
-
-// Fallback to mathjs
-result = math.operation(data);
-perfCounters.mathjsCalls++;
-return result;
-```
+- **Notes:**
+  - Use compound speed forms `mi/h` / `km/h` — shorthands like `mph`, `kph`,
+    and `knot` are not valid units.
+  - Some astronomical/nautical/typography units (e.g. `lightyear`, `parsec`,
+    `AU`, `nauticalMile`) are not available in MathTS's unit set and return
+    `Unit "X" not found.`
 
 ## Technical Implementation
 
 ### Project Structure
 
 ```
-C:/mcp-servers/math-mcp/
+math-mcp/
 ├── src/                          # TypeScript source
-│   ├── index.ts                  # MathJS-only server (legacy)
-│   ├── index-wasm.ts             # WASM-accelerated server (PRODUCTION)
-│   ├── mathjs-shim.ts            # Single mathjs import surface
-│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
-│   └── wasm-wrapper.ts           # WASM integration layer
+│   ├── index.ts                  # MCP server entry point + 7 tool definitions
+│   ├── math-engine.ts            # MathTS instance (create(all))
+│   ├── tool-handlers.ts          # Business logic for all 7 tools
+│   ├── handler-utils.ts          # Shared handler helpers
+│   ├── utils.ts                  # General utilities
+│   ├── validation.ts             # Input validation, sandboxing, size limits
+│   ├── rate-limiter.ts           # Token bucket rate limiting
+│   ├── expression-cache.ts       # LRU cache for parsed/evaluated expressions
+│   ├── health.ts                 # Health check system
+│   ├── errors.ts                 # Error types
+│   ├── types.ts                  # Shared TypeScript types
+│   ├── shared/                   # constants.ts, logger.ts
+│   └── telemetry/                # metrics.ts, server.ts (Prometheus + health)
 │
-├── dist/                         # Compiled JavaScript
-│   ├── index.js                  # Compiled legacy server
-│   ├── index-wasm.js             # Compiled production server ⭐
-│   └── wasm-wrapper.js           # Compiled wrapper
-│
-├── wasm/                         # WASM implementation
-│   ├── assembly/                 # AssemblyScript source
-│   │   ├── matrix/               # Matrix operations
-│   │   │   ├── multiply.ts
-│   │   │   ├── determinant.ts
-│   │   │   └── transpose.ts
-│   │   └── statistics/           # Statistical operations
-│   │       ├── mean.ts
-│   │       ├── median.ts
-│   │       ├── variance.ts
-│   │       └── minmax.ts
-│   │
-│   ├── bindings/                 # JavaScript ↔ WASM bridge
-│   │   ├── matrix.cjs            # Matrix bindings
-│   │   └── statistics.cjs        # Statistics bindings
-│   │
-│   ├── build/                    # Compiled WASM modules
-│   │   ├── release.wasm          # Production WASM
-│   │   └── debug.wasm            # Development WASM
-│   │
-│   ├── tests/                    # Differential testing
-│   │   ├── differential-matrix.cjs
-│   │   └── differential-statistics.cjs
-│   │
-│   └── benchmarks/               # Performance benchmarks
-│       ├── profile-matrix.js
-│       └── profile-stats.js
+├── dist/                         # Compiled JavaScript (tsc output)
+│   └── index.js                  # Entry point / bin
 │
 ├── test/                         # Tests
-│   ├── integration-test.js       # End-to-end MCP tests
-│   └── unit/                     # Unit tests
-│       ├── handler-utils.test.ts
-│       ├── routing-utils.test.ts
-│       ├── mathjs-shim.test.ts
-│       ├── acceleration-adapter.test.ts
-│       ├── wasm-executor.test.ts
-│       └── wasm-integrity.test.ts
+│   ├── integration-test.js       # End-to-end MCP integration tests
+│   ├── correctness-tests.js      # Mathematical correctness validation
+│   ├── unit/                     # Vitest unit tests
+│   └── security/                 # Vitest security tests (injection, DoS, fuzzing, bounds)
 │
 ├── docs/                         # Documentation
-│   ├── DEPLOYMENT_PLAN.md        # Production deployment guide
-│   ├── IMPLEMENTATION_PLAN.md    # Development plan
-│   ├── PRODUCT_SPECIFICATION.md  # This document
-│   ├── REFACTORING_PLAN.md       # Refactoring history
-│   ├── STYLE_GUIDE.md            # Code style guide
-│   └── TEST_VERIFICATION_PLAN.md # Testing strategy
-│
 ├── CHANGELOG.md                  # Complete project history
 ├── README.md                     # Main documentation
 ├── eslint.config.js              # ESLint flat config
@@ -272,44 +166,33 @@ C:/mcp-servers/math-mcp/
 ### Dependencies
 
 **Production:**
-- `@modelcontextprotocol/sdk` ^1.20.2 - MCP protocol implementation
-- `mathjs` `file:../Mathjs` - Mathematical operations library (local fork v15.2.0)
+- `@danielsimonjr/mathts-compat` - MathTS mathjs-compatible engine (`create(all)`)
+- `@danielsimonjr/mathts-matrix` - MathTS matrix operations
+- `@modelcontextprotocol/sdk` - MCP protocol implementation
+- `prom-client` - Prometheus metrics
 
 **Development:**
-- `typescript` ^5.9.3 - TypeScript compiler
-- `@types/node` ^24.9.1 - Node.js type definitions
-- AssemblyScript (in wasm/) - WASM compilation
-
-**WASM Build Tools:**
-- `assemblyscript` - Compile TypeScript to WASM
-- `gulp` - Build automation (in wasm/)
+- `typescript` - TypeScript compiler
+- `vitest` / `@vitest/coverage-v8` - Unit/security test runner and coverage
+- `eslint` / `prettier` - Linting and formatting
+- `@types/node` - Node.js type definitions
 
 ### Build Process
 
-**Standard Build:**
+**Standard build (the only build step):**
 ```bash
 npm run build
-# Compiles: src/*.ts → dist/*.js
+# Compiles: src/*.ts -> dist/*.js (tsc)
 ```
 
 **Install dependencies:**
 ```bash
 npm install
-# Note: use npm install, not npm ci (package-lock.json is gitignored)
 ```
 
-**WASM Build (if needed):**
-```bash
-cd wasm
-npm install
-npx gulp
-# Compiles: assembly/*.ts → build/*.wasm
-```
-
-**Entry Points:**
-- Main: `dist/index-wasm.js` (production)
-- Fallback: `dist/index.js` (legacy)
-- Binary: `math-mcp` (via npm link)
+**Entry Point:**
+- Main: `dist/index.js`
+- Binary: `math-mcp` (via `bin` in package.json)
 
 ## MCP Protocol Implementation
 
@@ -317,8 +200,7 @@ npx gulp
 
 **Server Information:**
 - Name: `math-mcp`
-- Version: `2.0.0-wasm`
-- Protocol: Model Context Protocol v1.20.2
+- Protocol: Model Context Protocol
 
 **Supported Methods:**
 - `tools/list` - List available tools
@@ -400,129 +282,83 @@ await server.connect(transport);
 {
   "mcpServers": {
     "math-mcp": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": ["C:\\mcp-servers\\math-mcp\\dist\\index-wasm.js"]
+      "command": "node",
+      "args": ["/path/to/math-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-**Integration Status:** ✅ Configured and Ready
-
 ### Claude CLI
-
-**Configuration Method:** Command-line interface
 
 **Setup:**
 ```bash
-claude mcp add --transport stdio math-mcp node c:/mcp-servers/math-mcp/dist/index-wasm.js
+claude mcp add --transport stdio math-mcp node /path/to/math-mcp/dist/index.js
 ```
 
 **Verification:**
 ```bash
 claude mcp list
-# Output: math-mcp: node c:/mcp-servers/math-mcp/dist/index-wasm.js - ✓ Connected
+# Output: math-mcp: node /path/to/math-mcp/dist/index.js - ✓ Connected
 ```
-
-**Integration Status:** ✅ Configured and Tested
 
 ### Other MCP Clients
 
 Any MCP-compatible client can integrate by:
-1. Spawning Node.js process: `node /path/to/dist/index-wasm.js`
+1. Spawning Node.js process: `node /path/to/dist/index.js`
 2. Communicating via stdio with JSON-RPC 2.0
 3. Using standard MCP protocol for tool discovery and execution
+
+## Security
+
+- **Expression sandboxing / AST validation** (`src/validation.ts`) — rejects
+  disallowed constructs before evaluation.
+- **Size limits** (`src/validation.ts`) — bound expression length, nesting
+  depth, matrix dimensions, and array length; this is the primary defense
+  against large/expensive inputs, since synchronous computation cannot be
+  aborted mid-flight with a timeout.
+- **Token-bucket rate limiting** (`src/rate-limiter.ts`).
 
 ## Quality Assurance
 
 ### Testing Strategy
 
-**1. Integration Tests (11 tests, 100% passing):**
-- WASM initialization verification
-- Small matrix operations (mathjs fallback)
-- Large matrix operations (WASM acceleration)
-- Small statistics operations (mathjs fallback)
-- Large statistics operations (WASM acceleration)
-- Threshold-based routing verification
-- Performance monitoring validation
+**1. Integration Tests** (`test/integration-test.js`, run via `npm test`):
+End-to-end correctness checks against the MathTS-backed compute engine across
+small and large inputs for each operation the tools expose.
 
-**2. Unit Tests (750 passing / 0 failing / 2 skipped):**
-- `handler-utils.test.ts` — successResponse, errorResponse, executeHandler, withErrorHandling
-- `routing-utils.test.ts` — routeWithFallback tier ordering, computeRoutingStatsSummary
-- `mathjs-shim.test.ts` — mathjs surface sanity checks and end-to-end smoke test
-- `acceleration-adapter.test.ts` — adapter unwrapping, error propagation, singleton export
-- `wasm-executor.test.ts` — threshold gating, wasmReady flag, fallback, perf counters
-- `wasm-integrity.test.ts` — integrity check env-var handling, hash match/mismatch, fs errors
+**2. Unit Tests** (`test/unit/`, run via `npm run test:unit`, Vitest):
+Covers validation, expression caching, rate limiting, handler utilities,
+health checks, general utilities, error types, and the solver.
 
-**3. Differential Tests:**
-- WASM results must exactly match mathjs results
-- Floating-point precision validation
-- Edge case handling (empty arrays, singular matrices)
+**3. Security Tests** (`test/security/`, run via `npm run test:security`,
+Vitest): injection, DoS/bounds, and fuzzing coverage.
 
-**4. Performance Benchmarks:**
-- Matrix operations: 10×10, 20×20, 50×50
-- Statistics: 100, 1,000, 10,000 elements
-- WASM vs mathjs comparison
-- Speedup verification
+**4. Correctness Tests** (`test/correctness-tests.js`, run via
+`npm run test:correctness`): mathematical correctness validation.
 
 **5. MCP Protocol Tests:**
 - Request/response format validation
 - Error handling verification
 - All 7 tools functional testing
 
-### Success Criteria (All Met ✅)
-
-- ✅ Integration tests: 11/11 passing (100%)
-- ✅ Unit tests: 750 passing / 0 failing / 2 skipped
-- ✅ Matrix operations: 7-17x speedup (target: 5-10x)
-- ✅ Statistical operations: 15-42x speedup (target: 2-5x)
-- ✅ WASM usage rate: 70% (target: >50%)
-- ✅ MCP server works without errors
-- ✅ WASM fallback mechanisms work correctly
-- ✅ Claude Desktop integration successful
-- ✅ Claude CLI integration successful
-
 ## Performance Monitoring
 
-### Built-in Metrics
+### Prometheus Metrics & Health Probes
 
-The server tracks performance in real-time:
+`src/telemetry/metrics.ts` and `src/telemetry/server.ts` run an HTTP server on
+**port 9090** exposing:
+- `/metrics` - Prometheus metrics
+- `/health` - General health status
+- `/health/live` - Liveness probe
+- `/health/ready` - Readiness probe
 
-```typescript
-interface PerfStats {
-  wasmCalls: number;          // Total WASM operations
-  mathjsCalls: number;        // Total mathjs operations
-  totalCalls: number;         // Combined total
-  wasmPercentage: string;     // "70.0%"
-  avgWasmTime: string;        // "0.207ms"
-  avgMathjsTime: string;      // "1.178ms"
-  wasmInitialized: boolean;   // true/false
-}
-```
-
-**Access via:**
-```typescript
-import { getPerfStats } from './wasm-wrapper.js';
-const stats = getPerfStats();
-```
+These are Kubernetes-compatible probes (`src/health.ts`).
 
 ### Logging
 
-**Startup Messages:**
-```
-Math MCP Server running on stdio
-[WASM] Modules initialized successfully
-```
-
-**Initialization Failure:**
-```
-[WASM] Initialization failed, will use mathjs fallback: <error>
-```
-
-**Operation Failures:**
-```
-[WASM] Matrix multiply failed, falling back to mathjs: <error>
-```
+Controlled by `LOG_LEVEL` (`src/shared/logger.ts`) and `ENABLE_PERF_LOGGING`
+for per-call performance logging (`src/index.ts`).
 
 ## Deployment Requirements
 
@@ -530,87 +366,61 @@ Math MCP Server running on stdio
 
 **Node.js:**
 - Version: 18.0.0 or higher
-- Tested on: v25.0.0
-- Required for: JavaScript runtime and WASM execution
+- Required for: JavaScript runtime
 
 **Operating Systems:**
-- Windows 10/11 (tested)
-- macOS 10.15+ (compatible)
-- Linux (Ubuntu 20.04+, compatible)
-
-**Memory:**
-- Minimum: 512 MB RAM
-- Recommended: 1 GB RAM (for large matrix operations)
-
-**Disk Space:**
-- Installation: ~50 MB
-- WASM modules: ~2 MB
-- Dependencies: ~100 MB (node_modules)
+- Windows 10/11
+- macOS
+- Linux
 
 ### Installation Requirements
 
 **Required:**
 - Node.js and npm installed
 - Write access to installation directory
-- Network access for npm install
+- Network access for `npm install`
 
 **Optional:**
 - Global npm link capability (for binary installation)
 - Claude Desktop or Claude CLI
 
-## Product Versioning
+## Environment Variables
 
-### Version History
+The following are read from `process.env` by `src/`:
+- `LOG_LEVEL` - `debug` | `info` | `warn` | `error` (`src/shared/logger.ts`)
+- `NODE_ENV` (`src/shared/logger.ts`)
+- `ENABLE_PERF_LOGGING` - per-call perf logging (default off, `src/index.ts`)
+- `DISABLE_PERF_TRACKING` (`src/shared/constants.ts`)
+- `OPERATION_TIMEOUT` - default 30000 (`src/shared/constants.ts`)
+- `EXPRESSION_CACHE_SIZE` - default 1000 (`src/expression-cache.ts`)
+- `MAX_REQUESTS_PER_WINDOW` - default 100 (`src/rate-limiter.ts`)
+- `RATE_LIMIT_WINDOW_MS` - default 60000 (`src/rate-limiter.ts`)
+- `MAX_CONCURRENT_REQUESTS` - default 10 (`src/rate-limiter.ts`)
+- `MAX_QUEUE_SIZE` - default 50 (`src/rate-limiter.ts`)
+- `ENABLE_TELEMETRY` - start the metrics/health HTTP server (default off, `src/telemetry/server.ts`)
+- `TELEMETRY_PORT` - default 9090 (`src/telemetry/server.ts`)
 
-**2.0.0-wasm** (November 2, 2025) - Current
-- Server renamed from mathjs-mcp to math-mcp
-- WASM acceleration enabled by default
-- Updated package.json to use index-wasm.js
-- Claude Desktop and CLI configurations updated
-- Production ready status achieved
+### Size limits (fixed constants, NOT env-configurable)
 
-**1.0.0** (November 2, 2025)
-- Initial production release
-- Project refactored to root-level structure
-- 11/11 integration tests passing
-- Complete documentation
-
-**Development Phases** (October-November 2025)
-- Phase 1: Planning and foundation
-- Phase 2: WASM implementation
-- Phase 3: Integration and testing
-- Phase 4: Production deployment
-
-### Semantic Versioning
-
-Format: `MAJOR.MINOR.PATCH-wasm`
-
-- MAJOR: Breaking changes to MCP interface
-- MINOR: New features, tool additions
-- PATCH: Bug fixes, performance improvements
-- -wasm: Indicates WASM-accelerated version
+The input size limits are hardcoded in the `LIMITS` object in
+`src/validation.ts` and cannot be overridden via environment variables:
+- Matrix dimension: 1000 × 1000 (`MAX_MATRIX_SIZE`)
+- Array length: 100000 (`MAX_ARRAY_LENGTH`)
+- Expression length: 10000 characters (`MAX_EXPRESSION_LENGTH`)
+- Nesting depth: 50 (`MAX_NESTING_DEPTH`)
 
 ## Product Roadmap
 
-### Current Status (2.0.0-wasm)
+### Current Status (4.1.x)
 
-✅ All features implemented and tested
-✅ Production deployment complete
-✅ Documentation complete
+✅ All 7 tools implemented and tested on the MathTS engine
 ✅ Integration with Claude Desktop and CLI
 
 ### Potential Future Enhancements
 
-**Performance Optimizations:**
-- Additional WASM operations (eigenvalues, SVD)
-- Lower thresholds for faster small operations
-- Parallel WASM execution for batch operations
-- WebAssembly SIMD optimizations
-
 **Feature Additions:**
 - Symbolic integration (currently only derivatives)
 - Linear programming solver
-- Polynomial root finding
 - Complex number operations
 - Vector calculus operations
 
@@ -618,12 +428,10 @@ Format: `MAJOR.MINOR.PATCH-wasm`
 - Interactive configuration UI
 - Performance profiling dashboard
 - Real-time operation monitoring
-- Custom threshold configuration
 
 **Integration:**
 - Support for more MCP clients
 - Streaming results for long computations
-- Caching for repeated calculations
 - Distributed computation support
 
 ## Support and Maintenance
@@ -634,55 +442,47 @@ Format: `MAJOR.MINOR.PATCH-wasm`
 # Standard build
 npm run build
 
-# Development mode (watch + run)
+# Development mode
 npm run dev
 
 # Start production server
 npm start
 
 # Run integration tests
-node test/integration-test.js
+npm test
 
-# Rebuild WASM modules
-cd wasm && npx gulp
+# Run all tests
+npm run test:all
 ```
 
 ### Troubleshooting
 
 **Common Issues:**
 
-1. **WASM not initializing**
-   - Check wasm/build/ directory exists
-   - Verify wasm bindings are present
-   - Rebuild WASM: `cd wasm && npx gulp`
-
-2. **Performance not improving**
-   - Verify using index-wasm.js not index.js
-   - Check input sizes meet thresholds
-   - Review WASM initialization logs
-
-3. **Integration test failures**
+1. **Integration test failures**
    - Rebuild project: `npm run build`
    - Check Node.js version: `node --version`
    - Review test output for specific failures
 
+2. **MCP connection issues**
+   - Verify `dist/index.js` exists (run `npm run build`)
+   - Check the client configuration points at the correct absolute path
+
 ### Support Channels
 
 **Documentation:**
-- README.md - Quick start guide
-- DEPLOYMENT_PLAN.md - Deployment instructions
-- CHANGELOG.md - Complete project history
+- `README.md` - Quick start guide
+- `CHANGELOG.md` - Complete project history
 - This file - Complete product specification
 
 **Diagnostic Commands:**
 ```bash
 # Verify installation
-node dist/index-wasm.js
+node dist/index.js
 # Should start and wait for JSON-RPC input
 
 # Run tests
-node test/integration-test.js
-# Should show 11/11 passing
+npm test
 
 # Check MCP integration
 claude mcp list
@@ -694,16 +494,12 @@ claude mcp list
 **License:** ISC License
 
 **Dependencies:**
-- mathjs (Apache-2.0) — local fork at `file:../Mathjs`
-- @modelcontextprotocol/sdk (MIT)
-- TypeScript (Apache-2.0)
-- AssemblyScript (Apache-2.0)
+- `@danielsimonjr/mathts-compat`, `@danielsimonjr/mathts-matrix` — MathTS engine
+- `@modelcontextprotocol/sdk` (MIT)
+- `prom-client`
+- TypeScript
 
 ---
 
 **Product Status:** Production Ready ✅
 **Deployment Status:** Claude Desktop ✅ | Claude CLI ✅
-**WASM Status:** Enabled and Tested ✅
-**Documentation Status:** Complete ✅
-**Last Updated:** November 2, 2025
-**Version:** 2.0.0-wasm

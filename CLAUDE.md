@@ -171,11 +171,20 @@ There is no `accelerator`/router parameter (the acceleration layer was removed i
 
 ## Environment Variables
 
-Key configuration options (only these are read by `src/`):
-- `LOG_LEVEL` - debug|info|warn|error (`src/shared/logger.ts`)
-- `ENABLE_PERF_LOGGING` - `true` enables per-call perf logging (`src/index.ts`)
-- `MAX_MATRIX_SIZE` - Maximum matrix dimension (default: 1000, `src/validation.ts`)
-- `MAX_ARRAY_LENGTH` - Maximum array length (default: 100000, `src/validation.ts`)
+Env vars actually read from `process.env` in `src/` (verified by grep):
+- `LOG_LEVEL` - debug|info|warn|error (`src/shared/logger.ts`; default DEBUG, or INFO when `NODE_ENV=production`)
+- `NODE_ENV` - affects the default log level (`src/shared/logger.ts`)
+- `ENABLE_PERF_LOGGING` - `true` enables per-call perf logging (`src/shared/constants.ts`, `src/index.ts`)
+- `DISABLE_PERF_TRACKING` - `true` disables perf tracking (`src/shared/constants.ts`)
+- `OPERATION_TIMEOUT` - default 30000 (`src/shared/constants.ts`)
+- `EXPRESSION_CACHE_SIZE` - LRU cache entries, default 1000 (`src/expression-cache.ts`)
+- `MAX_REQUESTS_PER_WINDOW` (100), `RATE_LIMIT_WINDOW_MS` (60000), `MAX_CONCURRENT_REQUESTS` (10), `MAX_QUEUE_SIZE` (50) - rate limiter (`src/rate-limiter.ts`)
+- `ENABLE_TELEMETRY` (`true` starts the metrics/health HTTP server, default off), `TELEMETRY_PORT` (9090) - (`src/telemetry/server.ts`)
+
+**Size limits are NOT env vars** — `MAX_MATRIX_SIZE` (1000), `MAX_ARRAY_LENGTH`
+(100000), `MAX_EXPRESSION_LENGTH` (10000), `MAX_NESTING_DEPTH` (50) are hardcoded
+constants in the `LIMITS` object in `src/validation.ts`; changing them needs a
+code edit + rebuild.
 
 ## Commit Convention
 

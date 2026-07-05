@@ -1,21 +1,18 @@
 # Math-MCP Style Guide
 
 **Project:** math-mcp
-**Version:** 2.0.0-wasm
-**Last Updated:** November 2, 2025
 
-This document defines the coding standards and best practices for the math-mcp project, covering TypeScript MCP server code, AssemblyScript WASM implementations, testing, and documentation.
+This document defines the coding standards and best practices for the math-mcp project, covering TypeScript MCP server code, testing, and documentation.
 
 ## Table of Contents
 
 1. [Project Naming Conventions](#project-naming-conventions)
 2. [TypeScript MCP Server Style](#typescript-mcp-server-style)
-3. [AssemblyScript WASM Style](#assemblyscript-wasm-style)
-4. [File Organization](#file-organization)
-5. [Documentation Standards](#documentation-standards)
-6. [Testing Conventions](#testing-conventions)
-7. [Git Commit Guidelines](#git-commit-guidelines)
-8. [Code Review Checklist](#code-review-checklist)
+3. [File Organization](#file-organization)
+4. [Documentation Standards](#documentation-standards)
+5. [Testing Conventions](#testing-conventions)
+6. [Git Commit Guidelines](#git-commit-guidelines)
+7. [Code Review Checklist](#code-review-checklist)
 
 ---
 
@@ -31,28 +28,23 @@ This document defines the coding standards and best practices for the math-mcp p
 - **Git repository:** Use `math-mcp` in all references
 
 ### Rationale
-The project was renamed from `mathjs-mcp` to `math-mcp` on November 2, 2025, to:
-- Reflect the WASM-accelerated nature beyond just mathjs
+The project was renamed from `mathjs-mcp` to `math-mcp` to:
+- Reflect that the compute engine is not just a thin mathjs wrapper
 - Simplify the name and improve clarity
-- Indicate it's a general math server, not just a mathjs wrapper
+- Indicate it's a general math server
 
 ### File Naming
 
 **TypeScript Files:**
-- MCP server files: `index.ts`, `index-wasm.ts`
-- Wrapper/utility files: `wasm-wrapper.ts`, `utils.ts`
-- Use kebab-case for multi-word files: `performance-monitor.ts`
-
-**AssemblyScript Files:**
-- Use kebab-case: `multiply.ts`, `determinant.ts`, `matrix-transpose.ts`
+- MCP server files: `index.ts`
+- Utility files: `utils.ts`, `handler-utils.ts`
+- Use kebab-case for multi-word files: `expression-cache.ts`, `rate-limiter.ts`
 
 **JavaScript Files:**
-- Bindings: `matrix.cjs`, `statistics.cjs` (CommonJS modules)
-- Tests: `integration-test.js`, `differential-matrix.cjs`
-- Benchmarks: `profile-matrix.js`, `profile-stats.js`
+- Tests: `integration-test.js`, `correctness-tests.js`
 
 **Documentation:**
-- All caps with underscores: `README.md`, `CHANGELOG.md`, `DEPLOYMENT_PLAN.md`
+- All caps with underscores: `README.md`, `CHANGELOG.md`
 - Exception: `package.json`, `tsconfig.json` (standard names)
 
 ---
@@ -65,7 +57,7 @@ Every TypeScript MCP server file should follow this structure:
 
 ```typescript
 #!/usr/bin/env node
-// Shebang for executable files (index-wasm.ts)
+// Shebang for executable files (index.ts)
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -74,8 +66,8 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import math from "./mathjs-shim.js";
-import * as wasmWrapper from "./wasm-wrapper.js";
+import { handleEvaluate, withErrorHandling } from "./tool-handlers.js";
+import { getPackageVersion } from "./utils.js";
 
 // ============================================================================
 // TOOL DEFINITIONS
@@ -97,7 +89,7 @@ const TOOLS: Tool[] = [
 const server = new Server(
   {
     name: "math-mcp",  // Use official server name
-    version: "2.0.0-wasm",
+    version: getPackageVersion(),
   },
   {
     capabilities: {
@@ -139,12 +131,12 @@ main().catch((error) => {
 **Variables:**
 ```typescript
 // Use camelCase for variables
-const wasmInitialized: boolean = true;
+const cacheInitialized: boolean = true;
 let performanceStats: PerfStats;
 
 // Use descriptive names
-const thresholdMatrixMultiply = 10;  // Good
-const mmThresh = 10;                 // Bad
+const maxMatrixSize = 1000;  // Good
+const mmSize = 1000;         // Bad
 ```
 
 **Functions:**
@@ -154,7 +146,7 @@ async function evaluateExpression(expr: string): Promise<number> { }
 function formatResult(value: any): string { }
 
 // Private functions (in modules): prefix with underscore
-function _initializeWASM(): void { }
+function _initializeCache(): void { }
 ```
 
 **Constants:**
@@ -166,12 +158,10 @@ const ERROR_MESSAGES = {
   DIMENSION_MISMATCH: "Matrix dimensions do not match",
 };
 
-// Object of thresholds: camelCase keys
-const THRESHOLDS = {
-  matrix_multiply: 10,
-  matrix_det: 5,
-  matrix_add_sub: 20,
-  statistics: 100,
+// Object of size limits: camelCase keys
+const SIZE_LIMITS = {
+  matrix_dimension: 1000,
+  array_length: 100000,
 };
 ```
 
@@ -185,9 +175,9 @@ interface Tool {
 }
 
 type PerfStats = {
-  wasmCalls: number;
-  mathjsCalls: number;
-  wasmPercentage: string;
+  toolName: string;
+  durationMs: number;
+  cacheHit: boolean;
 };
 ```
 
@@ -198,14 +188,14 @@ type PerfStats = {
 ```typescript
 // ✅ GOOD: Explicit types
 async function multiply(a: number[][], b: number[][]): Promise<number[][]> {
-  return wasmWrapper.matrixMultiply(a, b);
+  return math.multiply(a, b);
 }
 
 const result: string = JSON.stringify({ value: 42 });
 
 // ❌ BAD: Implicit any types
 async function multiply(a, b) {
-  return wasmWrapper.matrixMultiply(a, b);
+  return math.multiply(a, b);
 }
 ```
 
@@ -274,7 +264,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function processRequest(data: string): Promise<Result> {
   try {
     const parsed = JSON.parse(data);
-    const result = await wasmWrapper.calculate(parsed);
+    const result = await handleEvaluate(parsed);
     return { success: true, data: result };
   } catch (error) {
     return { success: false, error: String(error) };
@@ -284,7 +274,7 @@ async function processRequest(data: string): Promise<Result> {
 // ❌ BAD: Missing await or improper error handling
 async function processRequest(data: string): Promise<Result> {
   const parsed = JSON.parse(data);  // No try-catch
-  const result = wasmWrapper.calculate(parsed);  // Missing await
+  const result = handleEvaluate(parsed);  // Missing await
   return { success: true, data: result };
 }
 ```
@@ -296,9 +286,7 @@ async function processRequest(data: string): Promise<Result> {
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import math from "./mathjs-shim.js";
-
-import * as wasmWrapper from "./wasm-wrapper.js";
+import math from "./math-engine.js";
 import { formatResult } from "./utils.js";
 
 // Use .js extensions for ESM imports (required)
@@ -334,144 +322,6 @@ async function evaluateExpression(
 
 ---
 
-## AssemblyScript WASM Style
-
-### 1. File Structure
-
-Every AssemblyScript file should follow this structure:
-
-```typescript
-/**
- * @file multiply.ts
- * @description Matrix multiplication implementation for WASM
- * @module wasm/assembly/matrix
- */
-
-// ============================================================================
-// IMPORTS
-// ============================================================================
-
-import { f64, i32 } from 'assemblyscript';
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const EPSILON: f64 = 1e-10;
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-function validateDimensions(rows: i32, cols: i32): bool {
-  return rows > 0 && cols > 0;
-}
-
-// ============================================================================
-// EXPORTED FUNCTIONS
-// ============================================================================
-
-/**
- * Multiplies two matrices.
- * @param a - First matrix (flattened array)
- * @param aRows - Number of rows in matrix a
- * @param aCols - Number of columns in matrix a
- * @param b - Second matrix (flattened array)
- * @param bRows - Number of rows in matrix b
- * @param bCols - Number of columns in matrix b
- * @returns Resulting matrix (flattened array)
- */
-export function multiply(
-  a: Float64Array,
-  aRows: i32,
-  aCols: i32,
-  b: Float64Array,
-  bRows: i32,
-  bCols: i32
-): Float64Array {
-  // Validate dimensions
-  assert(aCols == bRows, "Matrix dimensions incompatible for multiplication");
-
-  const result = new Float64Array(aRows * bCols);
-
-  for (let i: i32 = 0; i < aRows; i++) {
-    for (let j: i32 = 0; j < bCols; j++) {
-      let sum: f64 = 0.0;
-      for (let k: i32 = 0; k < aCols; k++) {
-        sum += unchecked(a[i * aCols + k]) * unchecked(b[k * bCols + j]);
-      }
-      unchecked(result[i * bCols + j] = sum);
-    }
-  }
-
-  return result;
-}
-```
-
-### 2. Type Usage
-
-**Use explicit numeric types:**
-
-```typescript
-// Integers - use i32 for standard integers
-let index: i32 = 0;
-let count: i32 = 100;
-let size: i32 = 1000;
-
-// Floating point - use f64 for all math operations
-let value: f64 = 3.14159;
-let result: f64 = 0.0;
-
-// Arrays
-let data: Float64Array = new Float64Array(100);
-let indices: Int32Array = new Int32Array(10);
-```
-
-### 3. Performance Optimizations
-
-```typescript
-// ✅ GOOD: Use unchecked for performance in hot loops
-function sumArray(arr: Float64Array): f64 {
-  let sum: f64 = 0.0;
-  const len = arr.length;
-  for (let i: i32 = 0; i < len; i++) {
-    sum += unchecked(arr[i]);  // Skip bounds checking
-  }
-  return sum;
-}
-
-// ✅ GOOD: Pre-calculate loop bounds
-function processMatrix(matrix: Float64Array, rows: i32, cols: i32): void {
-  const size = rows * cols;  // Calculate once
-  for (let i: i32 = 0; i < size; i++) {
-    // Process element
-  }
-}
-
-// ❌ BAD: Recalculating on each iteration
-function sumArraySlow(arr: Float64Array): f64 {
-  let sum: f64 = 0.0;
-  for (let i: i32 = 0; i < arr.length; i++) {  // Recalculates length
-    sum += arr[i];  // Bounds checking on each access
-  }
-  return sum;
-}
-```
-
-### 4. Memory Management
-
-```typescript
-// AssemblyScript manages memory automatically for most cases
-export function createArray(size: i32): Float64Array {
-  return new Float64Array(size);  // Garbage collected
-}
-
-// For manual memory management (advanced cases only)
-// Use sparingly and ensure proper cleanup
-```
-
----
-
 ## File Organization
 
 ### Project Structure
@@ -479,48 +329,30 @@ export function createArray(size: i32): Float64Array {
 ```
 math-mcp/
 ├── src/                          # TypeScript source code
-│   ├── index.ts                  # MathJS-only server (legacy)
-│   ├── index-wasm.ts             # WASM-accelerated server (PRODUCTION)
-│   ├── mathjs-shim.ts            # Single mathjs import surface
-│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
-│   └── wasm-wrapper.ts           # WASM integration layer
+│   ├── index.ts                  # Entry point: MCP server + 7 tool defs (→ dist/index.js, also bin)
+│   ├── math-engine.ts            # Builds the MathTS instance (create(all)); every module imports its default export
+│   ├── tool-handlers.ts          # Business logic for the 7 mathematical tools
+│   ├── handler-utils.ts          # Shared helpers for the handlers
+│   ├── utils.ts                  # Shared helpers (logging, perf tracking, version)
+│   ├── validation.ts             # Input validation and security (expression sandboxing, size limits)
+│   ├── rate-limiter.ts           # Token bucket rate limiting
+│   ├── expression-cache.ts       # Cache for parsed/evaluated expressions
+│   ├── health.ts                 # Health check system (Kubernetes-compatible probes)
+│   ├── errors.ts                 # Error types
+│   ├── types.ts                  # Shared TypeScript types
+│   ├── shared/                   # constants.ts, logger.ts (LOG_LEVEL-driven)
+│   └── telemetry/                # metrics.ts (Prometheus), server.ts (port 9090: /metrics, /health)
 │
 ├── dist/                         # Compiled JavaScript output
-│   ├── index.js
-│   ├── index-wasm.js             # Production entry point
-│   └── wasm-wrapper.js
-│
-├── wasm/                         # WASM implementation
-│   ├── assembly/                 # AssemblyScript source
-│   │   ├── matrix/               # Matrix operations
-│   │   │   ├── multiply.ts
-│   │   │   ├── determinant.ts
-│   │   │   └── transpose.ts
-│   │   └── statistics/           # Statistical operations
-│   │       ├── mean.ts
-│   │       ├── median.ts
-│   │       └── variance.ts
-│   ├── bindings/                 # JavaScript <-> WASM bridge
-│   │   ├── matrix.cjs
-│   │   └── statistics.cjs
-│   ├── build/                    # Compiled WASM modules
-│   │   ├── release.wasm
-│   │   └── debug.wasm
-│   ├── tests/                    # Differential tests
-│   └── benchmarks/               # Performance benchmarks
+│   └── index.js                  # The only entry point
 │
 ├── test/                         # Tests
-│   ├── integration-test.js
-│   └── unit/                     # Unit tests
-│       ├── handler-utils.test.ts
-│       ├── routing-utils.test.ts
-│       ├── mathjs-shim.test.ts
-│       ├── acceleration-adapter.test.ts
-│       ├── wasm-executor.test.ts
-│       └── wasm-integrity.test.ts
+│   ├── integration-test.js       # End-to-end integration tests
+│   ├── correctness-tests.js      # Mathematical correctness validation
+│   ├── unit/                     # Unit tests (Vitest)
+│   └── security/                 # Security tests (injection, DoS, fuzzing, bounds)
 │
 ├── docs/                         # Documentation
-│   ├── DEPLOYMENT_PLAN.md
 │   ├── PRODUCT_SPECIFICATION.md
 │   ├── STYLE_GUIDE.md
 │   └── ...
@@ -536,14 +368,12 @@ math-mcp/
 
 **Source Files:**
 - TypeScript MCP server code → `src/`
-- AssemblyScript WASM code → `wasm/assembly/`
-- Compiled output → `dist/` (TypeScript), `wasm/build/` (WASM)
+- Compiled output → `dist/`
 
 **Tests:**
-- Integration tests → `test/`
+- Integration/correctness tests → `test/`
 - Unit tests → `test/unit/`
-- WASM differential tests → `wasm/tests/`
-- Benchmarks → `wasm/benchmarks/`
+- Security tests → `test/security/`
 
 **Documentation:**
 - Major docs → `docs/`
@@ -591,27 +421,12 @@ License information
 
 ```typescript
 // Single-line comments for brief explanations
-const threshold = 10;  // Use WASM for matrices >= 10x10
+const MAX_MATRIX_SIZE = 1000;  // Reject matrices larger than this (src/validation.ts)
 
 /**
  * Multi-line JSDoc comments for functions, classes, and complex logic.
  * Include @param, @returns, @example tags.
  */
-```
-
-**AssemblyScript:**
-
-```typescript
-/**
- * Function documentation with JSDoc tags.
- *
- * @param a - Description
- * @returns Description
- */
-export function multiply(a: Matrix, b: Matrix): Matrix {
-  // Implementation comments when logic is complex
-  // ...
-}
 ```
 
 ### 3. CHANGELOG.md Format
@@ -639,15 +454,15 @@ Brief overview of changes
 
 ```typescript
 // ✅ GOOD: Explain WHY, not WHAT
-// Use WASM for large matrices because it's 14x faster
-if (size >= THRESHOLDS.matrix_multiply) {
-  return wasmMultiply(a, b);
+// Reject oversized matrices up front since synchronous JS can't be interrupted mid-computation
+if (size > MAX_MATRIX_SIZE) {
+  throw new ValidationError("Matrix exceeds maximum allowed size");
 }
 
 // ❌ BAD: Redundant comments
-// Check if size is greater than or equal to threshold
-if (size >= THRESHOLDS.matrix_multiply) {
-  return wasmMultiply(a, b);
+// Check if size is greater than max matrix size
+if (size > MAX_MATRIX_SIZE) {
+  throw new ValidationError("Matrix exceeds maximum allowed size");
 }
 ```
 
@@ -665,26 +480,26 @@ console.log("\n=== MCP Server Integration Tests ===\n");
 let testsPassed = 0;
 let testsFailed = 0;
 
-async function testWasmInitialization() {
-  console.log("--- WASM Initialization ---");
+async function testEvaluateTool() {
+  console.log("--- evaluate tool ---");
 
   try {
-    const initialized = await checkWasmStatus();
-    if (initialized) {
-      console.log("✓ WASM should be initialized");
+    const result = await callTool("evaluate", { expression: "2 + 2" });
+    if (result === "4") {
+      console.log("✓ evaluate returns correct result");
       testsPassed++;
     } else {
-      throw new Error("WASM not initialized");
+      throw new Error(`Expected 4, got ${result}`);
     }
   } catch (error) {
-    console.log("✗ WASM initialization failed:", error.message);
+    console.log("✗ evaluate failed:", error.message);
     testsFailed++;
   }
 }
 
 // Run all tests
 async function runAllTests() {
-  await testWasmInitialization();
+  await testEvaluateTool();
   await testMatrixOperations();
   await testStatistics();
 
@@ -705,11 +520,11 @@ runAllTests();
 // Test function names: testFeatureName
 async function testSmallMatrixMultiply() { }
 async function testLargeMatrixMultiply() { }
-async function testWasmFallback() { }
+async function testMatrixSizeLimitRejected() { }
 
 // Test descriptions: Clear and specific
-console.log("✓ Small matrix multiply (2x2) - mathjs");
-console.log("✓ Large matrix multiply (20x20) - WASM");
+console.log("✓ Small matrix multiply (2x2)");
+console.log("✓ Large matrix rejected (exceeds MAX_MATRIX_SIZE)");
 ```
 
 ### 3. Assertions
@@ -724,7 +539,7 @@ function assertEqual(actual, expected, message) {
 
 // Usage
 assertEqual(result.length, 4, "Result array length");
-assertEqual(wasmPercentage, "70.0%", "WASM usage percentage");
+assertEqual(response.isError, false, "Tool call should not error");
 ```
 
 ---
@@ -756,14 +571,14 @@ assertEqual(wasmPercentage, "70.0%", "WASM usage percentage");
 ### Examples
 
 ```
-feat(wasm): add matrix transpose acceleration
+feat(solve): add exact polynomial roots for degree <= 3
 
-Implement WASM-accelerated matrix transpose for matrices >= 20x20.
-Achieves 12x speedup compared to mathjs implementation.
+Delegate degree-<=3 closed-form solving to MathTS's polynomialRoot,
+including complex roots, with a numeric real-root fallback for
+higher-degree/transcendental equations.
 
-- Add transpose.ts to wasm/assembly/matrix/
-- Update wasm-wrapper.ts with threshold routing
-- Add integration tests
+- Update handleSolve in tool-handlers.ts
+- Add unit tests in test/unit/solver.test.ts
 
 Closes #123
 ```
@@ -771,24 +586,21 @@ Closes #123
 ```
 fix(server): correct server name from mathjs-mcp to math-mcp
 
-Update server name in index.ts and index-wasm.ts to use the
-official "math-mcp" name instead of the old "mathjs-mcp" name.
+Update server name in index.ts to use the official "math-mcp"
+name instead of the old "mathjs-mcp" name.
 
 Affected files:
 - src/index.ts:153
-- src/index-wasm.ts:153
 - package.json:2
 ```
 
 ```
-docs: merge MCP integration guide into deployment plan
+docs: update style guide for the v4 MathTS architecture
 
-Consolidate MCP_INTEGRATION_GUIDE.md into DEPLOYMENT_PLAN.md
-and update with current configuration for both Claude Desktop
-and Claude CLI.
+Remove stale conventions from the deleted WASM acceleration stack and replace them
+with the current src/ layout and MathTS-based engine references.
 
-- Delete docs/MCP_INTEGRATION_GUIDE.md
-- Update docs/DEPLOYMENT_PLAN.md with merged content
+- Update docs/STYLE_GUIDE.md
 ```
 
 ### Commit Best Practices
@@ -817,24 +629,16 @@ and Claude CLI.
 ### TypeScript Specific
 
 - [ ] Import statements include .js extensions (ESM requirement)
-- [ ] mathjs imported via `./mathjs-shim.js` (not `import * as math from 'mathjs'`)
+- [ ] Compute engine accessed via `src/math-engine.ts` (MathTS, mathjs-compatible API — not called "mathjs")
 - [ ] Proper use of async/await
 - [ ] MCP responses formatted correctly
 - [ ] Server name is "math-mcp" (not "mathjs-mcp")
-- [ ] `AccelerationWrapper` imported from `src/types.ts` (or re-exported via `tool-handlers.ts`)
-
-### WASM Specific
-
-- [ ] Explicit types for all variables and parameters
-- [ ] Use unchecked() in performance-critical loops
-- [ ] Assertions for input validation
-- [ ] Memory management is correct (if using manual allocation)
+- [ ] Shared types imported from `src/types.ts`
 
 ### Performance
 
-- [ ] WASM thresholds appropriate for operation
 - [ ] No unnecessary computations in hot loops
-- [ ] Fallback to mathjs if WASM fails
+- [ ] Large-input protection enforced via size limits (`src/validation.ts`), not timeouts
 
 ---
 
@@ -844,16 +648,13 @@ This style guide establishes conventions for:
 
 1. **Naming**: math-mcp (official name), camelCase variables, PascalCase types
 2. **TypeScript**: Explicit types, proper async/await, ESM imports with .js
-3. **AssemblyScript**: Explicit numeric types, unchecked for performance
-4. **Organization**: Clear project structure, logical file placement
-5. **Documentation**: JSDoc comments, clear README/CHANGELOG
-6. **Testing**: Descriptive names, clear assertions, integration tests
-7. **Git**: Conventional commits, atomic changes, descriptive messages
+3. **Organization**: Clear project structure, logical file placement
+4. **Documentation**: JSDoc comments, clear README/CHANGELOG
+5. **Testing**: Descriptive names, clear assertions, integration tests
+6. **Git**: Conventional commits, atomic changes, descriptive messages
 
 Following these conventions ensures code quality, maintainability, and consistency across the math-mcp project.
 
 ---
 
-**Last Updated:** November 2, 2025
-**Version:** 2.0.0-wasm
 **Project:** math-mcp

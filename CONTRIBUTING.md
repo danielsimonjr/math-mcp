@@ -17,12 +17,10 @@ This project follows a standard code of conduct. Please be respectful and profes
 3. **Install dependencies**:
    ```bash
    npm install
-   cd wasm && npm install && cd ..
    ```
 4. **Build the project**:
    ```bash
    npm run build
-   cd wasm && npx gulp && cd ..
    ```
 5. **Run tests**:
    ```bash
@@ -37,7 +35,6 @@ This project follows a standard code of conduct. Please be respectful and profes
 - `fix/description` - Bug fixes
 - `docs/description` - Documentation updates
 - `perf/description` - Performance improvements
-- `wasm/description` - WASM-related changes
 
 ### Making Changes
 
@@ -77,10 +74,9 @@ This project follows a standard code of conduct. Please be respectful and profes
 
 ## Code Style
 
-This project follows strict TypeScript and AssemblyScript style guidelines. Please see:
+This project follows strict TypeScript style guidelines. Please see:
 
 - **TypeScript Style**: See docs/STYLE_GUIDE.md
-- **AssemblyScript Style**: See docs/STYLE_GUIDE.md
 - **Naming Conventions**: camelCase for variables/functions, PascalCase for types
 
 ### TypeScript
@@ -100,19 +96,6 @@ export function calc_mean(data: any): any {
 }
 ```
 
-### AssemblyScript
-
-```typescript
-// Good
-export function mean(data: Float64Array, length: i32): f64 {
-  let sum: f64 = 0.0;
-  for (let i: i32 = 0; i < length; i++) {
-    sum += unchecked(data[i]);
-  }
-  return sum / <f64>length;
-}
-```
-
 ## Testing
 
 ### Integration Tests
@@ -123,34 +106,14 @@ Run the full integration test suite:
 node test/integration-test.js
 ```
 
-Expected output: **11/11 tests passing**
-
-### WASM Differential Tests
-
-If you modify WASM modules, run differential tests:
-
-```bash
-cd wasm/tests
-node differential-test.js
-```
-
-### Performance Benchmarks
-
-If your changes affect performance:
-
-```bash
-cd wasm/benchmarks
-node profile-matrix.js
-node profile-statistics.js
-```
-
-Include benchmark results in your PR.
+Also run `npm run test:unit` (Vitest unit tests) and `npm run test:security`
+(security test suite) — see `npm run test:all` for the full set.
 
 ## Adding New Features
 
 ### Adding a New MCP Tool
 
-1. **Define the tool** in `src/index-wasm.ts`:
+1. **Define the tool** in `src/index.ts`:
    ```typescript
    server.setRequestHandler(ListToolsRequestSchema, async () => ({
      tools: [
@@ -170,11 +133,10 @@ Include benchmark results in your PR.
    }));
    ```
 
-2. **Implement the handler**:
+2. **Implement the handler** in `src/tool-handlers.ts`:
    ```typescript
-   case "your_tool": {
-     const { param } = args as { param: string };
-     const result = yourImplementation(param);
+   export async function handleYourTool(args: { param: string }) {
+     const result = yourImplementation(args.param);
      return {
        content: [{ type: "text", text: JSON.stringify({ result }) }]
      };
@@ -187,32 +149,6 @@ Include benchmark results in your PR.
    - README.md (features section)
    - docs/PRODUCT_SPECIFICATION.md
 
-### Adding WASM-Accelerated Operations
-
-1. **Implement in AssemblyScript** (`wasm/assembly/your-module.ts`):
-   ```typescript
-   export function yourOperation(data: Float64Array, length: i32): f64 {
-     // Implementation
-   }
-   ```
-
-2. **Add JavaScript bindings** (`wasm/bindings/your-module.cjs`)
-
-3. **Integrate in wrapper** (`src/wasm-wrapper.ts`):
-   - Add threshold configuration
-   - Implement routing logic
-   - Add fallback handling
-
-4. **Add differential tests**:
-   ```typescript
-   // Compare WASM vs mathjs results
-   ```
-
-5. **Benchmark performance**:
-   - Measure speedup
-   - Tune threshold
-   - Document results
-
 ## Documentation
 
 When adding features or making changes:
@@ -220,41 +156,15 @@ When adding features or making changes:
 - **Update README.md** if user-facing changes
 - **Update docs/PRODUCT_SPECIFICATION.md** for API changes
 - **Update docs/BUILD_GUIDE.md** if build process changes
-- **Update docs/DEPLOYMENT_PLAN.md** if deployment changes
 - **Add to CHANGELOG.md** following keep-a-changelog format
-
-## Performance Guidelines
-
-### When to Use WASM
-
-WASM acceleration is beneficial when:
-- Operation has O(n²) or O(n³) complexity
-- Input size is large (≥ threshold)
-- Operation is purely numerical (no symbolic math)
-
-### Threshold Tuning
-
-When adding WASM-accelerated operations:
-
-1. **Benchmark** WASM vs mathjs at various input sizes
-2. **Find crossover point** where WASM becomes faster
-3. **Set threshold** slightly above crossover
-4. **Document** rationale in code comments
-
-### Performance Targets
-
-- WASM should be ≥5x faster than mathjs above threshold
-- No regression below threshold
-- Overhead should be minimal (<1ms)
 
 ## Pull Request Process
 
 1. **Ensure CI passes** - All tests must pass on all platforms
 2. **Update documentation** - Keep docs in sync with code
 3. **Add tests** - New features need test coverage
-4. **Benchmark if needed** - Performance changes need benchmarks
-5. **Follow conventional commits** - Clean, descriptive commit messages
-6. **Request review** - Assign reviewers if you know who should review
+4. **Follow conventional commits** - Clean, descriptive commit messages
+5. **Request review** - Assign reviewers if you know who should review
 
 ### PR Checklist
 
@@ -266,7 +176,6 @@ Before submitting:
 - [ ] CHANGELOG.md updated
 - [ ] No performance regression
 - [ ] TypeScript compiles without errors
-- [ ] WASM builds successfully (if applicable)
 
 ## Getting Help
 

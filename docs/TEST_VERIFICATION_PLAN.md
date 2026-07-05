@@ -2,277 +2,160 @@
 
 ## Overview
 
-This document outlines the comprehensive testing strategy for **math-mcp** (WASM-accelerated MCP server for mathematical operations). The project uses a **wrapper pattern** with threshold-based routing between WASM (AssemblyScript) and mathjs implementations to optimize performance while maintaining correctness.
+This document outlines the comprehensive testing strategy for **math-mcp**, an MCP server for mathematical operations. The compute engine is **MathTS** (`@danielsimonjr/mathts-compat` + `@danielsimonjr/mathts-matrix`), a mathjs-compatible API, built via `create(all)` in `src/math-engine.ts`. MathTS handles its own internal tier dispatch; there is no separate acceleration/fallback layer for the server to route between.
 
-**Architecture**: MCP Server → WASM Wrapper → (WASM modules OR mathjs fallback)
+**Architecture**: MCP Server (`src/index.ts`) → `src/tool-handlers.ts` → MathTS engine (`src/math-engine.ts`)
 
 ## Testing Principles
 
 1. **Correctness First**: All operations must produce mathematically correct results
-2. **WASM Parity**: WASM results must match mathjs exactly (differential testing)
-3. **Automatic Fallback**: System must gracefully fall back to mathjs on WASM failure
-4. **Performance Validation**: WASM must show measurable improvement for large inputs
-5. **Threshold Optimization**: Routing decisions must be optimal for performance
-6. **Integration Testing**: Full MCP server end-to-end testing
-7. **No Regression**: All existing functionality must continue to work
-8. **Multi-Platform**: Support Windows, macOS, and Linux
+2. **Input Safety**: Expression sandboxing, AST validation, and size limits must hold under adversarial input
+3. **Integration Testing**: Full MCP tool-handler end-to-end testing
+4. **No Regression**: All existing functionality (the 7 tools' I/O contracts) must continue to work
+5. **Security Validation**: Injection, DoS, fuzzing, and bounds testing must pass
 
 ## Current Test Status
 
-**Version**: 2.0.0-wasm
 **Server Name**: math-mcp
-**WASM Status**: Enabled by default
+**Engine**: MathTS (mathjs-compatible)
 
 ### Test Results Summary
-- **Integration Tests**: 11/11 passing (100%)
-- **WASM Usage Rate**: 70% in typical workloads
-- **Performance**: 14.30x average speedup, 42x peak
-- **Platforms Tested**: Windows (Node.js v25.0.0)
-- **WASM Initialization**: Successful
-- **Fallback Mechanism**: Tested and working
+- **Integration Tests**: 12/12 passing (100%)
+- **Unit Tests (Vitest)**: 372 tests passing across 11 test files
+- **Security Tests (Vitest)**: 121 tests — 118 passing, 3 intentionally skipped, across 4 test files
+- **Correctness Tests**: mathematical results validated against expected values
 
 ## Test Categories
 
 ### 1. Integration Tests
 
 **Location**: `test/integration-test.js`
-**Purpose**: End-to-end testing of MCP server with WASM acceleration
-**Framework**: Custom test harness with MCP protocol simulation
+**Purpose**: End-to-end testing of the MCP server's tool handlers
+**Framework**: Custom lightweight test harness
 
 #### Test Categories
 
-1. **Initialization** (1 test)
-   - WASM module loading
-   - Bindings initialization
-   - Memory allocation
+1. **Matrix Operations**
+   - Matrix multiply (20×20 shape check)
+   - Determinant (3×3)
+   - Transpose (array in → array out)
 
-2. **Matrix Operations** (4 tests)
-   - Small matrices (below threshold → mathjs)
-   - Large matrices (above threshold → WASM)
-   - Determinant calculation
-   - Matrix transpose
+2. **Statistics**
+   - Mean
+   - Min / max
+   - Variance / std (sample default)
+   - Large-array mean (1000 elements)
 
-3. **Statistics** (3 tests)
-   - Small datasets (below threshold → mathjs)
-   - Large datasets (above threshold → WASM)
-   - Various operations (mean, median, std, variance)
-
-4. **Symbolic Math** (2 tests)
+3. **Symbolic Math**
    - Expression evaluation
    - Simplification
    - Derivatives
-   - Equation solving
 
-5. **Performance Monitoring** (1 test)
-   - WASM usage percentage
-   - Execution time tracking
-   - Fallback detection
+4. **Unit Conversion**
+   - One representative conversion
 
 #### Running Integration Tests
 
 ```bash
 # Run all integration tests
-node test/integration-test.js
+npm test
 
 # Expected output:
-✓ WASM Initialization (1/11)
-✓ Matrix Operations - Small Matrices (2/11)
-✓ Matrix Operations - Large Matrices (WASM) (3/11)
-✓ Matrix Determinant (4/11)
-✓ Matrix Transpose (5/11)
-✓ Statistics - Small Dataset (6/11)
-✓ Statistics - Large Dataset (WASM) (7/11)
-✓ Symbolic Math - Evaluation (8/11)
-✓ Symbolic Math - Simplification (9/11)
-✓ Unit Conversion (10/11)
-✓ Performance Monitoring (11/11)
+--- Matrix Operations ---
+✓ matrix multiply (20x20) shape
+✓ determinant (3x3)
+✓ transpose (array in → array out)
 
-All integration tests passed!
-WASM integration working correctly
-Threshold-based routing working
-Performance monitoring working
+--- Statistics ---
+✓ mean
+✓ min / max
+✓ variance / std (sample default)
+✓ large mean (1000 elements)
+
+--- Symbolic ---
+✓ evaluate
+✓ simplify
+✓ derivative
+✓ unit conversion
+
+--- Test Results ---
+Total: 12  Passed: 12  Failed: 0
+
+✓ All integration tests passed!
 ```
 
 #### Success Criteria
 
-- ✅ All 11 tests pass
-- ✅ WASM usage rate ≥ 60% for test workload
+- ✅ All 12 tests pass
 - ✅ No errors or exceptions
 - ✅ Correct results for all operations
-- ✅ Performance metrics collected
 
-### 2. WASM Differential Tests
+### 2. Correctness Tests
 
-**Location**: `wasm/tests/differential-test.js`
-**Purpose**: Verify WASM results match mathjs exactly
-**Framework**: Custom comparison with floating-point tolerance
+**Location**: `test/correctness-tests.js`
+**Purpose**: Validate mathematical correctness of results independent of the MCP transport layer
+**Run with**: `npm run test:correctness`
 
-#### Test Strategy
+### 3. Unit Tests
 
-Compare WASM and mathjs outputs for:
-1. Randomly generated test cases
-2. Edge cases (empty, NaN, Infinity, very large/small)
-3. Known problematic inputs
-4. Boundary conditions
+**Location**: `test/unit/`
+**Framework**: Vitest
+**Total**: 372 tests passing across 11 test files
 
-#### Running Differential Tests
+#### Unit Test Files
 
-```bash
-cd wasm/tests
-node differential-test.js
+- `handler-utils.test.ts` — response formatting / error-handling helpers used by `tool-handlers.ts`
+- `validation.test.ts` — expression sandboxing, AST validation, size limits (`src/validation.ts`)
+- `rate-limiter.test.ts` — token-bucket rate limiting (`src/rate-limiter.ts`)
+- `expression-cache.test.ts` — LRU expression cache (`src/expression-cache.ts`)
+- `errors.test.ts` — error types (`src/errors.ts`)
+- `health.test.ts` — health check probes (`src/health.ts`)
+- `solver.test.ts` — `solve` tool behavior (exact roots ≤ degree 3 incl. complex, numeric real-root fallback ≥ degree 4 / transcendental)
+- `utils.test.ts` — shared utility helpers
+- `shared/` — tests for `src/shared/` (constants, `LOG_LEVEL`-driven logger)
+- `telemetry/` — tests for `src/telemetry/` (Prometheus metrics, health probes on port 9090)
 
-# Expected output:
-Testing matrix operations...
-✓ Matrix multiply (100 iterations)
-✓ Matrix determinant (100 iterations)
-✓ Matrix transpose (100 iterations)
-
-Testing statistics...
-✓ Mean (100 iterations)
-✓ Median (100 iterations)
-✓ Std deviation (100 iterations)
-✓ Variance (100 iterations)
-
-All differential tests passed!
-Total iterations: 700
-Failures: 0
-```
-
-### 3. Performance Benchmarks
-
-**Location**: `wasm/benchmarks/`
-**Purpose**: Quantify performance improvements and validate thresholds
-**Framework**: Custom timing harness with statistical analysis
-
-#### Benchmark Results
-
-**Matrix Operations**:
-```
-Matrix Multiply Performance:
-5x5:   0.8x (mathjs faster, below threshold)
-10x10: 7.2x (WASM faster, at threshold)
-20x20: 8.4x (WASM faster, above threshold)
-50x50: 12.1x (WASM faster, large matrices)
-100x100: 15.3x (WASM faster, very large)
-```
-
-**Statistics Operations**:
-```
-Statistics Performance:
-mean(100):   7.2x
-mean(1000):  15.3x
-mean(10000): 18.4x
-
-median(50):   0.9x (sorting overhead)
-median(100):  12.1x
-median(1000): 25.3x
-
-std(100):   8.1x
-std(1000):  16.2x
-std(10000): 22.4x
-
-min(100):   25.3x
-min(1000):  38.7x
-min(10000): 42.1x (peak speedup)
-```
-
-#### Performance Targets
-
-```typescript
-const PERFORMANCE_TARGETS = {
-  matrix: {
-    multiply_10x10: { minSpeedup: 5, maxTime: 5 },    // >5x faster, <5ms
-    multiply_20x20: { minSpeedup: 7, maxTime: 10 },   // >7x faster, <10ms
-    determinant_50x50: { minSpeedup: 10, maxTime: 50 }, // >10x faster, <50ms
-  },
-  statistics: {
-    mean_100: { minSpeedup: 5, maxTime: 1 },      // >5x faster, <1ms
-    mean_1000: { minSpeedup: 10, maxTime: 5 },    // >10x faster, <5ms
-    median_100: { minSpeedup: 8, maxTime: 2 },    // >8x faster, <2ms
-    std_1000: { minSpeedup: 12, maxTime: 10 },    // >12x faster, <10ms
-  }
-};
-```
-
-#### Running Benchmarks
+#### Running Unit Tests
 
 ```bash
-# Matrix benchmarks
-node wasm/benchmarks/profile-matrix.js
-
-# Statistics benchmarks
-node wasm/benchmarks/profile-statistics.js
-
-# Full benchmark suite
-npm run benchmark
+npm run test:unit
 ```
 
-### 4. Threshold Validation Tests
+### 4. Security Tests
 
-**Purpose**: Verify threshold-based routing works correctly
-**Location**: `test/threshold-validation.js`
+**Location**: `test/security/`
+**Framework**: Vitest
+**Total**: 121 tests — 118 passing, 3 intentionally skipped, across 4 test files
 
-#### Threshold Configuration
+#### Security Test Files
 
-Located in `src/wasm-wrapper.ts`:
+- `injection.test.ts` — expression injection / sandbox escape attempts
+- `dos.test.ts` — denial-of-service protection (oversized expressions, matrices, arrays)
+- `fuzzing.test.ts` — fuzzed/malformed input handling
+- `bounds.test.ts` — `MAX_MATRIX_SIZE` / `MAX_ARRAY_LENGTH` and related boundary conditions
 
-```typescript
-const THRESHOLDS = {
-  matrix_multiply: 10,    // Use WASM for matrices ≥10×10
-  matrix_det: 5,          // Use WASM for matrices ≥5×5
-  matrix_transpose: 20,   // Use WASM for matrices ≥20×20
-  matrix_add_sub: 20,     // Use WASM for matrices ≥20×20 (add/subtract)
-  statistics: 100,        // Use WASM for arrays ≥100 elements
-  median: 50,             // Use WASM for arrays ≥50 elements (sorting)
-};
+Because the engine runs synchronously in JavaScript, a runaway computation
+cannot be interrupted by a timeout — so DoS protection is enforced entirely
+through **size limits and input validation** in `src/validation.ts`. The
+security suite exists to verify those limits actually hold under adversarial
+input, not to test a fallback/acceleration chain.
+
+#### Running Security Tests
+
+```bash
+npm run test:security
 ```
 
-### 5. Fallback Testing
+#### Success Criteria
 
-**Purpose**: Verify graceful degradation when WASM fails
-**Location**: `test/fallback-test.js`
+- ✅ Injection attempts are rejected or safely sandboxed
+- ✅ Oversized inputs are rejected via size limits, not left to run unbounded
+- ✅ Fuzzed/malformed input produces typed errors, not crashes
+- ✅ Boundary conditions at `MAX_MATRIX_SIZE` / `MAX_ARRAY_LENGTH` behave correctly
 
-#### Test Scenarios
+### 5. Edge Case Testing
 
-1. **WASM Initialization Failure**
-   - Verify operations continue with mathjs fallback
-   - No errors thrown to user
-
-2. **WASM Runtime Error**
-   - Automatic fallback to mathjs
-   - Results remain correct
-
-3. **Memory Allocation Failure**
-   - Graceful handling of oversized inputs
-   - Informative error messages
-
-### 6. MCP Server End-to-End Tests
-
-**Purpose**: Test complete MCP protocol integration
-**Location**: `test/mcp-e2e-test.js`
-
-#### Test Coverage
-
-1. **Server Initialization**
-   - Server responds to initialize request
-   - Returns correct server info (name: "math-mcp")
-
-2. **Tool Listing**
-   - Returns all 7 tools
-   - Tool schemas are valid
-
-3. **Tool Execution**
-   - All tools execute correctly
-   - Results formatted as JSON
-
-4. **Error Handling**
-   - Invalid requests return proper errors
-   - Missing parameters handled
-
-### 7. Edge Case Testing
-
-**Purpose**: Test boundary conditions and error cases
-**Location**: `test/edge-cases.js`
+**Purpose**: Test boundary conditions and error cases (covered within `test/unit/` and `test/security/`, not a separate suite)
 
 #### Test Cases
 
@@ -286,60 +169,42 @@ const THRESHOLDS = {
 - Matrix dimension mismatch (clear errors)
 - Non-numeric inputs (validation)
 
-### 8. Unit Tests
-
-**Location**: `test/unit/`
-**Framework**: Vitest
-**Total**: 750 passing / 0 failing / 2 skipped
-
-#### Unit Test Files
-
-- `handler-utils.test.ts` — `successResponse`, `errorResponse`, `executeHandler`, `withErrorHandling`
-- `routing-utils.test.ts` — `routeWithFallback` tier ordering, `computeRoutingStatsSummary`
-- `mathjs-shim.test.ts` — mathjs surface sanity checks (parse, simplify, derivative, statistics, unit)
-- `acceleration-adapter.test.ts` — compat layer mocks, `{result, tier}` unwrapping, `statsMode` normalization
-- `wasm-executor.test.ts` — `executeUnaryOp`/`executeBinaryOp` threshold gating, `recordPerf`/`getPerfStats`/`resetPerfCounters`
-- `wasm-integrity.test.ts` — `isIntegrityCheckEnabled`, hash-match/mismatch, missing-manifest, fs read-failure
-
 ## Test Infrastructure
 
 ### Directory Structure
 
 ```
-C:/mcp-servers/math-mcp/
+math-mcp/
 ├── test/
-│   ├── integration-test.js        # Main integration test suite (11 tests)
-│   ├── threshold-validation.js    # Threshold routing tests
-│   ├── fallback-test.js          # Fallback mechanism tests
-│   ├── mcp-e2e-test.js           # MCP protocol end-to-end tests
-│   ├── edge-cases.js             # Edge case and error handling
-│   └── unit/
-│       ├── handler-utils.test.ts
-│       ├── routing-utils.test.ts
-│       ├── mathjs-shim.test.ts
-│       ├── acceleration-adapter.test.ts
-│       ├── wasm-executor.test.ts
-│       └── wasm-integrity.test.ts
-├── wasm/
-│   ├── tests/
-│   │   ├── differential-test.js  # WASM vs mathjs comparison
-│   │   └── wasm-unit-tests.js    # WASM module unit tests
-│   ├── benchmarks/
-│   │   ├── profile-matrix.js     # Matrix operation benchmarks
-│   │   ├── profile-statistics.js # Statistics benchmarks
-│   │   └── benchmark-suite.js    # Full benchmark runner
-│   └── assembly/
-│       ├── matrix.ts             # WASM matrix implementations
-│       └── statistics.ts         # WASM statistics implementations
-├── src/
-│   ├── index.ts                  # Original mathjs-only server
-│   ├── index-wasm.ts            # WASM-accelerated server (production)
-│   ├── types.ts                  # Shared interfaces (AccelerationWrapper, etc.)
-│   └── wasm-wrapper.ts          # WASM integration layer
-└── docs/
-    ├── TEST_GUIDE.md            # Detailed testing documentation
-    ├── BUILD_GUIDE.md           # Build and compilation guide
-    └── TEST_VERIFICATION_PLAN.md # This document
+│   ├── integration-test.js        # Main integration test suite (12 tests)
+│   ├── correctness-tests.js       # Mathematical correctness validation
+│   ├── unit/                      # Vitest unit tests (372 tests, 11 files)
+│   │   ├── handler-utils.test.ts
+│   │   ├── validation.test.ts
+│   │   ├── rate-limiter.test.ts
+│   │   ├── expression-cache.test.ts
+│   │   ├── errors.test.ts
+│   │   ├── health.test.ts
+│   │   ├── solver.test.ts
+│   │   ├── utils.test.ts
+│   │   ├── shared/
+│   │   └── telemetry/
+│   └── security/                  # Vitest security tests (121 tests, 4 files)
+│       ├── injection.test.ts
+│       ├── dos.test.ts
+│       ├── fuzzing.test.ts
+│       └── bounds.test.ts
+└── src/
+    ├── index.ts                   # MCP server entry point → dist/index.js (also bin)
+    ├── math-engine.ts             # Builds the MathTS instance (create(all))
+    ├── tool-handlers.ts           # Business logic for all 7 tools
+    ├── validation.ts              # Input validation / expression sandboxing / size limits
+    ├── rate-limiter.ts            # Token-bucket rate limiting
+    ├── expression-cache.ts        # LRU expression cache
+    ├── health.ts                  # Health check probes
+    ├── errors.ts / types.ts       # Error types and shared TypeScript types
+    ├── shared/                    # constants.ts, logger.ts
+    └── telemetry/                 # metrics.ts, server.ts (port 9090)
 ```
 
 ### Test Execution Scripts
@@ -349,12 +214,11 @@ C:/mcp-servers/math-mcp/
 {
   "scripts": {
     "test": "node test/integration-test.js",
-    "test:differential": "node wasm/tests/differential-test.js",
-    "test:edge": "node test/edge-cases.js",
-    "test:all": "npm run test && npm run test:differential && npm run test:edge",
-    "benchmark": "node wasm/benchmarks/benchmark-suite.js",
-    "benchmark:matrix": "node wasm/benchmarks/profile-matrix.js",
-    "benchmark:stats": "node wasm/benchmarks/profile-statistics.js"
+    "test:correctness": "node test/correctness-tests.js",
+    "test:all": "npm test && npm run test:correctness",
+    "test:unit": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:security": "vitest run test/security/"
   }
 }
 ```
@@ -362,24 +226,23 @@ C:/mcp-servers/math-mcp/
 ### Running Tests
 
 ```bash
-# Run main integration test suite (11 tests)
+# Run main integration test suite (12 tests)
 npm test
 
-# Run WASM differential tests
-npm run test:differential
+# Run correctness tests
+npm run test:correctness
 
-# Run edge case tests
-npm run test:edge
+# Run unit tests
+npm run test:unit
 
-# Run all tests
+# Run security tests
+npm run test:security
+
+# Run coverage
+npm run test:coverage
+
+# Run integration + correctness together
 npm run test:all
-
-# Run performance benchmarks
-npm run benchmark
-
-# Run specific benchmarks
-npm run benchmark:matrix
-npm run benchmark:stats
 ```
 
 ## Continuous Integration
@@ -410,69 +273,51 @@ jobs:
         run: npm install
       - name: Build TypeScript
         run: npm run build
-      - name: Build WASM modules
-        run: |
-          cd wasm
-          npm install
-          npx gulp
+      - name: Run unit tests
+        run: npm run test:unit
       - name: Run integration tests
         run: npm test
-      - name: Run differential tests
-        run: npm run test:differential
-      - name: Run benchmarks
-        run: npm run benchmark
+      - name: Run correctness tests
+        run: npm run test:correctness
+      - name: Run security tests
+        run: npm run test:security
 ```
 
 ## Acceptance Criteria
 
 ### Critical (Must Pass) ✅
 
-- ✅ **All integration tests pass** (11/11 = 100%)
-- ✅ **WASM initialization succeeds**
-- ✅ **Differential tests pass** (WASM results match mathjs)
-- ✅ **Fallback mechanism works** (graceful degradation)
+- ✅ **All integration tests pass** (12/12 = 100%)
+- ✅ **All unit tests pass** (372/372)
+- ✅ **Correctness tests pass** (mathematically validated results)
+- ✅ **Security tests pass** (118/118 non-skipped)
 - ✅ **MCP server responds correctly** (all 7 tools functional)
 - ✅ **No crashes or exceptions** (robust error handling)
-- ✅ **Threshold-based routing works** (correct WASM/mathjs selection)
 
-### High Priority (Should Pass) ✅
+### High Priority (Should Pass)
 
-- ✅ **Performance targets met** (14.30x average, 42x peak)
-- ✅ **WASM usage rate ≥ 60%** (70% achieved)
-- ✅ **Response time < 100ms** for typical operations
-- ✅ **Memory usage stable** (no leaks detected)
-- ✅ **Works on Windows** (primary development platform)
+- ✅ **Response time reasonable** for typical operations (small matrices/arrays)
+- ⏳ **Multi-platform testing** (macOS, Linux) — see below
+- ⏳ **Multiple Node.js versions** (18, 20, 22)
 
 ### Medium Priority (Nice to Have)
 
-- ⏳ **Multi-platform testing** (macOS, Linux)
-- ⏳ **Multiple Node.js versions** (18, 20, 22)
 - ⏳ **CI/CD pipeline** (automated testing)
-- ⏳ **Code coverage ≥ 80%**
+- ⏳ **Code coverage** tracked via `npm run test:coverage`
 - ⏳ **Load testing** (concurrent operations)
-
-### Optional (Future Enhancements)
-
-- 🔮 **SIMD optimization** (further performance gains)
-- 🔮 **GPU acceleration** (for very large matrices)
-- 🔮 **Compression** (reduce WASM binary size)
-- 🔮 **Streaming operations** (handle infinite datasets)
 
 ## Current Status
 
 ### Completed ✅
 
 1. **Integration Test Suite**
-   - 11 comprehensive tests covering all functionality
+   - 12 tests covering matrix operations, statistics, symbolic math, and unit conversion
    - 100% pass rate
-   - Tests WASM initialization, matrix ops, statistics, symbolic math
-   - Performance monitoring included
 
-2. **WASM Implementation**
-   - AssemblyScript modules for matrix and statistics operations
-   - Threshold-based routing (10x10 for matrices, 100 for stats)
-   - Automatic fallback to mathjs
-   - 14.30x average speedup, 42x peak
+2. **MathTS Engine Integration**
+   - `@danielsimonjr/mathts-compat` provides the mathjs-compatible API surface
+   - Large-input protection via size limits (`MAX_MATRIX_SIZE`, `MAX_ARRAY_LENGTH`) rather than timeouts
+   - Known limitation: large dense matrix multiplication is slower than the old WASM path (MathTS's JS matmul); small matrices — the normal tool use — remain fast
 
 3. **MCP Server Integration**
    - 7 tools fully functional (evaluate, simplify, derivative, solve, matrix_operations, statistics, unit_conversion)
@@ -480,15 +325,11 @@ jobs:
    - Proper error handling
    - Works with Claude Desktop and Claude CLI
 
-4. **Performance Benchmarks**
-   - Matrix operations: 7-17x speedup
-   - Statistics: 15-42x speedup
-   - WASM usage: 70% of operations
-   - Average execution time: 0.207ms
+4. **Unit Test Suite**
+   - 372 tests passing across 11 files covering handler utils, validation, rate limiting, expression caching, errors, health, the solver, shared utilities, and telemetry
 
-5. **Unit Test Suite**
-   - 750 passing / 0 failing / 2 skipped
-   - 6 new unit test files covering hot-path gaps (`handler-utils.ts`, `wasm-executor.ts`, `routing-utils.ts`, `acceleration-adapter.ts`, `wasm-integrity.ts`, `mathjs-shim.ts`)
+5. **Security Test Suite**
+   - 121 tests (118 passing, 3 intentionally skipped) across injection, DoS, fuzzing, and bounds
 
 ### In Progress ⏳
 
@@ -497,25 +338,18 @@ jobs:
    - macOS: ⏳ Needs testing
    - Linux: ⏳ Needs testing
 
-2. **Differential Test Automation**
-   - Test suite exists: `wasm/tests/differential-test.js`
-   - Needs integration into CI/CD pipeline
-
-3. **CI/CD Pipeline**
-   - GitHub Actions workflow defined
+2. **CI/CD Pipeline**
+   - GitHub Actions workflow proposed above
    - Needs repository setup and activation
 
 ### Planned 🔮
 
 1. **Extended Edge Case Testing**
-   - Memory leak detection (requires --expose-gc)
-   - Stress testing with very large inputs
+   - Stress testing with very large inputs (within size limits)
    - Concurrency testing
 
 2. **Documentation**
-   - Performance regression tracking
-   - Test result visualization
-   - Coverage reporting
+   - Coverage reporting via `npm run test:coverage`
 
 ## Test Reporting
 
@@ -523,126 +357,53 @@ jobs:
 
 ```
 Math-MCP Integration Test Suite
-Version: 2.0.0-wasm
-Date: 2025-11-02
-Platform: Windows, Node.js v25.0.0
+Platform: Windows / macOS / Linux, Node.js 18+
 
 RESULTS:
-✓ WASM Initialization (1/11)
-✓ Matrix Operations - Small Matrices (2/11)
-✓ Matrix Operations - Large Matrices (WASM) (3/11)
-✓ Matrix Determinant (4/11)
-✓ Matrix Transpose (5/11)
-✓ Statistics - Small Dataset (6/11)
-✓ Statistics - Large Dataset (WASM) (7/11)
-✓ Symbolic Math - Evaluation (8/11)
-✓ Symbolic Math - Simplification (9/11)
-✓ Unit Conversion (10/11)
-✓ Performance Monitoring (11/11)
+✓ Matrix Operations (3/3)
+✓ Statistics (4/4)
+✓ Symbolic Math (3/3)
+✓ Unit Conversion (1/1)
 
 SUMMARY:
-- Tests Passed: 11/11 (100%)
-- WASM Initialization: Success
-- WASM Usage Rate: 70%
-- Average Speedup: 14.30x
-- Peak Speedup: 42x
-- Fallback Tests: Passed
+- Tests Passed: 12/12 (100%)
 
 STATUS: ✅ ALL TESTS PASSED
-```
-
-### Benchmark Report Format
-
-```
-Math-MCP Performance Benchmark Report
-Date: 2025-11-02
-Commit: v2.0.0-wasm
-Platform: Windows 11, Node.js v25.0.0
-
-MATRIX OPERATIONS:
-| Size    | WASM (ms) | MathJS (ms) | Speedup | Threshold | Status |
-|---------|-----------|-------------|---------|-----------|--------|
-| 5x5     | 0.15      | 0.12        | 0.8x    | Below     | ✅     |
-| 10x10   | 0.35      | 2.52        | 7.2x    | At        | ✅     |
-| 20x20   | 1.12      | 9.41        | 8.4x    | Above     | ✅     |
-| 50x50   | 8.23      | 99.6        | 12.1x   | Above     | ✅     |
-
-STATISTICS:
-| Operation | Size  | WASM (ms) | MathJS (ms) | Speedup | Status |
-|-----------|-------|-----------|-------------|---------|--------|
-| Mean      | 100   | 0.08      | 0.58        | 7.2x    | ✅     |
-| Mean      | 1000  | 0.42      | 6.43        | 15.3x   | ✅     |
-| Median    | 100   | 0.12      | 1.45        | 12.1x   | ✅     |
-| Std       | 1000  | 0.55      | 8.91        | 16.2x   | ✅     |
-| Min       | 10000 | 0.15      | 6.32        | 42.1x   | ✅     |
-
-OVERALL:
-- Average Speedup: 14.30x
-- Peak Speedup: 42x (min/max operations)
-- WASM Usage Rate: 70%
-- Average WASM Time: 0.207ms
-
-STATUS: ✅ ALL TARGETS MET
 ```
 
 ## Troubleshooting Test Failures
 
 ### Integration Tests Failing
 
-1. **WASM Initialization Failure**
-   ```bash
-   # Check WASM build exists
-   ls wasm/build/release.wasm
-   ls wasm/bindings/*.cjs
+```bash
+# Rebuild the project and confirm the entry point exists
+npm run build
+ls dist/index.js
+```
 
-   # Rebuild WASM
-   cd wasm && npx gulp
-   ```
+### Unit / Security Tests Failing
 
-2. **Performance Tests Failing**
-   ```bash
-   # Verify thresholds are correct
-   grep THRESHOLDS src/wasm-wrapper.ts
+```bash
+# Run with verbose output to see which assertion failed
+npx vitest run test/unit --reporter=verbose
+npx vitest run test/security --reporter=verbose
 
-   # Run benchmarks to check actual performance
-   npm run benchmark
-   ```
-
-3. **Differential Tests Failing**
-   ```bash
-   # Check tolerance settings
-   # Floating-point differences may need adjustment
-   # Verify WASM implementation matches mathjs logic
-   ```
-
-### Benchmark Issues
-
-1. **Inconsistent Results**
-   - Run multiple iterations
-   - Check system load
-   - Disable background processes
-   - Use consistent Node.js version
-
-2. **Performance Regression**
-   - Compare with baseline
-   - Check WASM optimization level (release vs debug)
-   - Verify threshold configuration
-   - Profile with `node --prof`
+# Check the actual limits in effect
+grep -n "MAX_MATRIX_SIZE\|MAX_ARRAY_LENGTH" src/validation.ts
+```
 
 ## Conclusion
 
 This test verification plan ensures:
 
-1. **Correctness**: Differential testing guarantees WASM matches mathjs
-2. **Performance**: Benchmarks validate 14.30x average speedup (target met)
-3. **Reliability**: Integration tests verify end-to-end functionality
-4. **Robustness**: Fallback mechanism prevents failures
-5. **Quality**: 100% integration test pass rate
+1. **Correctness**: correctness and unit tests guarantee MathTS produces mathematically sound results
+2. **Integration**: end-to-end tests verify MCP server functionality across all 7 tools
+3. **Security**: injection/DoS/fuzzing/bounds tests verify sandboxing and size limits hold under adversarial input
+4. **Reliability**: health checks and telemetry are covered by dedicated unit tests
 
-**Current Status**: Production ready with comprehensive test coverage. All critical and high-priority acceptance criteria met.
+**Current Status**: Integration, unit, correctness, and security suites all in place and passing (security: 118/118 non-skipped).
 
 **Next Steps**:
 1. Expand multi-platform testing (macOS, Linux)
-2. Implement CI/CD pipeline
+2. Implement the proposed CI/CD pipeline
 3. Add stress and concurrency tests
-4. Track performance regressions over time

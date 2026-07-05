@@ -9,19 +9,16 @@ This directory contains comprehensive documentation for the Math-MCP project.
 - [**Product Specification**](PRODUCT_SPECIFICATION.md) - Product requirements and specifications
 - [**Implementation Plan**](IMPLEMENTATION_PLAN.md) - Detailed implementation roadmap and sprints
 - [**Sprint 9 Plan**](SPRINT_9_PLAN.md) - Current sprint planning and tasks
-- [**Acceleration Architecture**](ACCELERATION_ARCHITECTURE.md) - WASM acceleration system design
-- [**Deployment Plan**](DEPLOYMENT_PLAN.md) - Production deployment strategy
+- [**Components**](COMPONENTS.md) - Reference for all components and modules
+- [**Data Flow**](DATAFLOW.md) - Request lifecycle and processing pipelines
 
 ### Development Guides
 
 - [**Build Guide**](BUILD_GUIDE.md) - How to build the project from source
+- [**User Guide**](USER_GUIDE.md) - Using the Math MCP Server's tools
 - [**Test Guide**](TEST_GUIDE.md) - Testing strategy and guidelines
 - [**Test Verification Plan**](TEST_VERIFICATION_PLAN.md) - Test coverage verification
 - [**Style Guide**](STYLE_GUIDE.md) - Code style and conventions
-
-### Performance
-
-- [**Benchmarks**](BENCHMARKS.md) - Performance benchmarks and results
 
 ### Code Review & Quality
 
@@ -52,13 +49,14 @@ This directory contains comprehensive documentation for the Math-MCP project.
 
 **For Developers:**
 - [Build Guide](BUILD_GUIDE.md) - Build from source
+- [User Guide](USER_GUIDE.md) - Use the server's tools
 - [Test Guide](TEST_GUIDE.md) - Run tests
 - [Style Guide](STYLE_GUIDE.md) - Code conventions
 
 **For Architects:**
-- [Acceleration Architecture](ACCELERATION_ARCHITECTURE.md) - System design
+- [Components](COMPONENTS.md) - Component reference
+- [Data Flow](DATAFLOW.md) - Request lifecycle and processing pipelines
 - [Implementation Plan](IMPLEMENTATION_PLAN.md) - Development roadmap
-- [Benchmarks](BENCHMARKS.md) - Performance data
 
 ## 📝 Documentation Conventions
 
@@ -74,5 +72,4 @@ See [CHANGELOG.md](../CHANGELOG.md) for the latest changes and updates.
 
 ---
 
-**Last Updated**: November 26, 2025
-**Version**: 3.2.0
+**Version**: 4.1.3 (see `package.json`)

@@ -28,10 +28,10 @@ Math MCP Server is a **Model Context Protocol (MCP)** server that provides mathe
 
 ### Key Features
 
-- **High Performance** - Up to 42x faster with WASM acceleration
+- **Direct Computation** - Powered by MathTS, a mathjs-compatible computation engine
 - **Production Ready** - Rate limiting, health checks, Prometheus metrics
 - **Secure** - Input validation, expression sandboxing, size limits
-- **Zero Configuration** - Works out of the box with automatic optimization
+- **Zero Configuration** - Works out of the box
 
 ---
 
@@ -53,14 +53,8 @@ cd math-mcp
 # Install dependencies
 npm install
 
-# Build the project
+# Build the project (TypeScript compile only)
 npm run build
-
-# Build WASM modules
-npm run build:wasm
-
-# Generate WASM hashes (for integrity verification)
-npm run generate:hashes
 
 # Verify installation
 npm test
@@ -75,14 +69,13 @@ node --version  # Should show v18.0.0 or higher
 # Run type check
 npm run type-check
 
-# Run tests (expect 11/11 passing)
+# Run tests (integration tests)
 npm test
 ```
 
 Expected output:
 ```
 ✓ All integration tests passed!
-✓ WASM integration working correctly
 Success rate: 100.0%
 ```
 
@@ -103,7 +96,7 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "math-mcp": {
       "command": "node",
-      "args": ["/path/to/math-mcp/dist/index-wasm.js"]
+      "args": ["/path/to/math-mcp/dist/index.js"]
     }
   }
 }
@@ -114,7 +107,7 @@ Restart Claude Desktop and start using math tools!
 ### Integration with Claude CLI
 
 ```bash
-claude mcp add --transport stdio math-mcp node /path/to/math-mcp/dist/index-wasm.js
+claude mcp add --transport stdio math-mcp node /path/to/math-mcp/dist/index.js
 ```
 
 ### Running Standalone
@@ -124,7 +117,7 @@ claude mcp add --transport stdio math-mcp node /path/to/math-mcp/dist/index-wasm
 npm start
 
 # Or directly
-node dist/index-wasm.js
+node dist/index.js
 ```
 
 ---
@@ -133,15 +126,15 @@ node dist/index-wasm.js
 
 The server provides **7 mathematical tools**:
 
-| Tool | Description | Acceleration |
-|------|-------------|--------------|
-| `evaluate` | Evaluate mathematical expressions | - |
-| `simplify` | Simplify algebraic expressions | - |
-| `derivative` | Calculate derivatives | - |
-| `solve` | Solve equations | - |
-| `matrix_operations` | Matrix operations | WASM/Workers |
-| `statistics` | Statistical calculations | WASM/Workers |
-| `unit_conversion` | Convert between units | - |
+| Tool | Description |
+|------|-------------|
+| `evaluate` | Evaluate mathematical expressions |
+| `simplify` | Simplify algebraic expressions |
+| `derivative` | Calculate derivatives |
+| `solve` | Solve equations |
+| `matrix_operations` | Matrix operations |
+| `statistics` | Statistical calculations |
+| `unit_conversion` | Convert between units |
 
 ---
 
@@ -236,9 +229,13 @@ solve("x^2 - 4 = 0", "x")               // x = 2, x = -2
 solve("x^2 + 2*x + 1 = 0", "x")         // x = -1
 ```
 
+**Notes:**
+- For polynomials of degree ≤ 3, `solve` returns exact roots, including complex roots.
+- For degree ≥ 4 or transcendental equations, `solve` falls back to a numeric method that returns real roots only.
+
 ### 5. matrix_operations
 
-Perform matrix operations with WASM acceleration for large matrices.
+Perform matrix operations (multiply, inverse, determinant, transpose, eigenvalues, add, subtract).
 
 **Parameters:**
 | Name | Type | Required | Description |
@@ -286,13 +283,11 @@ matrix_operations("eigenvalues", "[[4,2],[1,3]]")
 // Result: [5, 2]
 ```
 
-**Acceleration:**
-- Matrices 10×10+ use WASM (8-17x faster)
-- Matrices 100×100+ use WebWorkers (32x faster)
+**Note:** Matrix size is bounded by `MAX_MATRIX_SIZE` (default 1000×1000). Very large dense matrices (e.g. 800×800+) can take noticeably longer, since computation happens directly in JavaScript with no acceleration tier.
 
 ### 6. statistics
 
-Calculate statistical values with WASM acceleration for large datasets.
+Calculate statistical values over a data array.
 
 **Parameters:**
 | Name | Type | Required | Description |
@@ -343,9 +338,7 @@ statistics("sum", "[1,2,3,4,5]")      // 15
 statistics("product", "[2,3,4]")       // 24
 ```
 
-**Acceleration:**
-- Arrays 100+ elements use WASM (15-42x faster)
-- Arrays 100K+ elements use WebWorkers (125x faster)
+**Note:** Array length is bounded by `MAX_ARRAY_LENGTH` (default 100,000).
 
 ### 7. unit_conversion
 
@@ -365,13 +358,15 @@ Convert between compatible units.
 | Mass | kg, g, mg, lb, oz |
 | Time | s, min, h, day, week, year |
 | Temperature | celsius, fahrenheit, kelvin |
-| Speed | m/s, km/h, mph, knot |
+| Speed | m/s, km/h, mi/h |
 | Area | m^2, cm^2, ft^2, acre, hectare |
 | Volume | L, mL, m^3, gallon, cup |
 | Pressure | Pa, bar, psi, atm |
 | Energy | J, kJ, cal, kcal, Wh, kWh |
 | Power | W, kW, hp |
 | And many more... | |
+
+**Note:** Use compound speed forms like `mi/h` and `km/h` — shorthand forms like `mph`, `kph`, and `knot` are not recognized units. Some astronomical/nautical units from other mathjs-based tools (e.g. `lightyear`, `parsec`, `AU`, `nauticalMile`) are also not available and will return `Unit "X" not found.`
 
 **Examples:**
 ```javascript
@@ -385,7 +380,7 @@ unit_conversion("100 fahrenheit", "celsius") // "37.778 celsius"
 unit_conversion("0 celsius", "kelvin")       // "273.15 kelvin"
 
 // Speed
-unit_conversion("60 mph", "km/h")           // "96.5606 km/h"
+unit_conversion("60 mi/h", "km/h")          // "96.5606 km/h"
 unit_conversion("100 km/h", "m/s")          // "27.778 m/s"
 
 // Mass
@@ -404,21 +399,14 @@ unit_conversion("60 kg*m/s^2", "N")         // "60 N"
 
 ## Performance Features
 
-### Multi-Tier Acceleration
+### Direct Computation
 
-The server automatically routes operations through the optimal tier:
-
-| Data Size | Tier | Speedup |
-|-----------|------|---------|
-| Small (<10 matrices, <100 elements) | mathjs | Baseline |
-| Medium (10-100 matrices, 100-100K elements) | WASM | Up to 42x |
-| Large (100+ matrices, 100K+ elements) | WebWorkers | Up to 143x |
-
-### Lazy Loading
-
-- WASM modules load on first use (no startup overhead)
-- Workers created on-demand
-- Reduces cold start time
+The server computes directly via the MathTS engine — there is no acceleration
+router, WASM tier, or worker pool. For most tool calls (typical expressions,
+small-to-medium matrices, everyday datasets) this is fast. Very large dense
+matrices or arrays are bounded by size limits (`MAX_MATRIX_SIZE`,
+`MAX_ARRAY_LENGTH`) rather than a timeout or fallback chain, since synchronous
+JavaScript computation can't be interrupted mid-operation.
 
 ### Expression Caching
 
@@ -435,86 +423,51 @@ The server automatically routes operations through the optimal tier:
 ```bash
 # Logging
 LOG_LEVEL=debug|info|warn|error    # Default: info
-
-# Acceleration tiers
-ENABLE_GPU=true                     # Default: false (not yet implemented)
-ENABLE_WORKERS=true                 # Default: true
-ENABLE_WASM=true                    # Default: true
-
-# Worker pool
-MIN_WORKERS=0                       # Default: 2 (0 for auto-scaling)
-MAX_WORKERS=8                       # Default: CPU cores - 1
-WORKER_IDLE_TIMEOUT=60000           # Default: 60000 (1 minute)
-TASK_TIMEOUT=30000                  # Default: 30000 (30 seconds)
-
-# Security limits
-MAX_MATRIX_SIZE=1000                # Maximum matrix dimension
-MAX_ARRAY_LENGTH=100000             # Maximum array length
-MAX_EXPRESSION_LENGTH=10000         # Maximum expression length
+NODE_ENV=production                 # Standard Node environment
 
 # Performance
-ENABLE_PERF_LOGGING=true            # Log performance stats periodically
-DISABLE_PERF_TRACKING=true          # Disable for minimal overhead
+ENABLE_PERF_LOGGING=true            # Log per-call performance stats (default: off)
+DISABLE_PERF_TRACKING=true          # Disable internal perf tracking
+OPERATION_TIMEOUT=30000             # Per-operation timeout, ms (default: 30000)
+EXPRESSION_CACHE_SIZE=1000          # LRU expression cache entries (default: 1000)
+
+# Rate limiting
+MAX_REQUESTS_PER_WINDOW=100         # Requests per window (default: 100)
+RATE_LIMIT_WINDOW_MS=60000          # Rate-limit window, ms (default: 60000)
+MAX_CONCURRENT_REQUESTS=10          # Max in-flight requests (default: 10)
+MAX_QUEUE_SIZE=50                   # Max queued requests (default: 50)
 
 # Telemetry
-ENABLE_TELEMETRY=true               # Enable Prometheus telemetry server (default: false)
+ENABLE_TELEMETRY=true               # Start metrics/health HTTP server (default: off)
+TELEMETRY_PORT=9090                 # Telemetry server port (default: 9090)
 ```
+
+**Note:** The input size limits are **not** environment variables — they are fixed
+constants in the `LIMITS` object in `src/validation.ts`: matrix dimension 1000×1000
+(`MAX_MATRIX_SIZE`), array length 100000 (`MAX_ARRAY_LENGTH`), expression length 10000
+(`MAX_EXPRESSION_LENGTH`), and nesting depth 50 (`MAX_NESTING_DEPTH`). Changing them
+requires a code change.
 
 ### Running with Custom Configuration
 
 ```bash
 # Debug mode with performance logging
-LOG_LEVEL=debug ENABLE_PERF_LOGGING=true node dist/index-wasm.js
-
-# Minimal memory usage (auto-scaling workers)
-MIN_WORKERS=0 MAX_WORKERS=2 node dist/index-wasm.js
-
-# High throughput configuration
-MIN_WORKERS=4 MAX_WORKERS=16 node dist/index-wasm.js
+LOG_LEVEL=debug ENABLE_PERF_LOGGING=true node dist/index.js
 ```
 
 ---
 
 ## Troubleshooting
 
-### WASM Not Loading
-
-**Symptoms:**
-```
-[WARN] WASM not initialized, falling back to mathjs
-```
-
-**Solutions:**
-1. Rebuild WASM modules:
-   ```bash
-   cd wasm && npm install && npm run asbuild && cd ..
-   ```
-2. Regenerate hashes:
-   ```bash
-   npm run generate:hashes
-   ```
-
-### Workers Not Starting
-
-**Symptoms:**
-```
-[ERROR] Worker threads not supported
-```
-
-**Solutions:**
-1. Verify Node.js version: `node --version` (must be >= 18)
-2. Check if `worker_threads` module is available
-
 ### Performance Issues
 
-**Symptoms:** Operations slower than expected
+**Symptoms:** Operations slower than expected, especially with large matrices or arrays.
 
 **Solutions:**
-1. Verify using `index-wasm.js` (not `index.js`)
-2. Check input sizes exceed acceleration thresholds
-3. Enable performance logging:
+1. Check that input sizes are within `MAX_MATRIX_SIZE` / `MAX_ARRAY_LENGTH` — the engine computes directly in JavaScript with no acceleration tier, so very large dense matrices/arrays take proportionally longer.
+2. Enable performance logging:
    ```bash
-   ENABLE_PERF_LOGGING=true node dist/index-wasm.js
+   ENABLE_PERF_LOGGING=true node dist/index.js
    ```
 
 ### Memory Issues
@@ -527,12 +480,9 @@ JavaScript heap out of memory
 **Solutions:**
 1. Increase Node.js memory:
    ```bash
-   node --max-old-space-size=4096 dist/index-wasm.js
+   node --max-old-space-size=4096 dist/index.js
    ```
-2. Reduce worker count:
-   ```bash
-   MAX_WORKERS=2 node dist/index-wasm.js
-   ```
+2. Reduce the size of the input matrix or array. The `MAX_MATRIX_SIZE` / `MAX_ARRAY_LENGTH` limits are fixed constants in `src/validation.ts`, not env-configurable — handling larger inputs requires a code change.
 
 ---
 
@@ -613,7 +563,5 @@ unit_conversion("98 N", "lbf")            // "22.03 lbf"
 
 ## Related Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture
 - [../README.md](../README.md) - Project overview
 - [../CHANGELOG.md](../CHANGELOG.md) - Version history
-- [ACCELERATION_ARCHITECTURE.md](ACCELERATION_ARCHITECTURE.md) - Performance details
