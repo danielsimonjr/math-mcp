@@ -81,7 +81,7 @@ npm run test:correctness
 # Unit tests (Vitest)
 npm run test:unit
 
-# Security tests (119 tests)
+# Security tests (121 tests)
 npm run test:security
 
 # Test coverage

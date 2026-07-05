@@ -422,7 +422,7 @@ JavaScript computation can't be interrupted mid-operation.
 
 ```bash
 # Logging
-LOG_LEVEL=debug|info|warn|error    # Default: info
+LOG_LEVEL=debug|info|warn|error    # default: debug; info when NODE_ENV=production
 NODE_ENV=production                 # Standard Node environment
 
 # Performance

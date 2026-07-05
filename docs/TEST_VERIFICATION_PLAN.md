@@ -36,6 +36,7 @@ This document outlines the comprehensive testing strategy for **math-mcp**, an M
 #### Test Categories
 
 1. **Matrix Operations**
+   - Matrix multiply (2×2)
    - Matrix multiply (20×20 shape check)
    - Determinant (3×3)
    - Transpose (array in → array out)
@@ -62,6 +63,7 @@ npm test
 
 # Expected output:
 --- Matrix Operations ---
+✓ matrix multiply (2x2)
 ✓ matrix multiply (20x20) shape
 ✓ determinant (3x3)
 ✓ transpose (array in → array out)
@@ -360,7 +362,7 @@ Math-MCP Integration Test Suite
 Platform: Windows / macOS / Linux, Node.js 18+
 
 RESULTS:
-✓ Matrix Operations (3/3)
+✓ Matrix Operations (4/4)
 ✓ Statistics (4/4)
 ✓ Symbolic Math (3/3)
 ✓ Unit Conversion (1/1)

@@ -107,7 +107,7 @@ npm run test:all
 
 The integration suite exercises the real tool handlers directly (no MCP transport mocking):
 
-1. **Matrix Operations** — multiply (20×20 shape check), determinant (3×3), transpose
+1. **Matrix Operations** — multiply (2×2), multiply (20×20 shape check), determinant (3×3), transpose
 2. **Statistics** — mean, min/max, variance/std (sample default), large-array mean (1000 elements)
 3. **Symbolic Math** — evaluate, simplify, derivative
 4. **Unit Conversion** — one representative conversion
@@ -126,6 +126,7 @@ node test/integration-test.js
 
 ```
 --- Matrix Operations ---
+✓ matrix multiply (2x2)
 ✓ matrix multiply (20x20) shape
 ✓ determinant (3x3)
 ✓ transpose (array in → array out)
