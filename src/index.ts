@@ -1,27 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * @file index-wasm.ts
- * @description Math MCP Server with WASM Acceleration
+ * @file index.ts
+ * @description Math MCP Server
  *
- * This is the main entry point for the WASM-accelerated Math MCP Server.
- * It provides 7 mathematical tools with automatic performance optimization:
+ * This is the main entry point for the Math MCP Server (entry `src/index.ts`,
+ * compiled to `dist/index.js`, also the package `bin`). It provides 7
+ * mathematical tools backed by the MathTS (mathjs-compatible) engine:
  *
  * **Tools:**
  * 1. evaluate - Evaluate mathematical expressions with variables
  * 2. simplify - Simplify algebraic expressions
  * 3. derivative - Calculate derivatives
  * 4. solve - Solve equations
- * 5. matrix_operations ⚡ - Matrix operations (WASM-accelerated for large matrices)
- * 6. statistics ⚡ - Statistical calculations (WASM-accelerated for large datasets)
+ * 5. matrix_operations - Matrix operations
+ * 6. statistics - Statistical calculations
  * 7. unit_conversion - Convert between units
- *
- * **Intelligent Acceleration (v3.0.0):**
- * - WebGPU: Up to 100x faster for massive operations (GPU-accelerated)
- * - WebWorkers: Up to 4x faster for large operations (multi-threaded)
- * - WASM: Up to 42x faster for medium operations (single-threaded)
- * - Automatic routing: Intelligently selects optimal acceleration layer
- * - Graceful fallback: GPU → Workers → WASM → mathjs
  *
  * **Security Features:**
  * - Input validation for all operations
@@ -29,7 +23,7 @@
  * - Timeout protection for long-running operations
  * - Comprehensive error handling
  *
- * @module index-wasm
+ * @module index
  * @since 2.0.0
  */
 
@@ -146,7 +140,7 @@ const TOOLS: Tool[] = [
   {
     name: "matrix_operations",
     description:
-      "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]]. WASM-accelerated for large matrices (10x10+)",
+      "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]].",
     inputSchema: {
       type: "object",
       properties: {
@@ -170,7 +164,7 @@ const TOOLS: Tool[] = [
   {
     name: "statistics",
     description:
-      "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product. WASM-accelerated for large datasets (100+ elements)",
+      "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product.",
     inputSchema: {
       type: "object",
       properties: {

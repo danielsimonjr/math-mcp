@@ -4,7 +4,7 @@
  *
  * Provides:
  * - Overall health status (healthy/degraded/unhealthy)
- * - Component-level health checks (WASM, workers, rate limiter)
+ * - Component-level health checks (rate limiter, memory)
  * - Detailed status information
  * - Version information
  *
@@ -53,7 +53,6 @@ export interface HealthResponse {
   uptime: number;
   /** Component health checks */
   checks: {
-    wasm: HealthCheck;
     rateLimit: HealthCheck;
     memory: HealthCheck;
   };
@@ -63,60 +62,6 @@ export interface HealthResponse {
  * Track application start time for uptime calculation.
  */
 const startTime = Date.now();
-
-/**
- * Check WASM modules health.
- *
- * Verifies that WASM modules are loaded and functional.
- */
-async function checkWasm(): Promise<HealthCheck> {
-  try {
-    let matrixLoaded = false;
-    let statsLoaded = false;
-
-    try {
-      const { existsSync } = await import('node:fs');
-      const { fileURLToPath } = await import('node:url');
-      const matrixPath = fileURLToPath(new URL('../wasm/bindings/matrix.cjs', import.meta.url));
-      const statsPath = fileURLToPath(new URL('../wasm/bindings/statistics.cjs', import.meta.url));
-      matrixLoaded = existsSync(matrixPath);
-      statsLoaded = existsSync(statsPath);
-    } catch {
-      // fs / url import failed — leave both false
-    }
-
-    if (matrixLoaded && statsLoaded) {
-      return {
-        status: 'pass',
-        message: 'WASM modules loaded',
-        details: {
-          matrix: 'loaded',
-          statistics: 'loaded',
-        },
-        timestamp: new Date().toISOString(),
-      };
-    } else {
-      return {
-        status: 'warn',
-        message: 'WASM modules not fully loaded',
-        details: {
-          matrix: matrixLoaded ? 'loaded' : 'not loaded',
-          statistics: statsLoaded ? 'loaded' : 'not loaded',
-        },
-        timestamp: new Date().toISOString(),
-      };
-    }
-  } catch (error: unknown) {
-    return {
-      status: 'fail',
-      message: 'WASM check failed',
-      details: {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      timestamp: new Date().toISOString(),
-    };
-  }
-}
 
 /**
  * Check rate limiter health.
@@ -265,7 +210,6 @@ export async function getHealthStatus(): Promise<HealthResponse> {
   logger.debug('Running health checks');
 
   const checks = {
-    wasm: await checkWasm(),
     rateLimit: await checkRateLimit(),
     memory: await checkMemory(),
   };

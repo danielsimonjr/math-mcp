@@ -27,7 +27,7 @@ describe('DoS Protection', () => {
   });
 
   describe('Rate limiting', () => {
-    // Note: Rate limiting is applied at the MCP server level (index-wasm.ts),
+    // Note: Rate limiting is applied at the MCP server level (index.ts),
     // not in the handler functions themselves. These tests should be integration
     // tests that call the full server, not unit tests of individual handlers.
     it.skip('should limit request rate', async () => {
@@ -251,12 +251,12 @@ describe('DoS Protection', () => {
     // handleStatistics calls through the full rate-limiter + handler chain),
     // not a unit test of queueing behavior. The same pattern as the two
     // it.skip rate-limit tests above (lines 33, 57): "Rate limiting is
-    // applied at the MCP server level (index-wasm.ts), not in the handler
+    // applied at the MCP server level (index.ts), not in the handler
     // functions themselves. These tests should be integration tests that
     // call the full server, not unit tests of individual handlers."
     //
     // To restore: convert to a real integration test that spawns
-    // dist/index-wasm.js and exercises queueing via the MCP transport.
+    // dist/index.js and exercises queueing via the MCP transport.
     it.skip('should queue operations when at capacity', async () => {
       globalRateLimiter.reset();
 

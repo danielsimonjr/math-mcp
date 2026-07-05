@@ -5,7 +5,13 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
-## [Unreleased]
+## [4.1.4] - 2026-07-05
+
+### Removed
+- **Purged the last pre-v4 WASM/worker code remnants.** The acceleration stack was deleted in v4.0.0, but dead references survived and one was a real bug: the `/health` `checkWasm` component probed the deleted `wasm/bindings/*.cjs`, so `existsSync` always failed and `/health` **permanently reported `warn` "WASM modules not fully loaded"** — health is no longer falsely degraded. Also removed: the unused `WasmError` class; four never-updated Prometheus metrics (`math_mcp_queue_size`, `math_mcp_workers`, `math_mcp_backpressure_events_total`, `math_mcp_wasm_module_state`) and their dead updater functions (`updateQueueSize`/`updateWorkerMetrics`/`recordBackpressureEvent` were referenced only in their own JSDoc); the dead `AccelerationWrapper` type; and the "WASM-accelerated" wording in the `matrix_operations`/`statistics` **tool descriptions** (the client-visible strings) and the stale `index.ts` header. Cleaned `package.json` (dropped the "native WASM/parallel acceleration" claim and the `wasm`/`webassembly` keywords). Tests updated to drop the assertions for the removed surface; full suite green — build + type-check clean, integration 12/12, unit+security 471 passed / 3 skipped (was 490; 19 vestigial tests removed).
+
+### Added
+- **Committed, reproducible bundle build**: `scripts/bundle.mjs` + `npm run bundle` (esbuild `src/index.ts` → `bundle/index.mjs`, matching the sibling `*-mcp` plugins). Rebuilt `bundle/index.mjs` on this release. (Plugin manifest bumped 4.2.0 → 4.2.1 so the marketplace re-clones.)
 
 ### Fixed
 - **CI green again (was red since the v4 cutover, 2026-06-24), unblocking all open Dependabot PRs.** `ci.yml` still ran `cd wasm && npm run asbuild` in the test job and kept a dedicated "WASM Build Verification" job, but the `wasm/` AssemblyScript project was deleted in v4 (`7ca99b6`). Every run failed at `cd wasm: No such file or directory`, so the required status checks blocked PRs #73–#77. Removed the dead wasm step and the wasm-build job. Verified on current master: `npm run build` and `tsc --noEmit` exit 0, integration tests 12/12 (these had never actually run under v4 CI — the wasm step aborted the job first).

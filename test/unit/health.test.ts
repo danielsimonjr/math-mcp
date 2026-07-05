@@ -56,7 +56,6 @@ describe('Health Checks', () => {
       const health = await getHealthStatus();
 
       expect(health.checks).toBeDefined();
-      expect(health.checks.wasm).toBeDefined();
       expect(health.checks.rateLimit).toBeDefined();
       expect(health.checks.memory).toBeDefined();
     });
@@ -66,26 +65,8 @@ describe('Health Checks', () => {
 
       const validCheckStatuses: CheckStatus[] = ['pass', 'warn', 'fail'];
 
-      expect(validCheckStatuses).toContain(health.checks.wasm.status);
       expect(validCheckStatuses).toContain(health.checks.rateLimit.status);
       expect(health.checks.memory.status).toContain(health.checks.memory.status);
-    });
-  });
-
-  describe('WASM health check', () => {
-    it('should check WASM module status', async () => {
-      const health = await getHealthStatus();
-
-      expect(health.checks.wasm).toBeDefined();
-      expect(health.checks.wasm.status).toBeDefined();
-      expect(health.checks.wasm.message).toBeDefined();
-      expect(health.checks.wasm.timestamp).toBeDefined();
-    });
-
-    it('should include WASM details', async () => {
-      const health = await getHealthStatus();
-
-      expect(health.checks.wasm.details).toBeDefined();
     });
   });
 
@@ -244,7 +225,6 @@ describe('Health Checks', () => {
     it('should include timestamps in all checks', async () => {
       const health = await getHealthStatus();
 
-      expect(health.checks.wasm.timestamp).toBeDefined();
       expect(health.checks.rateLimit.timestamp).toBeDefined();
       expect(health.checks.memory.timestamp).toBeDefined();
     });
@@ -254,7 +234,6 @@ describe('Health Checks', () => {
 
       const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
 
-      expect(health.checks.wasm.timestamp).toMatch(isoPattern);
       expect(health.checks.rateLimit.timestamp).toMatch(isoPattern);
       expect(health.checks.memory.timestamp).toMatch(isoPattern);
     });

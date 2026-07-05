@@ -73,37 +73,6 @@ export class ValidationError extends MathMCPError {
 }
 
 /**
- * Error thrown when a WASM operation fails.
- * Indicates issues with WASM initialization, execution, or memory management.
- *
- * @class WasmError
- * @extends MathMCPError
- *
- * @example
- * ```typescript
- * throw new WasmError("Failed to initialize WASM module", { cause: err });
- * ```
- */
-export class WasmError extends MathMCPError {
-  /**
-   * The name of the error type
-   * @type {string}
-   */
-  override name = "WasmError";
-
-  /**
-   * Creates a new WasmError instance
-   *
-   * @param {string} message - Description of the WASM error
-   * @param {ErrorOptions} [options] - Optional error options
-   */
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    Object.setPrototypeOf(this, WasmError.prototype);
-  }
-}
-
-/**
  * Error thrown when an operation exceeds its timeout limit.
  * Used to prevent long-running operations from blocking the server.
  *

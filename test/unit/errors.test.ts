@@ -5,7 +5,6 @@
  * Tests all custom error types including:
  * - MathMCPError (base error)
  * - ValidationError
- * - WasmError
  * - TimeoutError
  * - SizeLimitError
  * - ComplexityError
@@ -18,7 +17,6 @@ import { describe, it, expect } from 'vitest';
 import {
   MathMCPError,
   ValidationError,
-  WasmError,
   TimeoutError,
   SizeLimitError,
   ComplexityError,
@@ -97,38 +95,6 @@ describe('errors', () => {
       const error = new ValidationError('Test');
 
       expect(error.name).toBe('ValidationError');
-    });
-  });
-
-  describe('WasmError', () => {
-    it('should create WASM error with message', () => {
-      const error = new WasmError('WASM initialization failed');
-
-      expect(error).toBeInstanceOf(Error);
-      expect(error).toBeInstanceOf(MathMCPError);
-      expect(error).toBeInstanceOf(WasmError);
-      expect(error.message).toBe('WASM initialization failed');
-      expect(error.name).toBe('WasmError');
-    });
-
-    it('should support error cause', () => {
-      const cause = new Error('Module load failed');
-      const error = new WasmError('WASM error', { cause });
-
-      expect(error.cause).toBe(cause);
-    });
-
-    it('should inherit from MathMCPError', () => {
-      const error = new WasmError('Test');
-
-      expect(error).toBeInstanceOf(MathMCPError);
-      expect(error).toBeInstanceOf(WasmError);
-    });
-
-    it('should have correct error name', () => {
-      const error = new WasmError('Test');
-
-      expect(error.name).toBe('WasmError');
     });
   });
 
@@ -288,7 +254,7 @@ describe('errors', () => {
       expect(error instanceof Error).toBe(true);
       expect(error instanceof MathMCPError).toBe(true);
       expect(error instanceof ValidationError).toBe(true);
-      expect(error instanceof WasmError).toBe(false);
+      expect(error instanceof TimeoutError).toBe(false);
     });
 
     it('should have correct inheritance chain for SizeLimitError', () => {
@@ -341,11 +307,10 @@ describe('errors', () => {
       const errors = [
         new MathMCPError('Test 1'),
         new ValidationError('Test 2'),
-        new WasmError('Test 3'),
-        new TimeoutError('Test 4'),
-        new SizeLimitError('Test 5'),
-        new ComplexityError('Test 6'),
-        new RateLimitError('Test 7'),
+        new TimeoutError('Test 3'),
+        new SizeLimitError('Test 4'),
+        new ComplexityError('Test 5'),
+        new RateLimitError('Test 6'),
       ];
 
       for (const error of errors) {
@@ -358,7 +323,7 @@ describe('errors', () => {
         }
       }
 
-      expect(caughtAsMathMCPError).toBe(7);
+      expect(caughtAsMathMCPError).toBe(6);
     });
   });
 });

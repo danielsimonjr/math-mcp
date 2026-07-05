@@ -8,21 +8,15 @@ import {
   resetMetrics,
   recordOperation,
   recordError,
-  updateQueueSize,
-  updateWorkerMetrics,
   recordCacheOperation,
   recordRateLimitHit,
-  recordBackpressureEvent,
   recordInputSize,
   getMetrics,
   getMetricsJSON,
   operationDuration,
   operationCount,
-  queueSize,
-  workerCount,
   cacheOperations,
   rateLimitHits,
-  backpressureEvents,
 } from '../../../src/telemetry/metrics.js';
 
 describe('Prometheus Metrics', () => {
@@ -96,67 +90,6 @@ describe('Prometheus Metrics', () => {
     });
   });
 
-  describe('updateQueueSize', () => {
-    it('should update queue size gauge', async () => {
-      updateQueueSize('task', 42);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('math_mcp_queue_size');
-      expect(metrics).toContain('type="task"');
-      expect(metrics).toContain('42');
-    });
-
-    it('should update multiple queue types', async () => {
-      updateQueueSize('task', 10);
-      updateQueueSize('rate_limit', 5);
-      updateQueueSize('backpressure', 3);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('type="task"');
-      expect(metrics).toContain('type="rate_limit"');
-      expect(metrics).toContain('type="backpressure"');
-    });
-
-    it('should handle zero queue size', async () => {
-      updateQueueSize('task', 0);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('0');
-    });
-  });
-
-  describe('updateWorkerMetrics', () => {
-    it('should update worker metrics', async () => {
-      updateWorkerMetrics(10, 7, 3);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('math_mcp_workers');
-      expect(metrics).toContain('state="total"');
-      expect(metrics).toContain('state="idle"');
-      expect(metrics).toContain('state="busy"');
-    });
-
-    it('should handle all workers idle', async () => {
-      updateWorkerMetrics(5, 5, 0);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('state="idle"');
-    });
-
-    it('should handle all workers busy', async () => {
-      updateWorkerMetrics(8, 0, 8);
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('state="busy"');
-    });
-  });
-
   describe('recordCacheOperation', () => {
     it('should record cache hit', async () => {
       recordCacheOperation('expression', true, 50);
@@ -204,42 +137,6 @@ describe('Prometheus Metrics', () => {
 
       expect(metrics).toContain('math_mcp_rate_limit_hits_total');
       expect(metrics).toContain('3');
-    });
-  });
-
-  describe('recordBackpressureEvent', () => {
-    it('should record backpressure REJECT events', async () => {
-      recordBackpressureEvent('REJECT', 'applied');
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('math_mcp_backpressure_events_total');
-      expect(metrics).toContain('strategy="REJECT"');
-      expect(metrics).toContain('action="applied"');
-    });
-
-    it('should record backpressure WAIT events', async () => {
-      recordBackpressureEvent('WAIT', 'applied');
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('strategy="WAIT"');
-    });
-
-    it('should record backpressure SHED events', async () => {
-      recordBackpressureEvent('SHED', 'applied');
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('strategy="SHED"');
-    });
-
-    it('should record backpressure recovered events', async () => {
-      recordBackpressureEvent('REJECT', 'recovered');
-
-      const metrics = await getMetrics();
-
-      expect(metrics).toContain('action="recovered"');
     });
   });
 
@@ -315,7 +212,6 @@ describe('Prometheus Metrics', () => {
   describe('resetMetrics', () => {
     it('should reset all metrics', async () => {
       recordOperation('test', 'mathjs', 10, 'success');
-      updateQueueSize('task', 100);
 
       resetMetrics();
 
@@ -337,16 +233,6 @@ describe('Prometheus Metrics', () => {
       expect(typeof operationCount.inc).toBe('function');
     });
 
-    it('should expose queueSize gauge', () => {
-      expect(queueSize).toBeDefined();
-      expect(typeof queueSize.set).toBe('function');
-    });
-
-    it('should expose workerCount gauge', () => {
-      expect(workerCount).toBeDefined();
-      expect(typeof workerCount.set).toBe('function');
-    });
-
     it('should expose cacheOperations counter', () => {
       expect(cacheOperations).toBeDefined();
       expect(typeof cacheOperations.inc).toBe('function');
@@ -355,11 +241,6 @@ describe('Prometheus Metrics', () => {
     it('should expose rateLimitHits counter', () => {
       expect(rateLimitHits).toBeDefined();
       expect(typeof rateLimitHits.inc).toBe('function');
-    });
-
-    it('should expose backpressureEvents counter', () => {
-      expect(backpressureEvents).toBeDefined();
-      expect(typeof backpressureEvents.inc).toBe('function');
     });
   });
 });

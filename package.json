@@ -1,7 +1,7 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "4.1.3",
-  "description": "MCP server for mathematical computations powered by MathTS (TypeScript rewrite of mathjs with native WASM/parallel acceleration), with comprehensive input validation, security features, rate limiting, and expression caching",
+  "version": "4.1.4",
+  "description": "MCP server for mathematical computations powered by MathTS (a mathjs-compatible TypeScript engine), with comprehensive input validation, security features, rate limiting, and expression caching",
   "main": "dist/index.js",
   "scripts": {
     "test": "node test/integration-test.js",
@@ -11,6 +11,7 @@
     "test:coverage": "vitest --coverage",
     "test:security": "vitest run test/security/",
     "build": "tsc",
+    "bundle": "node scripts/bundle.mjs",
     "verify:dist": "test -d dist && test -f dist/index.js || (echo 'Error: dist/ directory missing or incomplete' && exit 1)",
     "check:deps": "node scripts/check-dependencies.js",
     "start": "node dist/index.js",
@@ -30,8 +31,6 @@
     "mathjs",
     "mathematics",
     "calculator",
-    "wasm",
-    "webassembly",
     "performance",
     "statistics",
     "linear-algebra",

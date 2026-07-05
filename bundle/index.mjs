@@ -24460,10 +24460,10 @@ var StdioServerTransport = class {
   }
 };
 
-// dist/telemetry/server.js
+// src/telemetry/server.ts
 import { createServer } from "http";
 
-// dist/errors.js
+// src/errors.ts
 var MathMCPError = class _MathMCPError extends Error {
   /**
    * The name of the error type
@@ -24574,20 +24574,13 @@ var RateLimitError = class _RateLimitError extends MathMCPError {
   }
 };
 
-// dist/shared/logger.js
-var LogLevel;
-(function(LogLevel2) {
-  LogLevel2["ERROR"] = "error";
-  LogLevel2["WARN"] = "warn";
-  LogLevel2["INFO"] = "info";
-  LogLevel2["DEBUG"] = "debug";
-})(LogLevel || (LogLevel = {}));
-var currentLogLevel = process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" ? LogLevel.INFO : LogLevel.DEBUG);
+// src/shared/logger.ts
+var currentLogLevel = process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" ? "info" /* INFO */ : "debug" /* DEBUG */);
 var logLevelPriority = {
-  [LogLevel.ERROR]: 0,
-  [LogLevel.WARN]: 1,
-  [LogLevel.INFO]: 2,
-  [LogLevel.DEBUG]: 3
+  ["error" /* ERROR */]: 0,
+  ["warn" /* WARN */]: 1,
+  ["info" /* INFO */]: 2,
+  ["debug" /* DEBUG */]: 3
 };
 function shouldLog(level) {
   return logLevelPriority[level] <= logLevelPriority[currentLogLevel];
@@ -24599,33 +24592,36 @@ function formatLogMessage(level, message, metadata) {
 }
 var logger = {
   error(message, metadata) {
-    if (shouldLog(LogLevel.ERROR)) {
-      console.error(formatLogMessage(LogLevel.ERROR, message, metadata));
+    if (shouldLog("error" /* ERROR */)) {
+      console.error(formatLogMessage("error" /* ERROR */, message, metadata));
     }
   },
   warn(message, metadata) {
-    if (shouldLog(LogLevel.WARN)) {
-      console.error(formatLogMessage(LogLevel.WARN, message, metadata));
+    if (shouldLog("warn" /* WARN */)) {
+      console.error(formatLogMessage("warn" /* WARN */, message, metadata));
     }
   },
   info(message, metadata) {
-    if (shouldLog(LogLevel.INFO)) {
-      console.error(formatLogMessage(LogLevel.INFO, message, metadata));
+    if (shouldLog("info" /* INFO */)) {
+      console.error(formatLogMessage("info" /* INFO */, message, metadata));
     }
   },
   debug(message, metadata) {
-    if (shouldLog(LogLevel.DEBUG)) {
-      console.error(formatLogMessage(LogLevel.DEBUG, message, metadata));
+    if (shouldLog("debug" /* DEBUG */)) {
+      console.error(formatLogMessage("debug" /* DEBUG */, message, metadata));
     }
   }
 };
 
-// dist/shared/constants.js
-var DEFAULT_OPERATION_TIMEOUT = parseInt(process.env.OPERATION_TIMEOUT || "30000", 10);
+// src/shared/constants.ts
+var DEFAULT_OPERATION_TIMEOUT = parseInt(
+  process.env.OPERATION_TIMEOUT || "30000",
+  10
+);
 var PERF_TRACKING_ENABLED = process.env.DISABLE_PERF_TRACKING !== "true";
 var PERF_LOGGING_ENABLED = process.env.ENABLE_PERF_LOGGING === "true";
 
-// dist/utils.js
+// src/utils.ts
 var DEFAULT_OPERATION_TIMEOUT2 = DEFAULT_OPERATION_TIMEOUT;
 async function withTimeout(promise, timeoutMs, operationName, abortFn) {
   let timeoutHandle;
@@ -24675,7 +24671,10 @@ var PerformanceTracker = class {
    */
   recordOperation(operation, durationMs) {
     this.operationCounts.set(operation, (this.operationCounts.get(operation) || 0) + 1);
-    this.operationTimes.set(operation, (this.operationTimes.get(operation) || 0) + durationMs);
+    this.operationTimes.set(
+      operation,
+      (this.operationTimes.get(operation) || 0) + durationMs
+    );
   }
   /**
    * Gets statistics for a specific operation.
@@ -24747,7 +24746,7 @@ async function getPackageVersion() {
   }
 }
 
-// dist/telemetry/metrics.js
+// src/telemetry/metrics.ts
 var promClient = __toESM(require_prom_client(), 1);
 var register = new promClient.Registry();
 promClient.collectDefaultMetrics({
@@ -24765,18 +24764,6 @@ var operationCount = new promClient.Counter({
   name: "math_mcp_operation_total",
   help: "Total number of mathematical operations",
   labelNames: ["operation", "tier", "status"],
-  registers: [register]
-});
-var queueSize = new promClient.Gauge({
-  name: "math_mcp_queue_size",
-  help: "Current size of various queues",
-  labelNames: ["type"],
-  registers: [register]
-});
-var workerCount = new promClient.Gauge({
-  name: "math_mcp_workers",
-  help: "Number of workers in various states",
-  labelNames: ["state"],
   registers: [register]
 });
 var rateLimitHits = new promClient.Counter({
@@ -24808,12 +24795,6 @@ var errorCount = new promClient.Counter({
   labelNames: ["type", "operation"],
   registers: [register]
 });
-var backpressureEvents = new promClient.Counter({
-  name: "math_mcp_backpressure_events_total",
-  help: "Backpressure strategy applications",
-  labelNames: ["strategy", "action"],
-  registers: [register]
-});
 var inputSize = new promClient.Histogram({
   name: "math_mcp_input_size",
   help: "Size of inputs (matrix elements, array length, expression length)",
@@ -24832,12 +24813,6 @@ var mcpRequests = new promClient.Counter({
   labelNames: ["tool", "status"],
   registers: [register]
 });
-var wasmModuleState = new promClient.Gauge({
-  name: "math_mcp_wasm_module_state",
-  help: "WASM module initialization state (1=loaded, 0=error)",
-  labelNames: ["module"],
-  registers: [register]
-});
 async function getMetrics() {
   return register.metrics();
 }
@@ -24845,7 +24820,7 @@ logger.info("Prometheus metrics initialized", {
   metricsCount: register.getSingleMetric !== void 0 ? "available" : "unavailable"
 });
 
-// dist/rate-limiter.js
+// src/rate-limiter.ts
 var DEFAULT_CONFIG = {
   maxRequestsPerWindow: 100,
   // 100 requests
@@ -25043,7 +25018,10 @@ var RateLimiter = class {
 async function withRateLimit(limiter, fn) {
   if (!limiter.allowRequest()) {
     const stats = limiter.getStats();
-    throw new RateLimitError("Rate limit exceeded. Please try again later.", stats);
+    throw new RateLimitError(
+      "Rate limit exceeded. Please try again later.",
+      stats
+    );
   }
   limiter.startRequest();
   try {
@@ -25059,53 +25037,8 @@ var globalRateLimiter = new RateLimiter({
   maxQueueSize: parseInt(process.env.MAX_QUEUE_SIZE || "50", 10)
 });
 
-// dist/health.js
+// src/health.ts
 var startTime = Date.now();
-async function checkWasm() {
-  try {
-    let matrixLoaded = false;
-    let statsLoaded = false;
-    try {
-      const { existsSync } = await import("node:fs");
-      const { fileURLToPath } = await import("node:url");
-      const matrixPath = fileURLToPath(new URL("../wasm/bindings/matrix.cjs", import.meta.url));
-      const statsPath = fileURLToPath(new URL("../wasm/bindings/statistics.cjs", import.meta.url));
-      matrixLoaded = existsSync(matrixPath);
-      statsLoaded = existsSync(statsPath);
-    } catch {
-    }
-    if (matrixLoaded && statsLoaded) {
-      return {
-        status: "pass",
-        message: "WASM modules loaded",
-        details: {
-          matrix: "loaded",
-          statistics: "loaded"
-        },
-        timestamp: (/* @__PURE__ */ new Date()).toISOString()
-      };
-    } else {
-      return {
-        status: "warn",
-        message: "WASM modules not fully loaded",
-        details: {
-          matrix: matrixLoaded ? "loaded" : "not loaded",
-          statistics: statsLoaded ? "loaded" : "not loaded"
-        },
-        timestamp: (/* @__PURE__ */ new Date()).toISOString()
-      };
-    }
-  } catch (error2) {
-    return {
-      status: "fail",
-      message: "WASM check failed",
-      details: {
-        error: error2 instanceof Error ? error2.message : "Unknown error"
-      },
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    };
-  }
-}
 async function checkRateLimit() {
   try {
     const stats = globalRateLimiter.getStats();
@@ -25218,7 +25151,6 @@ async function checkMemory() {
 async function getHealthStatus() {
   logger.debug("Running health checks");
   const checks = {
-    wasm: await checkWasm(),
     rateLimit: await checkRateLimit(),
     memory: await checkMemory()
   };
@@ -25258,7 +25190,7 @@ async function getReadiness() {
 }
 logger.info("Health check module initialized");
 
-// dist/telemetry/server.js
+// src/telemetry/server.ts
 var TelemetryServer = class {
   server = null;
   config;
@@ -32499,8 +32431,8 @@ var MathWorkerPool = class {
       await this.initialize();
     }
     if (!this.pool) return;
-    const workerCount2 = count2 ?? this.config.maxWorkers;
-    await this._warmupWorkers(workerCount2);
+    const workerCount = count2 ?? this.config.maxWorkers;
+    await this._warmupWorkers(workerCount);
   }
   async _warmupWorkers(count2) {
     if (!this.pool) return;
@@ -34591,10 +34523,10 @@ var ComputePool = class {
    * @param weights     - Corresponding GL weights
    * @returns Sum of partial integrals = approximate value of ∫ₐᵇ f(x) dx
    */
-  async integrateFanOut(fnSource, a, b, workerCount2, nodes, weights) {
-    const h = (b - a) / workerCount2;
+  async integrateFanOut(fnSource, a, b, workerCount, nodes, weights) {
+    const h = (b - a) / workerCount;
     const tasks = [];
-    for (let k = 0; k < workerCount2; k++) {
+    for (let k = 0; k < workerCount; k++) {
       const subA = a + k * h;
       const subB = a + (k + 1) * h;
       tasks.push(
@@ -34625,12 +34557,12 @@ var ComputePool = class {
    * @param workerCount - Number of parallel worker tasks
    * @returns Concatenated Float64Array of `n` samples
    */
-  async distributionSampleFanOut(distName, params, n, baseSeed, workerCount2) {
+  async distributionSampleFanOut(distName, params, n, baseSeed, workerCount) {
     const SPLIT_MIX_CONST = 2654435769;
-    const baseChunkSize = Math.floor(n / workerCount2);
+    const baseChunkSize = Math.floor(n / workerCount);
     const tasks = [];
-    for (let k = 0; k < workerCount2; k++) {
-      const chunkCount = k < workerCount2 - 1 ? baseChunkSize : n - baseChunkSize * (workerCount2 - 1);
+    for (let k = 0; k < workerCount; k++) {
+      const chunkCount = k < workerCount - 1 ? baseChunkSize : n - baseChunkSize * (workerCount - 1);
       const chunkSeed = (baseSeed ^ (Math.imul(k, SPLIT_MIX_CONST) | 0)) >>> 0;
       tasks.push(
         this.workerPool.exec("sampleChunk", [distName, params, chunkSeed, chunkCount])
@@ -35262,20 +35194,20 @@ var ThresholdDispatcher = class {
       return 1;
     }
     const stats = this.pool.stats();
-    const workerCount2 = Math.max(1, stats.totalWorkers);
+    const workerCount = Math.max(1, stats.totalWorkers);
     switch (category) {
       case "matmul":
       case "decomposition":
-        return workerCount2;
+        return workerCount;
       case "elementwise":
       case "map":
-        return Math.min(workerCount2 * 2, Math.ceil(elementCount / 1e4));
+        return Math.min(workerCount * 2, Math.ceil(elementCount / 1e4));
       case "reduce":
-        return Math.min(workerCount2, Math.ceil(elementCount / 5e4));
+        return Math.min(workerCount, Math.ceil(elementCount / 5e4));
       case "sort":
-        return Math.min(workerCount2, 8);
+        return Math.min(workerCount, 8);
       default:
-        return workerCount2;
+        return workerCount;
     }
   }
 };
@@ -61503,14 +61435,14 @@ function gaussQuad(f, a, b, n = 5, order = 5, options = {}) {
   const nodes = GL_NODES[clampedOrder];
   const weights = GL_WEIGHTS[clampedOrder];
   const totalPoints = n * clampedOrder;
-  const workerCount2 = options.workerCount ?? 1;
-  if (workerCount2 > 1 && totalPoints >= GAUSS_WORKER_THRESHOLD && computePool.isReady()) {
+  const workerCount = options.workerCount ?? 1;
+  if (workerCount > 1 && totalPoints >= GAUSS_WORKER_THRESHOLD && computePool.isReady()) {
     validateClosureSource(f.toString());
     return computePool.integrateFanOut(
       f.toString(),
       a,
       b,
-      workerCount2,
+      workerCount,
       Array.from(nodes),
       Array.from(weights)
     );
@@ -61538,8 +61470,8 @@ function gaussQuad(f, a, b, n = 5, order = 5, options = {}) {
   return sum22;
 }
 async function romberg(f, a, b, tol = 1e-12, options = {}) {
-  const workerCount2 = options.workerCount ?? 1;
-  if (workerCount2 > 1 && computePool.isReady()) {
+  const workerCount = options.workerCount ?? 1;
+  if (workerCount > 1 && computePool.isReady()) {
     validateClosureSource(f.toString());
     const nodes = GL_NODES[5];
     const weights = GL_WEIGHTS[5];
@@ -61547,7 +61479,7 @@ async function romberg(f, a, b, tol = 1e-12, options = {}) {
       f.toString(),
       a,
       b,
-      workerCount2,
+      workerCount,
       Array.from(nodes),
       Array.from(weights)
     );
@@ -97961,11 +97893,11 @@ var all = {
   ...dist_exports
 };
 
-// dist/math-engine.js
+// src/math-engine.ts
 var math = create2(all);
 var math_engine_default = math;
 
-// dist/validation.js
+// src/validation.ts
 var LIMITS = {
   /**
    * Maximum size for square matrices (e.g., 1000x1000)
@@ -98010,7 +97942,9 @@ function safeJsonParse(jsonString, context2) {
   }
   const MAX_JSON_STRING_LENGTH = 8 * 1024 * 1024;
   if (jsonString.length > MAX_JSON_STRING_LENGTH) {
-    throw new ValidationError(`${context2} exceeds maximum JSON payload size of 8MB (${MAX_JSON_STRING_LENGTH} characters; got ${jsonString.length})`);
+    throw new ValidationError(
+      `${context2} exceeds maximum JSON payload size of 8MB (${MAX_JSON_STRING_LENGTH} characters; got ${jsonString.length})`
+    );
   }
   try {
     return JSON.parse(jsonString);
@@ -98036,14 +97970,18 @@ function validateMatrix(data, context2) {
   }
   for (let i2 = 1; i2 < matrix4.length; i2++) {
     if (matrix4[i2].length !== firstRowLength) {
-      throw new ValidationError(`${context2} rows must have equal length. Row 0 has ${firstRowLength} elements, row ${i2} has ${matrix4[i2].length}`);
+      throw new ValidationError(
+        `${context2} rows must have equal length. Row 0 has ${firstRowLength} elements, row ${i2} has ${matrix4[i2].length}`
+      );
     }
   }
   for (let i2 = 0; i2 < matrix4.length; i2++) {
     for (let j = 0; j < matrix4[i2].length; j++) {
       const value = matrix4[i2][j];
       if (typeof value !== "number" || !Number.isFinite(value)) {
-        throw new ValidationError(`${context2} contains non-numeric or non-finite value at position [${i2}][${j}]: ${value}`);
+        throw new ValidationError(
+          `${context2} contains non-numeric or non-finite value at position [${i2}][${j}]: ${value}`
+        );
       }
     }
   }
@@ -98051,7 +97989,9 @@ function validateMatrix(data, context2) {
 }
 function validateSquareMatrix(matrix4, context2) {
   if (matrix4.length !== matrix4[0].length) {
-    throw new ValidationError(`${context2} must be square (n\xD7n). Got ${matrix4.length}\xD7${matrix4[0].length}`);
+    throw new ValidationError(
+      `${context2} must be square (n\xD7n). Got ${matrix4.length}\xD7${matrix4[0].length}`
+    );
   }
   return matrix4;
 }
@@ -98059,7 +97999,9 @@ function validateMatrixSize(matrix4, context2) {
   const rows = matrix4.length;
   const cols = matrix4[0].length;
   if (rows > LIMITS.MAX_MATRIX_SIZE || cols > LIMITS.MAX_MATRIX_SIZE) {
-    throw new SizeLimitError(`${context2} size ${rows}\xD7${cols} exceeds maximum size of ${LIMITS.MAX_MATRIX_SIZE}\xD7${LIMITS.MAX_MATRIX_SIZE}`);
+    throw new SizeLimitError(
+      `${context2} size ${rows}\xD7${cols} exceeds maximum size of ${LIMITS.MAX_MATRIX_SIZE}\xD7${LIMITS.MAX_MATRIX_SIZE}`
+    );
   }
   return matrix4;
 }
@@ -98071,13 +98013,17 @@ function validateMatrixCompatibility(matrixA, matrixB, operation) {
   switch (operation) {
     case "multiply":
       if (aCols !== bRows) {
-        throw new ValidationError(`Incompatible matrix dimensions: cannot multiply ${aRows}\xD7${aCols} by ${bRows}\xD7${bCols} (columns ${aCols} \u2260 rows ${bRows})`);
+        throw new ValidationError(
+          `Incompatible matrix dimensions: cannot multiply ${aRows}\xD7${aCols} by ${bRows}\xD7${bCols} (columns ${aCols} \u2260 rows ${bRows})`
+        );
       }
       break;
     case "add":
     case "subtract":
       if (aRows !== bRows || aCols !== bCols) {
-        throw new ValidationError(`Cannot ${operation} matrices: dimensions must match. Got ${aRows}\xD7${aCols} and ${bRows}\xD7${bCols}`);
+        throw new ValidationError(
+          `Cannot ${operation} matrices: dimensions must match. Got ${aRows}\xD7${aCols} and ${bRows}\xD7${bCols}`
+        );
       }
       break;
     default:
@@ -98094,14 +98040,18 @@ function validateNumberArray(data, context2) {
   for (let i2 = 0; i2 < data.length; i2++) {
     const value = data[i2];
     if (typeof value !== "number" || !Number.isFinite(value)) {
-      throw new ValidationError(`${context2} contains non-numeric or non-finite value at index ${i2}: ${value}`);
+      throw new ValidationError(
+        `${context2} contains non-numeric or non-finite value at index ${i2}: ${value}`
+      );
     }
   }
   return data;
 }
 function validateArrayLength(array2, context2) {
   if (array2.length > LIMITS.MAX_ARRAY_LENGTH) {
-    throw new SizeLimitError(`${context2} length ${array2.length} exceeds maximum length of ${LIMITS.MAX_ARRAY_LENGTH}`);
+    throw new SizeLimitError(
+      `${context2} length ${array2.length} exceeds maximum length of ${LIMITS.MAX_ARRAY_LENGTH}`
+    );
   }
   return array2;
 }
@@ -98114,7 +98064,9 @@ function validateExpression(expression, context2) {
     throw new ValidationError(`${context2} cannot be empty`);
   }
   if (trimmed.length > LIMITS.MAX_EXPRESSION_LENGTH) {
-    throw new ComplexityError(`${context2} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_EXPRESSION_LENGTH}`);
+    throw new ComplexityError(
+      `${context2} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_EXPRESSION_LENGTH}`
+    );
   }
   let depth = 0;
   let maxDepth = 0;
@@ -98127,7 +98079,9 @@ function validateExpression(expression, context2) {
     }
   }
   if (maxDepth > LIMITS.MAX_NESTING_DEPTH) {
-    throw new ComplexityError(`${context2} complexity limit exceeded: nesting depth ${maxDepth} exceeds maximum of ${LIMITS.MAX_NESTING_DEPTH}`);
+    throw new ComplexityError(
+      `${context2} complexity limit exceeded: nesting depth ${maxDepth} exceeds maximum of ${LIMITS.MAX_NESTING_DEPTH}`
+    );
   }
   if (depth !== 0) {
     throw new ValidationError(`${context2} has unbalanced parentheses/brackets`);
@@ -98143,7 +98097,9 @@ function validateVariableName(variableName, context2) {
     throw new ValidationError(`${context2} cannot be empty`);
   }
   if (trimmed.length > LIMITS.MAX_VARIABLE_NAME_LENGTH) {
-    throw new ValidationError(`${context2} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_VARIABLE_NAME_LENGTH}`);
+    throw new ValidationError(
+      `${context2} length ${trimmed.length} exceeds maximum allowed length of ${LIMITS.MAX_VARIABLE_NAME_LENGTH}`
+    );
   }
   const FORBIDDEN_NAMES = /* @__PURE__ */ new Set([
     "__proto__",
@@ -98163,7 +98119,9 @@ function validateVariableName(variableName, context2) {
     throw new ValidationError(`${context2} must start with a letter or underscore`);
   }
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmed)) {
-    throw new ValidationError(`${context2} can only contain letters, numbers, and underscores`);
+    throw new ValidationError(
+      `${context2} can only contain letters, numbers, and underscores`
+    );
   }
   return trimmed;
 }
@@ -98174,14 +98132,18 @@ function validateScope(scope, context2) {
   const scopeObj = scope;
   const keys = Object.keys(scopeObj);
   if (keys.length > LIMITS.MAX_SCOPE_VARIABLES) {
-    throw new SizeLimitError(`${context2} has ${keys.length} variables, maximum allowed is ${LIMITS.MAX_SCOPE_VARIABLES}`);
+    throw new SizeLimitError(
+      `${context2} has ${keys.length} variables, maximum allowed is ${LIMITS.MAX_SCOPE_VARIABLES}`
+    );
   }
   const validatedScope = {};
   for (const key of keys) {
     validateVariableName(key, `${context2} variable name`);
     const value = scopeObj[key];
     if (typeof value !== "number" || !Number.isFinite(value)) {
-      throw new ValidationError(`${context2} variable '${key}' must be a finite number, got ${typeof value}`);
+      throw new ValidationError(
+        `${context2} variable '${key}' must be a finite number, got ${typeof value}`
+      );
     }
     validatedScope[key] = value;
   }
@@ -98192,12 +98154,14 @@ function validateEnum(value, allowedValues, context2) {
     throw new ValidationError(`${context2} must be a string, got ${typeof value}`);
   }
   if (!allowedValues.includes(value)) {
-    throw new ValidationError(`${context2} must be one of: ${allowedValues.join(", ")}. Got: ${value}`);
+    throw new ValidationError(
+      `${context2} must be one of: ${allowedValues.join(", ")}. Got: ${value}`
+    );
   }
   return value;
 }
 
-// dist/expression-cache.js
+// src/expression-cache.ts
 var LRUCache = class {
   maxSize;
   cache;
@@ -98284,7 +98248,9 @@ var LRUCache = class {
     };
   }
 };
-var expressionCache = new LRUCache(parseInt(process.env.EXPRESSION_CACHE_SIZE || "1000", 10));
+var expressionCache = new LRUCache(
+  parseInt(process.env.EXPRESSION_CACHE_SIZE || "1000", 10)
+);
 function generateCacheKey(expression, scope) {
   if (scope && Object.keys(scope).length > 0) {
     const scopeKeys = Object.keys(scope).sort().join(",");
@@ -98310,7 +98276,7 @@ function getCachedExpression(expression, computeFn, scope) {
   return value;
 }
 
-// dist/handler-utils.js
+// src/handler-utils.ts
 function successResponse(result) {
   return {
     content: [{ type: "text", text: JSON.stringify({ result }, null, 2) }],
@@ -98351,7 +98317,7 @@ async function withErrorHandling(handler, args) {
   }
 }
 
-// dist/tool-handlers.js
+// src/tool-handlers.ts
 var ALLOWED_NODE_TYPES = /* @__PURE__ */ new Set([
   "ConstantNode",
   "SymbolNode",
@@ -98372,8 +98338,7 @@ var FORBIDDEN_FUNCTIONS2 = /* @__PURE__ */ new Set([
   "help"
 ]);
 function validateNode(n) {
-  if (!n?.type)
-    return;
+  if (!n?.type) return;
   if (!ALLOWED_NODE_TYPES.has(n.type)) {
     throw new ValidationError(`Unsafe operation detected: ${n.type} is not allowed`);
   }
@@ -98384,43 +98349,66 @@ function validateNode(n) {
     throw new ValidationError("Assignment operations are not allowed");
   }
   n.args?.forEach?.(validateNode);
-  if (n.content)
-    validateNode(n.content);
-  if (n.index)
-    validateNode(n.index);
+  if (n.content) validateNode(n.content);
+  if (n.index) validateNode(n.index);
   n.items?.forEach?.(validateNode);
   n.blocks?.forEach?.((b) => b.node && validateNode(b.node));
 }
 function safeEvaluate(expression, scope) {
-  const compiled = getCachedExpression(expression, () => {
-    const node = math_engine_default.parse(expression);
-    validateNode(node);
-    return node.compile();
-  }, scope);
+  const compiled = getCachedExpression(
+    expression,
+    () => {
+      const node = math_engine_default.parse(expression);
+      validateNode(node);
+      return node.compile();
+    },
+    scope
+  );
   return compiled.evaluate(scope);
 }
 async function handleEvaluate(args) {
-  return executeHandler({ operationName: "evaluate", logContext: { expression: args.expression, hasScope: !!args.scope } }, async () => {
-    const expr = validateExpression(args.expression, "expression");
-    const scope = args.scope ? validateScope(args.scope, "scope") : {};
-    const result = await withTimeout(Promise.resolve(safeEvaluate(expr, scope)), DEFAULT_OPERATION_TIMEOUT2, "evaluate");
-    return successResponse(math_engine_default.format(result));
-  });
+  return executeHandler(
+    { operationName: "evaluate", logContext: { expression: args.expression, hasScope: !!args.scope } },
+    async () => {
+      const expr = validateExpression(args.expression, "expression");
+      const scope = args.scope ? validateScope(args.scope, "scope") : {};
+      const result = await withTimeout(
+        Promise.resolve(safeEvaluate(expr, scope)),
+        DEFAULT_OPERATION_TIMEOUT2,
+        "evaluate"
+      );
+      return successResponse(math_engine_default.format(result));
+    }
+  );
 }
 async function handleSimplify(args) {
-  return executeHandler({ operationName: "simplify", logContext: { expression: args.expression } }, async () => {
-    const expr = validateExpression(args.expression, "expression");
-    const simplified = await withTimeout(Promise.resolve(args.rules ? math_engine_default.simplify(expr, args.rules) : math_engine_default.simplify(expr)), DEFAULT_OPERATION_TIMEOUT2, "simplify");
-    return successResponse(simplified.toString());
-  });
+  return executeHandler(
+    { operationName: "simplify", logContext: { expression: args.expression } },
+    async () => {
+      const expr = validateExpression(args.expression, "expression");
+      const simplified = await withTimeout(
+        Promise.resolve(args.rules ? math_engine_default.simplify(expr, args.rules) : math_engine_default.simplify(expr)),
+        DEFAULT_OPERATION_TIMEOUT2,
+        "simplify"
+      );
+      return successResponse(simplified.toString());
+    }
+  );
 }
 async function handleDerivative(args) {
-  return executeHandler({ operationName: "derivative", logContext: { expression: args.expression, variable: args.variable } }, async () => {
-    const expr = validateExpression(args.expression, "expression");
-    const varName = validateVariableName(args.variable, "variable");
-    const result = await withTimeout(Promise.resolve(math_engine_default.derivative(expr, varName)), DEFAULT_OPERATION_TIMEOUT2, "derivative");
-    return successResponse(result.toString());
-  });
+  return executeHandler(
+    { operationName: "derivative", logContext: { expression: args.expression, variable: args.variable } },
+    async () => {
+      const expr = validateExpression(args.expression, "expression");
+      const varName = validateVariableName(args.variable, "variable");
+      const result = await withTimeout(
+        Promise.resolve(math_engine_default.derivative(expr, varName)),
+        DEFAULT_OPERATION_TIMEOUT2,
+        "derivative"
+      );
+      return successResponse(result.toString());
+    }
+  );
 }
 var SOLVE_WINDOW_LO = -100;
 var SOLVE_WINDOW_HI = 100;
@@ -98429,21 +98417,17 @@ function isComplexRoot2(r) {
   return typeof r === "object" && r !== null && "im" in r && "re" in r;
 }
 function fmtReal(x) {
-  if (!Number.isFinite(x))
-    return String(x);
+  if (!Number.isFinite(x)) return String(x);
   const rounded = Math.round(x);
-  if (Math.abs(x - rounded) < 1e-9)
-    return String(rounded);
+  if (Math.abs(x - rounded) < 1e-9) return String(rounded);
   return parseFloat(x.toFixed(10)).toString();
 }
 function fmtRoot(r) {
-  if (!isComplexRoot2(r))
-    return fmtReal(r);
+  if (!isComplexRoot2(r)) return fmtReal(r);
   const reZero = Math.abs(r.re) < 1e-9;
   const imAbs = Math.abs(r.im);
   const imMag = Math.abs(imAbs - 1) < 1e-9 ? "" : fmtReal(imAbs);
-  if (reZero)
-    return `${r.im < 0 ? "-" : ""}${imMag}i`;
+  if (reZero) return `${r.im < 0 ? "-" : ""}${imMag}i`;
   return `${fmtReal(r.re)} ${r.im < 0 ? "-" : "+"} ${imMag}i`;
 }
 function isLowDegreePolynomial(node, varName) {
@@ -98456,73 +98440,84 @@ function isLowDegreePolynomial(node, varName) {
     }
   };
   const f = [0, 1, 2, 3, 4].map(at);
-  if (f.some((v) => !Number.isFinite(v)))
-    return false;
+  if (f.some((v) => !Number.isFinite(v))) return false;
   const d4 = f[4] - 4 * f[3] + 6 * f[2] - 4 * f[1] + f[0];
   const scale2 = Math.max(1, ...f.map((v) => Math.abs(v)));
   return Math.abs(d4) <= 1e-7 * scale2;
 }
 async function handleSolve(args) {
-  return executeHandler({ operationName: "solve", logContext: { equation: args.equation, variable: args.variable } }, async () => {
-    const equation = validateExpression(args.equation, "equation");
-    const varName = validateVariableName(args.variable, "variable");
-    const parts = equation.split("=");
-    if (parts.length !== 2) {
-      throw new ValidationError("Equation must contain exactly one '=' sign");
-    }
-    const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-    const node = math_engine_default.parse(expr);
-    validateNode(node);
-    getCachedExpression(expr, () => node.compile());
-    const standardForm = () => {
-      try {
-        return `${math_engine_default.simplify(expr).toString()} = 0`;
-      } catch {
-        return `${expr} = 0`;
+  return executeHandler(
+    { operationName: "solve", logContext: { equation: args.equation, variable: args.variable } },
+    async () => {
+      const equation = validateExpression(args.equation, "equation");
+      const varName = validateVariableName(args.variable, "variable");
+      const parts = equation.split("=");
+      if (parts.length !== 2) {
+        throw new ValidationError("Equation must contain exactly one '=' sign");
       }
-    };
-    const probe = (x) => {
-      try {
-        const v = node.evaluate({ [varName]: x });
-        return { ok: typeof v === "number" && Number.isFinite(v), undefinedSymbol: false };
-      } catch (e2) {
-        const msg2 = e2 instanceof Error ? e2.message : String(e2);
-        return {
-          ok: false,
-          undefinedSymbol: /undefined symbol|not defined|undefined variable/i.test(msg2)
-        };
+      const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
+      const node = math_engine_default.parse(expr);
+      validateNode(node);
+      getCachedExpression(expr, () => node.compile());
+      const standardForm = () => {
+        try {
+          return `${math_engine_default.simplify(expr).toString()} = 0`;
+        } catch {
+          return `${expr} = 0`;
+        }
+      };
+      const probe = (x) => {
+        try {
+          const v = node.evaluate({ [varName]: x });
+          return { ok: typeof v === "number" && Number.isFinite(v), undefinedSymbol: false };
+        } catch (e2) {
+          const msg2 = e2 instanceof Error ? e2.message : String(e2);
+          return {
+            ok: false,
+            undefinedSymbol: /undefined symbol|not defined|undefined variable/i.test(msg2)
+          };
+        }
+      };
+      const probes = [0.37, 1.51, -0.91, 2.73].map(probe);
+      if (probes.every((p) => !p.ok)) {
+        if (probes.some((p) => p.undefinedSymbol)) {
+          return successResponse(
+            `Cannot solve: the equation contains unknowns other than '${varName}'. This solver handles a single variable. Standard form: ${standardForm()}`
+          );
+        }
+        return successResponse(
+          `Could not evaluate the equation as a real function of '${varName}'. Standard form: ${standardForm()}`
+        );
       }
-    };
-    const probes = [0.37, 1.51, -0.91, 2.73].map(probe);
-    if (probes.every((p) => !p.ok)) {
-      if (probes.some((p) => p.undefinedSymbol)) {
-        return successResponse(`Cannot solve: the equation contains unknowns other than '${varName}'. This solver handles a single variable. Standard form: ${standardForm()}`);
+      const roots = math_engine_default.solve(expr, varName);
+      if (roots.length === 0) {
+        const samples = [0.37, 1.51, -0.91, 2.73].map(
+          (x) => node.evaluate({ [varName]: x })
+        );
+        const allZero = samples.every((v) => Math.abs(v) < 1e-9);
+        return successResponse(
+          allZero ? `All real numbers are solutions of ${varName} (identity).` : `No solution: the equation reduces to a non-zero constant.`
+        );
       }
-      return successResponse(`Could not evaluate the equation as a real function of '${varName}'. Standard form: ${standardForm()}`);
+      const label = roots.length === 1 ? "Solution" : "Solutions";
+      if (isLowDegreePolynomial(node, varName)) {
+        return successResponse(
+          `${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(", ")}`
+        );
+      }
+      const shown = roots.length <= MAX_REPORTED_ROOTS ? roots : [...roots].sort((a, b) => Math.abs(a) - Math.abs(b)).slice(0, MAX_REPORTED_ROOTS).sort((a, b) => a - b);
+      const omitted = roots.length - shown.length;
+      let msg = `${label} (numeric, real roots in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}]): ` + shown.map((r) => `${varName} \u2248 ${fmtRoot(r)}`).join(", ");
+      if (omitted > 0) {
+        msg += ` \u2026 and ${omitted} more (the equation has many roots in this window \u2014 likely periodic; showing the first ${MAX_REPORTED_ROOTS}).`;
+      }
+      return successResponse(msg);
     }
-    const roots = math_engine_default.solve(expr, varName);
-    if (roots.length === 0) {
-      const samples = [0.37, 1.51, -0.91, 2.73].map((x) => node.evaluate({ [varName]: x }));
-      const allZero = samples.every((v) => Math.abs(v) < 1e-9);
-      return successResponse(allZero ? `All real numbers are solutions of ${varName} (identity).` : `No solution: the equation reduces to a non-zero constant.`);
-    }
-    const label = roots.length === 1 ? "Solution" : "Solutions";
-    if (isLowDegreePolynomial(node, varName)) {
-      return successResponse(`${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(", ")}`);
-    }
-    const shown = roots.length <= MAX_REPORTED_ROOTS ? roots : [...roots].sort((a, b) => Math.abs(a) - Math.abs(b)).slice(0, MAX_REPORTED_ROOTS).sort((a, b) => a - b);
-    const omitted = roots.length - shown.length;
-    let msg = `${label} (numeric, real roots in [${SOLVE_WINDOW_LO}, ${SOLVE_WINDOW_HI}]): ` + shown.map((r) => `${varName} \u2248 ${fmtRoot(r)}`).join(", ");
-    if (omitted > 0) {
-      msg += ` \u2026 and ${omitted} more (the equation has many roots in this window \u2014 likely periodic; showing the first ${MAX_REPORTED_ROOTS}).`;
-    }
-    return successResponse(msg);
-  });
+  );
 }
 var matrixOps = {
   multiply: (a, b) => {
-    if (!b)
-      throw new ValidationError("matrix_b is required for multiply");
+    if (!b) throw new ValidationError("matrix_b is required for multiply");
     validateMatrixCompatibility(a, b, "multiply");
     return math_engine_default.multiply(a, b);
   },
@@ -98540,26 +98535,30 @@ var matrixOps = {
     return math_engine_default.eigs(a).values;
   },
   add: (a, b) => {
-    if (!b)
-      throw new ValidationError("matrix_b is required for add");
+    if (!b) throw new ValidationError("matrix_b is required for add");
     validateMatrixCompatibility(a, b, "add");
     return math_engine_default.add(a, b);
   },
   subtract: (a, b) => {
-    if (!b)
-      throw new ValidationError("matrix_b is required for subtract");
+    if (!b) throw new ValidationError("matrix_b is required for subtract");
     validateMatrixCompatibility(a, b, "subtract");
     return math_engine_default.subtract(a, b);
   }
 };
 async function handleMatrixOperations(args) {
   const op = validateEnum(args.operation, Object.keys(matrixOps), "operation");
-  return executeHandler({ operationName: `matrix_${op}`, logContext: { operation: op } }, async () => {
-    const matrixA = validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_a, "matrix_a"), "matrix_a"), "matrix_a");
-    const matrixB = args.matrix_b ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, "matrix_b"), "matrix_b"), "matrix_b") : void 0;
-    const result = matrixOps[op](matrixA, matrixB);
-    return successResponse(math_engine_default.format(result));
-  });
+  return executeHandler(
+    { operationName: `matrix_${op}`, logContext: { operation: op } },
+    async () => {
+      const matrixA = validateMatrixSize(
+        validateMatrix(safeJsonParse(args.matrix_a, "matrix_a"), "matrix_a"),
+        "matrix_a"
+      );
+      const matrixB = args.matrix_b ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, "matrix_b"), "matrix_b"), "matrix_b") : void 0;
+      const result = matrixOps[op](matrixA, matrixB);
+      return successResponse(math_engine_default.format(result));
+    }
+  );
 }
 var statsOps = {
   mean: (data) => math_engine_default.mean(data),
@@ -98577,11 +98576,17 @@ var statsOps = {
 };
 async function handleStatistics(args) {
   const op = validateEnum(args.operation, Object.keys(statsOps), "operation");
-  return executeHandler({ operationName: `stats_${op}`, logContext: { operation: op } }, async () => {
-    const data = validateArrayLength(validateNumberArray(safeJsonParse(args.data, "data"), "data"), "data");
-    const result = statsOps[op](data);
-    return successResponse(math_engine_default.format(result));
-  });
+  return executeHandler(
+    { operationName: `stats_${op}`, logContext: { operation: op } },
+    async () => {
+      const data = validateArrayLength(
+        validateNumberArray(safeJsonParse(args.data, "data"), "data"),
+        "data"
+      );
+      const result = statsOps[op](data);
+      return successResponse(math_engine_default.format(result));
+    }
+  );
 }
 var UNIT_LIMITS = { value: 100, unit: 50, parens: 10 };
 var UNIT_PATTERNS = {
@@ -98589,39 +98594,46 @@ var UNIT_PATTERNS = {
   unit: /^[a-zA-Z0-9\s/^*-]+$/
 };
 async function handleUnitConversion(args) {
-  return executeHandler({ operationName: "unit_conversion", logContext: { value: args.value, targetUnit: args.target_unit } }, async () => {
-    if (typeof args.value !== "string" || !args.value.trim()) {
-      throw new ValidationError("value must be a non-empty string");
+  return executeHandler(
+    { operationName: "unit_conversion", logContext: { value: args.value, targetUnit: args.target_unit } },
+    async () => {
+      if (typeof args.value !== "string" || !args.value.trim()) {
+        throw new ValidationError("value must be a non-empty string");
+      }
+      if (typeof args.target_unit !== "string" || !args.target_unit.trim()) {
+        throw new ValidationError("target_unit must be a non-empty string");
+      }
+      if (args.value.length > UNIT_LIMITS.value) {
+        throw new ValidationError(`value exceeds maximum length of ${UNIT_LIMITS.value}`);
+      }
+      if (args.target_unit.length > UNIT_LIMITS.unit) {
+        throw new ValidationError(`target_unit exceeds maximum length of ${UNIT_LIMITS.unit}`);
+      }
+      if (!UNIT_PATTERNS.value.test(args.value)) {
+        throw new ValidationError("value contains invalid characters");
+      }
+      if (!UNIT_PATTERNS.unit.test(args.target_unit)) {
+        throw new ValidationError("target_unit contains invalid characters");
+      }
+      const openParens = (args.value.match(/\(/g) || []).length;
+      const closeParens = (args.value.match(/\)/g) || []).length;
+      if (openParens !== closeParens) {
+        throw new ValidationError("value has mismatched parentheses");
+      }
+      if (openParens > UNIT_LIMITS.parens) {
+        throw new ValidationError(`value has too many nested expressions (max ${UNIT_LIMITS.parens})`);
+      }
+      const result = await withTimeout(
+        Promise.resolve(math_engine_default.unit(args.value).to(args.target_unit)),
+        DEFAULT_OPERATION_TIMEOUT2,
+        "unit_conversion"
+      );
+      return successResponse(result.toString());
     }
-    if (typeof args.target_unit !== "string" || !args.target_unit.trim()) {
-      throw new ValidationError("target_unit must be a non-empty string");
-    }
-    if (args.value.length > UNIT_LIMITS.value) {
-      throw new ValidationError(`value exceeds maximum length of ${UNIT_LIMITS.value}`);
-    }
-    if (args.target_unit.length > UNIT_LIMITS.unit) {
-      throw new ValidationError(`target_unit exceeds maximum length of ${UNIT_LIMITS.unit}`);
-    }
-    if (!UNIT_PATTERNS.value.test(args.value)) {
-      throw new ValidationError("value contains invalid characters");
-    }
-    if (!UNIT_PATTERNS.unit.test(args.target_unit)) {
-      throw new ValidationError("target_unit contains invalid characters");
-    }
-    const openParens = (args.value.match(/\(/g) || []).length;
-    const closeParens = (args.value.match(/\)/g) || []).length;
-    if (openParens !== closeParens) {
-      throw new ValidationError("value has mismatched parentheses");
-    }
-    if (openParens > UNIT_LIMITS.parens) {
-      throw new ValidationError(`value has too many nested expressions (max ${UNIT_LIMITS.parens})`);
-    }
-    const result = await withTimeout(Promise.resolve(math_engine_default.unit(args.value).to(args.target_unit)), DEFAULT_OPERATION_TIMEOUT2, "unit_conversion");
-    return successResponse(result.toString());
-  });
+  );
 }
 
-// dist/index.js
+// src/index.ts
 var TOOLS = [
   {
     name: "evaluate",
@@ -98698,7 +98710,7 @@ var TOOLS = [
   },
   {
     name: "matrix_operations",
-    description: "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]]. WASM-accelerated for large matrices (10x10+)",
+    description: "Perform matrix operations like multiply, inverse, determinant, transpose, eigenvalues. Matrices should be in array format like [[1,2],[3,4]].",
     inputSchema: {
       type: "object",
       properties: {
@@ -98721,7 +98733,7 @@ var TOOLS = [
   },
   {
     name: "statistics",
-    description: "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product. WASM-accelerated for large datasets (100+ elements)",
+    description: "Calculate statistical values like mean, median, mode (returns array), std (standard deviation), variance, min, max, sum, product.",
     inputSchema: {
       type: "object",
       properties: {
@@ -98759,14 +98771,17 @@ var TOOLS = [
 ];
 async function createServer2() {
   const version2 = await getPackageVersion();
-  const server = new Server({
-    name: "math-mcp",
-    version: version2
-  }, {
-    capabilities: {
-      tools: {}
+  const server = new Server(
+    {
+      name: "math-mcp",
+      version: version2
+    },
+    {
+      capabilities: {
+        tools: {}
+      }
     }
-  });
+  );
   logger.info("MCP Server created", { version: version2 });
   return server;
 }
@@ -98790,9 +98805,15 @@ function registerHandlers(server) {
           case "solve":
             return await withErrorHandling(handleSolve, args);
           case "matrix_operations":
-            return await withErrorHandling((params) => handleMatrixOperations(params), args);
+            return await withErrorHandling(
+              (params) => handleMatrixOperations(params),
+              args
+            );
           case "statistics":
-            return await withErrorHandling((params) => handleStatistics(params), args);
+            return await withErrorHandling(
+              (params) => handleStatistics(params),
+              args
+            );
           case "unit_conversion":
             return await withErrorHandling(handleUnitConversion, args);
           default:

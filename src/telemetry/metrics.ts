@@ -5,8 +5,6 @@
  * Provides:
  * - Operation duration histograms
  * - Operation counters (success/failure)
- * - Queue size gauges
- * - Worker pool metrics
  * - Rate limit metrics
  * - Cache hit/miss metrics
  * - Error counters
@@ -37,7 +35,7 @@ promClient.collectDefaultMetrics({
  *
  * Labels:
  * - operation: The operation type (evaluate, matrixMultiply, etc.)
- * - tier: Acceleration tier used (mathjs, wasm, worker, gpu)
+ * - tier: compute tier label (currently unused; MathTS computes directly)
  * - status: Operation status (success, error, timeout)
  *
  * Buckets optimized for mathematical operations:
@@ -61,39 +59,13 @@ export const operationDuration = new promClient.Histogram({
  *
  * Labels:
  * - operation: The operation type
- * - tier: Acceleration tier used
+ * - tier: compute tier label (currently unused; MathTS computes directly)
  * - status: success or error
  */
 export const operationCount = new promClient.Counter({
   name: 'math_mcp_operation_total',
   help: 'Total number of mathematical operations',
   labelNames: ['operation', 'tier', 'status'],
-  registers: [register],
-});
-
-/**
- * Gauge for current queue sizes.
- *
- * Labels:
- * - type: Queue type (task, rate_limit, backpressure)
- */
-export const queueSize = new promClient.Gauge({
-  name: 'math_mcp_queue_size',
-  help: 'Current size of various queues',
-  labelNames: ['type'],
-  registers: [register],
-});
-
-/**
- * Gauge for worker pool state.
- *
- * Labels:
- * - state: Worker state (total, idle, busy)
- */
-export const workerCount = new promClient.Gauge({
-  name: 'math_mcp_workers',
-  help: 'Number of workers in various states',
-  labelNames: ['state'],
   registers: [register],
 });
 
@@ -163,20 +135,6 @@ export const errorCount = new promClient.Counter({
 });
 
 /**
- * Counter for backpressure events.
- *
- * Labels:
- * - strategy: REJECT, WAIT, SHED
- * - action: applied, recovered
- */
-export const backpressureEvents = new promClient.Counter({
-  name: 'math_mcp_backpressure_events_total',
-  help: 'Backpressure strategy applications',
-  labelNames: ['strategy', 'action'],
-  registers: [register],
-});
-
-/**
  * Histogram for input sizes.
  *
  * Labels:
@@ -217,24 +175,10 @@ export const mcpRequests = new promClient.Counter({
 });
 
 /**
- * Gauge for WASM module state.
- *
- * Labels:
- * - module: matrix or statistics
- * - state: loaded or error
- */
-export const wasmModuleState = new promClient.Gauge({
-  name: 'math_mcp_wasm_module_state',
-  help: 'WASM module initialization state (1=loaded, 0=error)',
-  labelNames: ['module'],
-  registers: [register],
-});
-
-/**
  * Helper function to record operation metrics.
  *
  * @param operation - Operation name
- * @param tier - Acceleration tier
+ * @param tier - Compute tier label (currently unused; MathTS computes directly)
  * @param durationMs - Duration in milliseconds
  * @param status - Operation status
  *
@@ -243,9 +187,9 @@ export const wasmModuleState = new promClient.Gauge({
  * const start = Date.now();
  * try {
  *   const result = await matrixMultiply(a, b);
- *   recordOperation('matrixMultiply', 'wasm', Date.now() - start, 'success');
+ *   recordOperation('matrixMultiply', 'mathts', Date.now() - start, 'success');
  * } catch (error) {
- *   recordOperation('matrixMultiply', 'mathjs', Date.now() - start, 'error');
+ *   recordOperation('matrixMultiply', 'mathts', Date.now() - start, 'error');
  * }
  * ```
  */
@@ -294,44 +238,6 @@ export function recordError(errorType: string, operation: string): void {
 }
 
 /**
- * Helper function to update queue size metrics.
- *
- * @param type - Queue type
- * @param size - Current queue size
- *
- * @example
- * ```typescript
- * updateQueueSize('task', taskQueue.length);
- * ```
- */
-export function updateQueueSize(type: string, size: number): void {
-  queueSize.set({ type }, size);
-}
-
-/**
- * Helper function to update worker metrics.
- *
- * @param total - Total workers
- * @param idle - Idle workers
- * @param busy - Busy workers
- *
- * @example
- * ```typescript
- * const stats = workerPool.getStats();
- * updateWorkerMetrics(stats.totalWorkers, stats.idleWorkers, stats.busyWorkers);
- * ```
- */
-export function updateWorkerMetrics(
-  total: number,
-  idle: number,
-  busy: number
-): void {
-  workerCount.set({ state: 'total' }, total);
-  workerCount.set({ state: 'idle' }, idle);
-  workerCount.set({ state: 'busy' }, busy);
-}
-
-/**
  * Helper function to record cache operations.
  *
  * @param type - Cache type
@@ -369,24 +275,6 @@ export function recordCacheOperation(
  */
 export function recordRateLimitHit(): void {
   rateLimitHits.inc();
-}
-
-/**
- * Helper function to record backpressure events.
- *
- * @param strategy - Backpressure strategy
- * @param action - applied or recovered
- *
- * @example
- * ```typescript
- * recordBackpressureEvent('REJECT', 'applied');
- * ```
- */
-export function recordBackpressureEvent(
-  strategy: 'REJECT' | 'WAIT' | 'SHED',
-  action: 'applied' | 'recovered'
-): void {
-  backpressureEvents.inc({ strategy, action });
 }
 
 /**

@@ -312,18 +312,8 @@ Prometheus metrics collection.
 | `math_mcp_cache_operations_total` | Counter | type, result | Cache hit/miss |
 | `math_mcp_errors_total` | Counter | type, operation | Error counts |
 | `math_mcp_input_size` | Histogram | type | Input sizes |
-| `math_mcp_queue_size` | Gauge | type | *Vestigial* — queue size (see note below) |
-| `math_mcp_workers` | Gauge | state | *Vestigial* — worker pool state (see note below) |
-| `math_mcp_backpressure_events_total` | Counter | strategy, action | *Vestigial* — backpressure events (see note below) |
 
 Also registers default Node.js process metrics (memory, CPU, event loop) via `promClient.collectDefaultMetrics`.
-
-**Note (vestigial metrics):** `math_mcp_queue_size`, `math_mcp_workers`, and
-`math_mcp_backpressure_events_total` remain registered in `metrics.ts` from the
-pre-v4 worker/queue subsystem that was removed in the MathTS cutover. Nothing
-in the current codebase calls their updater functions
-(`updateQueueSize`/`updateWorkerMetrics`/`recordBackpressureEvent`), so they
-always read 0 on `GET /metrics` — they do not indicate an active worker pool.
 
 **Helper Functions:**
 ```typescript
@@ -331,9 +321,6 @@ function recordOperation(operation, tier, durationMs, status): void
 function recordError(errorType, operation): void
 function recordCacheOperation(type, hit, size?): void
 function recordRateLimitHit(): void
-function updateQueueSize(type, size): void          // vestigial — unused
-function updateWorkerMetrics(total, idle, busy): void  // vestigial — unused
-function recordBackpressureEvent(strategy, action): void // vestigial — unused
 function getMetrics(): Promise<string>
 function getMetricsJSON(): Promise<MetricObject[]>
 ```

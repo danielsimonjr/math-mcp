@@ -360,10 +360,6 @@ Operation Execution
               │ • Histograms     │
               │ • Counters       │
               │ • Gauges         │
-              │   (incl. vestigial│
-              │   queue_size /   │
-              │   workers /      │
-              │   backpressure)  │
               └────────┬─────────┘
                        │
          ┌─────────────┴─────────────┐
@@ -381,13 +377,6 @@ Periodic Updates:
 │                  │     │ gauges           │
 └──────────────────┘     └──────────────────┘
 ```
-
-**Note (vestigial metrics):** `math_mcp_queue_size`, `math_mcp_workers`, and
-`math_mcp_backpressure_events_total` are still registered in `telemetry/metrics.ts`
-along with their updater functions (`updateQueueSize`, `updateWorkerMetrics`,
-`recordBackpressureEvent`), left over from the pre-v4 worker/queue subsystem
-that was removed. Nothing calls those updaters today, so these gauges/counter
-read 0 on `GET /metrics` — they do not reflect an active worker pool.
 
 ---
 
