@@ -54,3 +54,6 @@ Thumbs.db
 .venv/
 venv/
 __pycache__/
+
+# subagent-driven-development scratch/ledger
+.superpowers/
