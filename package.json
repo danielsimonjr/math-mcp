@@ -1,6 +1,6 @@
 {
   "name": "@danielsimonjr/math-mcp",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "MCP server for mathematical computations powered by MathTS (a mathjs-compatible TypeScript engine), with comprehensive input validation, security features, rate limiting, and expression caching",
   "main": "dist/index.js",
   "scripts": {
@@ -49,8 +49,8 @@
   "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
-    "@danielsimonjr/mathts-compat": "^0.2.5",
-    "@danielsimonjr/mathts-matrix": "^0.1.7",
+    "@danielsimonjr/mathts-compat": "^0.2.11",
+    "@danielsimonjr/mathts-matrix": "^0.2.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "prom-client": "^15.1.3"
   },

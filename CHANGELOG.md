@@ -5,6 +5,11 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## [4.1.5] - 2026-07-05
+
+### Changed
+- **Updated MathTS to the latest published releases.** `@danielsimonjr/mathts-compat` 0.1.9 → **0.2.11** and `@danielsimonjr/mathts-matrix` 0.1.7 → **0.2.2** (the `^0.1.7` pin had capped matrix below the current line), pulling transitive `mathts-core` 0.1.5 → 0.6.0, `mathts-functions` 0.2.10 → 0.13.2, `mathts-parallel` → 0.3.3. `node_modules` had also drifted stale (package.json already asked for `^0.2.5` compat but 0.1.9 was installed) — `npm install` re-synced it. No API or behavior changes surfaced: full suite green — build + type-check clean, integration 12/12, **correctness 232/232**, unit+security 471 passed / 3 skipped. Rebuilt `bundle/index.mjs` against the new engine and verified live (evaluate → 60, determinant → -2, solve `x²-4=0` → x = ±2). Plugin manifest bumped 4.2.1 → 4.2.2 for marketplace re-clone.
+
 ## [4.1.4] - 2026-07-05
 
 ### Removed

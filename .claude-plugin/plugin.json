@@ -1,5 +1,5 @@
 {
   "name": "math-mcp",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Math evaluation/CAS/stats/units tools (math-mcp server) + /math command."
 }
