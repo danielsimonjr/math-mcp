@@ -5,6 +5,28 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Dependabot auto-merge workflow** (`.github/workflows/dependabot-automerge.yml`, the
+  fleet-standard template from `danielsimonjr/gmail-mcp`). Green Dependabot PRs were
+  sitting unmerged indefinitely — `dependabot.yml` was configured but no workflow acted
+  on its PRs. The new workflow enables GitHub's native auto-merge (squash) for
+  Dependabot **patch/minor** bumps only, gated on `dependabot/fetch-metadata`'s
+  `update-type` output; major bumps are left for manual review. Because it uses
+  `gh pr merge --auto`, the merge still waits for the required CI status check
+  (branch protection) to go green before landing.
+
+### Changed
+- **Pinned Dependabot off TypeScript major-version bumps** (`.github/dependabot.yml`,
+  root `npm` entry) via an `ignore` rule for `typescript` `version-update:semver-major`.
+  Dependabot kept opening an un-mergeable TS 6→7 PR: the latest published
+  `@typescript-eslint/eslint-plugin@8.63.0` declares
+  `peer typescript: ">=4.8.4 <6.1.0"`, so bumping to TypeScript 7 (7.0.2 / 7.1.0 are on
+  npm) makes `npm ci`/`npm install` fail immediately with `ERESOLVE unable to resolve
+  dependency tree` before any compile step runs — no published `@typescript-eslint`
+  release supports TS 7 yet. Remove the ignore rule once one does.
+
 ## [4.1.5] - 2026-07-05
 
 ### Changed
