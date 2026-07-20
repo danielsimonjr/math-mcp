@@ -49,8 +49,8 @@
   "homepage": "https://github.com/danielsimonjr/math-mcp#readme",
   "type": "module",
   "dependencies": {
-    "@danielsimonjr/mathts-compat": "^0.3.2",
-    "@danielsimonjr/mathts-matrix": "^0.2.2",
+    "@danielsimonjr/mathts-compat": "^0.4.14",
+    "@danielsimonjr/mathts-matrix": "^0.7.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "prom-client": "^15.1.3"
   },
