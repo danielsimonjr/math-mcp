@@ -7,6 +7,46 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.6] - 2026-08-02
+
+### Fixed
+- **Rebuilt the stale committed plugin bundle.** `bundle/index.mjs` was last built
+  **2026-07-05**, but MathTS dependency merges continued landing on `master` through
+  **2026-07-27** — so the bundle the marketplace plugin actually executes had been serving
+  a three-week-old engine while `dist/` and the test suite exercised the current one. Tests
+  passing said nothing about it, because nothing tests the bundle. Rebuilt via
+  `npm run bundle` and verified live over MCP stdio against the shipped artifact: all 7
+  tools exposed, `evaluate 2*30` → 60, `determinant [[1,2],[3,4]]` → -2, `solve x^2-4=0`
+  → x = ±2.
+
+### Changed
+- **Published to npm to close a two-release registry gap.** The registry served **4.1.3**
+  while `master` had moved to 4.1.5, so the v4.1.4 health-probe fix and the v4.1.5 MathTS
+  refresh had never reached a single consumer. `npm publish` had also been removed from CI
+  (publishing is ZBOOK-local by policy), so nothing was going to close the gap
+  automatically. Released as 4.1.6 rather than 4.1.5 because nine dependency merges landed
+  on `master` *after* the `[4.1.5]` entry was written — republishing that version number
+  would have shipped contents its own changelog entry contradicts.
+- **MathTS engine advanced past what `[4.1.5]` documents.**
+  `@danielsimonjr/mathts-compat` `^0.2.11` → **`^0.4.18`** (PRs #82, #84, #90) and
+  `@danielsimonjr/mathts-matrix` `^0.2.2` → **`^0.7.0`** (PR #88). These are the shipped
+  runtime dependencies, so the range change is consumer-visible. Full suite re-verified on
+  the exact published tree: type-check + build clean, integration **12/12**, correctness
+  **232/232**, unit+security **471 passed / 3 skipped**.
+- **Development dependencies** bumped across four grouped Dependabot merges (#83, #85, #89,
+  #91): `@types/node` 26.1.0 → 26.1.1, `@typescript-eslint/eslint-plugin` ^8.62.0 →
+  ^8.65.0, `eslint` 10.6.0 → 10.8.0, `eslint-plugin-jsdoc` 63.0.10 → 63.3.1, `globals`
+  ^17.6.0 → ^17.8.0, `lint-staged` 17.0.8 → 17.2.0, `prettier` 3.9.4 → 3.9.6, `tsx`
+  ^4.22.4 → ^4.23.1, `@vitest/coverage-v8` ^4.1.9 → ^4.1.10. Build-time only; not shipped.
+- **Pinned Dependabot off TypeScript major-version bumps** (`.github/dependabot.yml`,
+  root `npm` entry) via an `ignore` rule for `typescript` `version-update:semver-major`.
+  Dependabot kept opening an un-mergeable TS 6→7 PR: the latest published
+  `@typescript-eslint/eslint-plugin@8.63.0` declares
+  `peer typescript: ">=4.8.4 <6.1.0"`, so bumping to TypeScript 7 (7.0.2 / 7.1.0 are on
+  npm) makes `npm ci`/`npm install` fail immediately with `ERESOLVE unable to resolve
+  dependency tree` before any compile step runs — no published `@typescript-eslint`
+  release supports TS 7 yet. Remove the ignore rule once one does.
+
 ### Added
 - **Dependabot auto-merge workflow** (`.github/workflows/dependabot-automerge.yml`, the
   fleet-standard template from `danielsimonjr/gmail-mcp`). Green Dependabot PRs were
@@ -16,16 +56,6 @@ Documentation in reverse chronological order (latest first).
   `update-type` output; major bumps are left for manual review. Because it uses
   `gh pr merge --auto`, the merge still waits for the required CI status check
   (branch protection) to go green before landing.
-
-### Changed
-- **Pinned Dependabot off TypeScript major-version bumps** (`.github/dependabot.yml`,
-  root `npm` entry) via an `ignore` rule for `typescript` `version-update:semver-major`.
-  Dependabot kept opening an un-mergeable TS 6→7 PR: the latest published
-  `@typescript-eslint/eslint-plugin@8.63.0` declares
-  `peer typescript: ">=4.8.4 <6.1.0"`, so bumping to TypeScript 7 (7.0.2 / 7.1.0 are on
-  npm) makes `npm ci`/`npm install` fail immediately with `ERESOLVE unable to resolve
-  dependency tree` before any compile step runs — no published `@typescript-eslint`
-  release supports TS 7 yet. Remove the ignore rule once one does.
 
 ## [4.1.5] - 2026-07-05
 
