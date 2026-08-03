@@ -7,6 +7,28 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Fixed
+- **Un-skipped the 3 disabled rate-limit/DoS security tests — the suite no longer reports green
+  while the rate limiter is untested** (`test/security/dos.test.ts`, 471 passed / 3 skipped →
+  **475 passed / 0 skipped**). They had been skipped as unfixable, but the stated reason was a
+  **layer mismatch, not an untestable control**: they called `handleEvaluate()` directly, and rate
+  limiting is applied in `src/index.ts:266` via `withRateLimit(globalRateLimiter, …)` — so flooding
+  a handler could never produce a rejection no matter how many requests were sent. Rewritten to
+  exercise `withRateLimit` itself, the exact call the server wraps every tool invocation in, and to
+  assert against ground truth (token-bucket capacity, `RateLimitError.stats` payload, concurrency
+  slots released in `finally`) rather than self-consistency.
+  **Proven not to be tautologies:** with `allowRequest()` forced to return `true`, all four fail;
+  with the limiter intact, all four pass.
+- **Corrected a false security claim in `rate-limiter.ts`.** The module header advertised
+  "Request queue size limits (max pending requests)" as a third active DoS-protection layer.
+  It is not implemented: `allowQueue()`, `queueRequest()` and `dequeueRequest()` exist and
+  `maxQueueSize` defaults to 50, but **nothing in `src/` ever calls them**, so over-capacity
+  requests are rejected rather than parked and `getStats().queued` is structurally always 0 —
+  a value `health.ts` reports. The skipped `should queue operations when at capacity` test was
+  therefore asserting a feature that does not exist. Header corrected to mark queueing as NOT
+  enforced, the methods retained (they are part of the exported class surface), and the real
+  reject-don't-queue behaviour pinned by a test that will fail loudly if queueing is ever added.
+
 ## [4.1.7] - 2026-08-02
 
 ### Security

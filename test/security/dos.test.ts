@@ -18,7 +18,8 @@ import {
   handleMatrixOperations,
   handleStatistics,
 } from '../../src/tool-handlers.js';
-import { globalRateLimiter } from '../../src/rate-limiter.js';
+import { globalRateLimiter, withRateLimit } from '../../src/rate-limiter.js';
+import { RateLimitError } from '../../src/errors.js';
 
 describe('DoS Protection', () => {
   // Reset rate limiter between tests
@@ -27,55 +28,90 @@ describe('DoS Protection', () => {
   });
 
   describe('Rate limiting', () => {
-    // Note: Rate limiting is applied at the MCP server level (index.ts),
-    // not in the handler functions themselves. These tests should be integration
-    // tests that call the full server, not unit tests of individual handlers.
-    it.skip('should limit request rate', async () => {
-      // Reset rate limiter to ensure clean state
+    // These exercise `withRateLimit(globalRateLimiter, fn)` -- the exact call
+    // src/index.ts:266 wraps every tool invocation in. The previous versions
+    // called handleEvaluate() directly and were skipped as unfixable, but the
+    // reason was a layer mismatch, not an untestable control: the handlers were
+    // never rate-limited, so flooding them could not produce a rejection no
+    // matter how many requests were sent.
+    it('should limit request rate', async () => {
       globalRateLimiter.reset();
+      const { maxTokens } = globalRateLimiter.getStats();
 
-      // Flood with requests - 200 requests should hit rate limit
-      const requests = Array(200)
-        .fill(null)
-        .map(() => handleEvaluate({ expression: '2+2' }));
-
-      const results = await Promise.allSettled(requests);
-
-      // Should have rejections due to rate limiting
-      const rejected = results.filter((r) => r.status === 'rejected');
-      const accepted = results.filter((r) => r.status === 'fulfilled');
-
-      // At least some requests should be rejected
-      expect(rejected.length).toBeGreaterThan(0);
-
-      // But not all should be rejected (some should succeed)
-      expect(accepted.length).toBeGreaterThan(0);
-
-      console.log(`Rate limit test: ${accepted.length} accepted, ${rejected.length} rejected out of 200`);
-    });
-
-    it.skip('should provide retry-after information on rate limit', async () => {
-      globalRateLimiter.reset();
-
-      // Flood with requests to trigger rate limit
-      const requests = Array(150)
-        .fill(null)
-        .map(() => handleEvaluate({ expression: '1+1' }));
-
-      const results = await Promise.allSettled(requests);
-      const rejected = results.filter((r) => r.status === 'rejected');
-
-      // At least one should be rejected with RateLimitError
-      expect(rejected.length).toBeGreaterThan(0);
-
-      // Check that rejected requests have error details
-      for (const result of rejected) {
-        if (result.status === 'rejected') {
-          expect(result.reason).toBeDefined();
-          // Should be RateLimitError or contain rate limit information
-          expect(result.reason.message || result.reason.toString()).toMatch(/rate limit|too many|concurrent/i);
+      // Serial, so the concurrency limit cannot be what rejects: each call
+      // completes before the next starts. Only the token bucket can fire.
+      const outcomes: string[] = [];
+      for (let i = 0; i < maxTokens + 20; i++) {
+        try {
+          await withRateLimit(globalRateLimiter, async () => 'ok');
+          outcomes.push('accepted');
+        } catch {
+          outcomes.push('rejected');
         }
       }
+
+      const accepted = outcomes.filter((o) => o === 'accepted').length;
+      const rejected = outcomes.filter((o) => o === 'rejected').length;
+
+      // Ground truth, not self-consistency: a token bucket of size maxTokens
+      // refilling at maxTokens/windowMs admits ~maxTokens in a burst this short.
+      expect(accepted).toBeGreaterThan(0);
+      expect(rejected).toBeGreaterThan(0);
+      expect(accepted).toBeLessThanOrEqual(maxTokens + 1);
+      expect(accepted + rejected).toBe(maxTokens + 20);
+    });
+
+    it('should provide retry-after information on rate limit', async () => {
+      globalRateLimiter.reset();
+      const { maxTokens } = globalRateLimiter.getStats();
+
+      let caught: unknown;
+      for (let i = 0; i < maxTokens + 20 && caught === undefined; i++) {
+        try {
+          await withRateLimit(globalRateLimiter, async () => 'ok');
+        } catch (e) {
+          caught = e;
+        }
+      }
+
+      expect(caught).toBeInstanceOf(RateLimitError);
+      const err = caught as RateLimitError;
+      expect(err.message).toMatch(/rate limit|too many|concurrent/i);
+
+      // The rejection must carry the stats a caller needs to back off with,
+      // not just a bare message -- that payload is the "retry-after" signal.
+      const stats = err.stats as Record<string, number> | undefined;
+      expect(stats).toBeDefined();
+      expect(stats).toMatchObject({
+        maxTokens,
+        maxConcurrent: expect.any(Number),
+      });
+      expect(stats!.availableTokens).toBeLessThan(1);
+    });
+
+    it('should reject beyond the concurrency limit while requests are in flight', async () => {
+      globalRateLimiter.reset();
+      const { maxConcurrent } = globalRateLimiter.getStats();
+
+      // Hold exactly maxConcurrent requests open, then attempt one more.
+      let release!: () => void;
+      const gate = new Promise<void>((r) => { release = r; });
+      const inFlight = Array.from({ length: maxConcurrent }, () =>
+        withRateLimit(globalRateLimiter, async () => { await gate; return 'ok'; })
+      );
+      // Let each one register as started before probing.
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(globalRateLimiter.getStats().concurrent).toBe(maxConcurrent);
+      await expect(
+        withRateLimit(globalRateLimiter, async () => 'ok')
+      ).rejects.toBeInstanceOf(RateLimitError);
+
+      release();
+      await Promise.all(inFlight);
+      // endRequest() must run in the finally block, or the limiter leaks slots
+      // and the server wedges permanently after maxConcurrent requests.
+      expect(globalRateLimiter.getStats().concurrent).toBe(0);
     });
 
     it('should recover after rate limit window', async () => {
@@ -249,32 +285,37 @@ describe('DoS Protection', () => {
 
     // Skipped: this is an integration-style load test (20 parallel
     // handleStatistics calls through the full rate-limiter + handler chain),
-    // not a unit test of queueing behavior. The same pattern as the two
-    // it.skip rate-limit tests above (lines 33, 57): "Rate limiting is
-    // applied at the MCP server level (index.ts), not in the handler
-    // functions themselves. These tests should be integration tests that
-    // call the full server, not unit tests of individual handlers."
+    // This replaces a skipped 'should queue operations when at capacity' test.
+    // It was not merely testing the wrong layer -- it asserted a feature that
+    // DOES NOT EXIST. RateLimiter ships allowQueue()/queueRequest()/
+    // dequeueRequest() and a maxQueueSize of 50, and the module header lists
+    // "Request queue size limits (max pending requests)" as a DoS protection
+    // layer, but grep across src/ shows none of those three methods is ever
+    // called. Nothing queues; getStats().queued is structurally always 0.
     //
-    // To restore: convert to a real integration test that spawns
-    // dist/index.js and exercises queueing via the MCP transport.
-    it.skip('should queue operations when at capacity', async () => {
+    // So this pins the REAL behaviour at capacity -- reject, do not queue --
+    // and guards the dead-code claim so it cannot quietly become true or drift
+    // further. If queueing is ever implemented, this test should fail loudly.
+    it('rejects rather than queues at capacity (queueing is NOT implemented)', async () => {
       globalRateLimiter.reset();
+      const { maxConcurrent } = globalRateLimiter.getStats();
 
-      // Create slow operations
-      const slowOps = Array(20)
-        .fill(null)
-        .map(() =>
-          handleStatistics({
-            operation: 'median',
-            data: JSON.stringify(Array(10000).fill(1)),
-          })
-        );
+      let release!: () => void;
+      const gate = new Promise<void>((r) => { release = r; });
+      const inFlight = Array.from({ length: maxConcurrent }, () =>
+        withRateLimit(globalRateLimiter, async () => { await gate; return 'ok'; })
+      );
+      await new Promise((r) => setTimeout(r, 0));
 
-      const results = await Promise.allSettled(slowOps);
+      // Over capacity: rejected immediately, and NOT parked in a queue.
+      await expect(
+        withRateLimit(globalRateLimiter, async () => 'ok')
+      ).rejects.toBeInstanceOf(RateLimitError);
+      expect(globalRateLimiter.getStats().queued).toBe(0);
 
-      // Most should complete successfully (might be queued)
-      const succeeded = results.filter((r) => r.status === 'fulfilled');
-      expect(succeeded.length).toBeGreaterThan(0);
+      release();
+      await Promise.all(inFlight);
+      expect(globalRateLimiter.getStats().queued).toBe(0);
     });
   });
 

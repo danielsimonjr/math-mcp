@@ -2,10 +2,21 @@
  * @file rate-limiter.ts
  * @description Rate limiting and request throttling for MCP server
  *
- * Implements multiple layers of protection against DoS attacks:
- * - Token bucket rate limiting (requests per time window)
- * - Concurrent request limits (max in-flight requests)
- * - Request queue size limits (max pending requests)
+ * Implements protection against DoS attacks:
+ * - Token bucket rate limiting (requests per time window) -- ENFORCED
+ * - Concurrent request limits (max in-flight requests)    -- ENFORCED
+ *
+ * Both are enforced through {@link withRateLimit}, which `src/index.ts` wraps
+ * around every tool invocation.
+ *
+ * NOT enforced: request queueing. `allowQueue()`, `queueRequest()` and
+ * `dequeueRequest()` exist and `maxQueueSize` defaults to 50, but nothing in
+ * `src/` ever calls them -- over-capacity requests are REJECTED, never parked,
+ * so `getStats().queued` is structurally always 0. This module header used to
+ * advertise "Request queue size limits (max pending requests)" as a third
+ * active layer, which was never true. The methods are retained (they are part
+ * of the exported class surface) but must not be read as live protection.
+ * Pinned by test/security/dos.test.ts.
  *
  * @module rate-limiter
  * @since 3.1.0
