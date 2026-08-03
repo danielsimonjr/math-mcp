@@ -7,6 +7,33 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.7] - 2026-08-02
+
+### Security
+- **Cleared all 9 open Dependabot alerts (4 high, 4 moderate, 1 low) — `npm audit` now reports 0.**
+  Six of them were **runtime**, meaning they shipped to every consumer: `fast-uri` (high, ReDoS
+  range `<= 3.1.3`), `hono` (3× moderate), `@hono/node-server` (moderate), and `body-parser` (low).
+  Every one arrived transitively through a single parent, `@modelcontextprotocol/sdk@1.29.0`, and
+  none were pinned by that parent's ranges — they were **stale lockfile resolutions**, not manifest
+  constraints. Fixed at the parent (`@modelcontextprotocol/sdk` `^1.29.0` → **`^1.30.0`**) plus a
+  lockfile refresh, rather than by overriding the individual leaves.
+  Verified against the **resolved lockfile**, not the manifest: `fast-uri` 3.1.2 → **3.1.5**,
+  `hono` 4.12.25 → **4.12.33**, `@hono/node-server` 1.19.14 → **2.0.12**, `body-parser` 2.2.2 →
+  **2.3.0**, `postcss` → **8.5.25**, `brace-expansion` → **5.0.9**.
+  Note `@hono/node-server` crossed a **major** (1.x → 2.x) — permitted by the SDK's
+  `^1.19.9 || ^2.0.5` range. Full suite re-run on the result: type-check + build clean, integration
+  **12/12**, correctness **232/232**, unit+security **471 passed / 3 skipped**.
+
+### Fixed
+- **Stopped shipping the development tree to consumers.** `package.json` had no `files` field and
+  the repo has no `.npmignore`, so the published tarball carried **161 files / 7.9 MB unpacked** —
+  including `src/`, `test/`, `docs/`, `tools/`, `scripts/`, `.github/`, `skills/`,
+  `.claude-plugin/`, `CLAUDE.md`, `claude_config.json`, `sbom.json`, and even `.dropboxignore`.
+  Added an explicit `files` allow-list (`dist`, `README.md`, `LICENSE`, `CHANGELOG.md`).
+- **Rebuilt `bundle/index.mjs` against the updated dependency tree.** The runtime dependencies
+  changed in this release, which re-staled the committed bundle exactly as in 4.1.6. Re-verified
+  live over MCP stdio: 7 tools, `evaluate 2*30` → 60, `determinant` → -2, `solve x^2-4=0` → x = ±2.
+
 ## [4.1.6] - 2026-08-02
 
 ### Fixed
