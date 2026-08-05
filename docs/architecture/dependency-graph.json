@@ -1,0 +1,919 @@
+{
+  "metadata": {
+    "name": "math-mcp",
+    "schemaVersion": "1.0.0",
+    "totalFiles": 38,
+    "totalModules": 4,
+    "totalExports": 86
+  },
+  "modules": {
+    "src": {
+      "bundle/index.mjs": {
+        "externalDependencies": [],
+        "nodeDependencies": [
+          "http",
+          "node:module",
+          "node:path",
+          "node:process",
+          "node:url"
+        ],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "scripts/bundle.mjs": {
+        "externalDependencies": [
+          "esbuild"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "scripts/check-dependencies.js": {
+        "externalDependencies": [],
+        "nodeDependencies": [
+          "fs",
+          "path",
+          "url"
+        ],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "scripts/verify-mathts-coverage.mjs": {
+        "externalDependencies": [
+          "@danielsimonjr/mathts-compat"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "src/errors.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": [
+          "MathMCPError",
+          "ValidationError",
+          "TimeoutError",
+          "SizeLimitError",
+          "ComplexityError",
+          "RateLimitError"
+        ]
+      },
+      "src/expression-cache.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "LRUCache",
+          "expressionCache",
+          "generateCacheKey",
+          "getCachedExpression",
+          "getCacheStats"
+        ]
+      },
+      "src/handler-utils.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger",
+              "perfTracker"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "MathMCPError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "ToolResponse",
+          "successResponse",
+          "errorResponse",
+          "HandlerOptions",
+          "executeHandler",
+          "withErrorHandling"
+        ]
+      },
+      "src/health.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/rate-limiter.ts",
+            "imports": [
+              "globalRateLimiter"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "HealthStatus",
+          "CheckStatus",
+          "HealthCheck",
+          "HealthResponse",
+          "getHealthStatus",
+          "getLiveness",
+          "getReadiness"
+        ]
+      },
+      "src/index.ts": {
+        "externalDependencies": [
+          "@modelcontextprotocol/sdk/server/index.js",
+          "@modelcontextprotocol/sdk/server/stdio.js",
+          "@modelcontextprotocol/sdk/types.js"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/telemetry/server.ts",
+            "imports": [
+              "startTelemetryServer",
+              "stopTelemetryServer"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleSimplify",
+              "handleDerivative",
+              "handleSolve",
+              "handleMatrixOperations",
+              "handleStatistics",
+              "handleUnitConversion",
+              "withErrorHandling"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger",
+              "getPackageVersion",
+              "perfTracker"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "MathMCPError"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/rate-limiter.ts",
+            "imports": [
+              "globalRateLimiter",
+              "withRateLimit"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "src/math-engine.ts": {
+        "externalDependencies": [
+          "@danielsimonjr/mathts-compat"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "src/rate-limiter.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "RateLimitError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "RateLimiterConfig",
+          "RateLimiter",
+          "withRateLimit",
+          "globalRateLimiter"
+        ]
+      },
+      "src/shared/constants.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": [
+          "DEFAULT_OPERATION_TIMEOUT",
+          "PERF_TRACKING_ENABLED",
+          "PERF_LOGGING_ENABLED"
+        ]
+      },
+      "src/shared/logger.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": [
+          "LogLevel",
+          "logger"
+        ]
+      },
+      "src/telemetry/metrics.ts": {
+        "externalDependencies": [
+          "prom-client"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "register",
+          "operationDuration",
+          "operationCount",
+          "rateLimitHits",
+          "rateLimitQueue",
+          "cacheOperations",
+          "cacheSize",
+          "errorCount",
+          "inputSize",
+          "activeConnections",
+          "mcpRequests",
+          "recordOperation",
+          "recordError",
+          "recordCacheOperation",
+          "recordRateLimitHit",
+          "recordInputSize",
+          "getMetrics",
+          "getMetricsJSON",
+          "resetMetrics"
+        ]
+      },
+      "src/telemetry/server.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [
+          "http"
+        ],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/telemetry/metrics.ts",
+            "imports": [
+              "getMetrics"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/health.ts",
+            "imports": [
+              "getHealthStatus",
+              "getLiveness",
+              "getReadiness"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "TelemetryServerConfig",
+          "TelemetryServer",
+          "startTelemetryServer",
+          "stopTelemetryServer",
+          "getTelemetryServer"
+        ]
+      },
+      "src/tool-handlers.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/math-engine.ts",
+            "imports": [
+              "default"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/validation.ts",
+            "imports": [
+              "validateExpression",
+              "validateScope",
+              "validateVariableName",
+              "validateMatrix",
+              "validateSquareMatrix",
+              "validateMatrixSize",
+              "validateMatrixCompatibility",
+              "validateNumberArray",
+              "validateArrayLength",
+              "validateEnum",
+              "safeJsonParse"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "ValidationError"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "withTimeout",
+              "DEFAULT_OPERATION_TIMEOUT"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/expression-cache.ts",
+            "imports": [
+              "getCachedExpression"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/handler-utils.ts",
+            "imports": [
+              "executeHandler",
+              "successResponse",
+              "ToolResponse"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/handler-utils.ts",
+            "imports": [
+              "ToolResponse",
+              "withErrorHandling"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "ToolResponse",
+          "withErrorHandling",
+          "handleEvaluate",
+          "handleSimplify",
+          "handleDerivative",
+          "handleSolve",
+          "handleMatrixOperations",
+          "handleStatistics",
+          "handleUnitConversion"
+        ]
+      },
+      "src/types.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "src/utils.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "TimeoutError"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/shared/logger.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/shared/constants.ts",
+            "imports": [
+              "DEFAULT_OPERATION_TIMEOUT"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/shared/logger.ts",
+            "imports": [
+              "logger"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/shared/logger.ts",
+            "imports": [
+              "LogLevel"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "logger",
+          "LogLevel",
+          "DEFAULT_OPERATION_TIMEOUT",
+          "withTimeout",
+          "perfTracker",
+          "getPackageVersion",
+          "formatNumber",
+          "isPlainObject"
+        ]
+      },
+      "src/validation.ts": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "ValidationError",
+              "SizeLimitError",
+              "ComplexityError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "LIMITS",
+          "safeJsonParse",
+          "validateMatrix",
+          "validateSquareMatrix",
+          "validateMatrixSize",
+          "validateMatrixCompatibility",
+          "validateNumberArray",
+          "validateArrayLength",
+          "validateExpression",
+          "validateVariableName",
+          "validateScope",
+          "validateEnum"
+        ]
+      },
+      "test/correctness-tests.js": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      },
+      "test/integration-test.js": {
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      }
+    },
+    "config": {
+      "eslint.config.js": {
+        "externalDependencies": [
+          "@eslint/js",
+          "@typescript-eslint/eslint-plugin",
+          "@typescript-eslint/parser",
+          "eslint-config-prettier",
+          "eslint-plugin-jsdoc",
+          "globals"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "exports": []
+      }
+    },
+    "tests": {
+      "test/security/bounds.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleMatrixOperations",
+              "handleStatistics",
+              "handleDerivative",
+              "handleSimplify",
+              "handleSolve",
+              "handleUnitConversion"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/security/dos.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleMatrixOperations",
+              "handleStatistics"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/rate-limiter.ts",
+            "imports": [
+              "globalRateLimiter",
+              "withRateLimit"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "RateLimitError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/security/fuzzing.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [
+          "crypto"
+        ],
+        "internalDependencies": [
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleMatrixOperations",
+              "handleStatistics",
+              "handleSimplify",
+              "handleDerivative"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/security/injection.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleSimplify",
+              "handleDerivative",
+              "handleSolve"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/errors.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "MathMCPError",
+              "ValidationError",
+              "TimeoutError",
+              "SizeLimitError",
+              "ComplexityError",
+              "RateLimitError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/expression-cache.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/expression-cache.ts",
+            "imports": [
+              "LRUCache",
+              "generateCacheKey",
+              "getCachedExpression",
+              "getCacheStats",
+              "expressionCache"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/handler-utils.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/handler-utils.ts",
+            "imports": [
+              "successResponse",
+              "errorResponse",
+              "executeHandler",
+              "withErrorHandling",
+              "ToolResponse"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "ValidationError",
+              "MathMCPError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/health.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/health.ts",
+            "imports": [
+              "getHealthStatus",
+              "getLiveness",
+              "getReadiness",
+              "HealthStatus",
+              "CheckStatus"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/rate-limiter.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/rate-limiter.ts",
+            "imports": [
+              "RateLimiter",
+              "withRateLimit",
+              "globalRateLimiter"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "RateLimitError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/shared/constants.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/shared/constants.ts",
+            "imports": [
+              "DEFAULT_OPERATION_TIMEOUT",
+              "PERF_TRACKING_ENABLED",
+              "PERF_LOGGING_ENABLED"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/shared/logger.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/shared/logger.ts",
+            "imports": [
+              "logger",
+              "LogLevel"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/solver.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleSolve"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/telemetry/metrics.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/telemetry/metrics.ts",
+            "imports": [
+              "resetMetrics",
+              "recordOperation",
+              "recordError",
+              "recordCacheOperation",
+              "recordRateLimitHit",
+              "recordInputSize",
+              "getMetrics",
+              "getMetricsJSON",
+              "operationDuration",
+              "operationCount",
+              "cacheOperations",
+              "rateLimitHits"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/utils.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "withTimeout",
+              "DEFAULT_OPERATION_TIMEOUT",
+              "perfTracker",
+              "formatNumber",
+              "isPlainObject"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "TimeoutError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      },
+      "test/unit/validation.test.ts": {
+        "externalDependencies": [
+          "vitest"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/validation.ts",
+            "imports": [
+              "LIMITS",
+              "safeJsonParse",
+              "validateMatrix",
+              "validateSquareMatrix",
+              "validateMatrixSize",
+              "validateMatrixCompatibility",
+              "validateNumberArray",
+              "validateArrayLength",
+              "validateExpression",
+              "validateVariableName"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/errors.ts",
+            "imports": [
+              "ValidationError",
+              "SizeLimitError",
+              "ComplexityError"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": []
+      }
+    },
+    "tools": {
+      "tools/generate-dependency-graph.ts": {
+        "externalDependencies": [
+          "@babel/core"
+        ],
+        "nodeDependencies": [
+          "fs",
+          "path",
+          "url"
+        ],
+        "internalDependencies": [],
+        "exports": []
+      }
+    }
+  },
+  "statistics": {
+    "totalTypeScriptFiles": 38,
+    "totalModules": 4,
+    "totalLinesOfCode": 129302,
+    "totalExports": 86,
+    "entryRoots": 1,
+    "reachableFiles": 14,
+    "dormantFiles": 7,
+    "orphanedFiles": 7,
+    "testOnlyFiles": 0,
+    "runtimeCircularDeps": 0,
+    "typeOnlyCircularDeps": 0,
+    "totalTypeOnlyImports": 0,
+    "noImporterFileCount": 7,
+    "unusedExportsCount": 14,
+    "circularDepsTruncated": false
+  },
+  "reachability": {
+    "roots": [
+      "src/index.ts"
+    ],
+    "reachableCount": 14,
+    "dormantCount": 7,
+    "orphaned": [
+      "bundle/index.mjs",
+      "scripts/bundle.mjs",
+      "scripts/check-dependencies.js",
+      "scripts/verify-mathts-coverage.mjs",
+      "src/types.ts",
+      "test/correctness-tests.js",
+      "test/integration-test.js"
+    ],
+    "testOnly": []
+  },
+  "warnings": []
+}

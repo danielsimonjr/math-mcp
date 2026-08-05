@@ -1,0 +1,290 @@
+{
+  "generated": "2026-08-05",
+  "totalFiles": 38,
+  "byDisposition": {
+    "reachable": 13,
+    "build-entry": 1,
+    "test-only": 0,
+    "orphan": 7,
+    "test": 15,
+    "tool": 1,
+    "config": 1,
+    "bench": 0,
+    "example": 0
+  },
+  "byArea": {
+    "src": 21,
+    "config": 1,
+    "tests": 15,
+    "tools": 1
+  },
+  "files": [
+    {
+      "file": "bundle/index.mjs",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 118477
+    },
+    {
+      "file": "eslint.config.js",
+      "package": "(root)",
+      "area": "config",
+      "disposition": "config",
+      "loc": 83
+    },
+    {
+      "file": "scripts/bundle.mjs",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 24
+    },
+    {
+      "file": "scripts/check-dependencies.js",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 223
+    },
+    {
+      "file": "scripts/verify-mathts-coverage.mjs",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 38
+    },
+    {
+      "file": "src/errors.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 206
+    },
+    {
+      "file": "src/expression-cache.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 224
+    },
+    {
+      "file": "src/handler-utils.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 86
+    },
+    {
+      "file": "src/health.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 276
+    },
+    {
+      "file": "src/index.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "build-entry",
+      "loc": 417
+    },
+    {
+      "file": "src/math-engine.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 26
+    },
+    {
+      "file": "src/rate-limiter.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 352
+    },
+    {
+      "file": "src/shared/constants.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 42
+    },
+    {
+      "file": "src/shared/logger.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 124
+    },
+    {
+      "file": "src/telemetry/metrics.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 332
+    },
+    {
+      "file": "src/telemetry/server.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 334
+    },
+    {
+      "file": "src/tool-handlers.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 477
+    },
+    {
+      "file": "src/types.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 11
+    },
+    {
+      "file": "src/utils.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 282
+    },
+    {
+      "file": "src/validation.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 588
+    },
+    {
+      "file": "test/correctness-tests.js",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 635
+    },
+    {
+      "file": "test/integration-test.js",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 94
+    },
+    {
+      "file": "test/security/bounds.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 580
+    },
+    {
+      "file": "test/security/dos.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 490
+    },
+    {
+      "file": "test/security/fuzzing.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 442
+    },
+    {
+      "file": "test/security/injection.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 472
+    },
+    {
+      "file": "test/unit/errors.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 329
+    },
+    {
+      "file": "test/unit/expression-cache.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 630
+    },
+    {
+      "file": "test/unit/handler-utils.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 138
+    },
+    {
+      "file": "test/unit/health.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 289
+    },
+    {
+      "file": "test/unit/rate-limiter.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 670
+    },
+    {
+      "file": "test/unit/shared/constants.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 102
+    },
+    {
+      "file": "test/unit/shared/logger.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 198
+    },
+    {
+      "file": "test/unit/solver.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 93
+    },
+    {
+      "file": "test/unit/telemetry/metrics.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 246
+    },
+    {
+      "file": "test/unit/utils.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 327
+    },
+    {
+      "file": "test/unit/validation.test.ts",
+      "package": "(root)",
+      "area": "tests",
+      "disposition": "test",
+      "loc": 505
+    },
+    {
+      "file": "tools/generate-dependency-graph.ts",
+      "package": "(root)",
+      "area": "tools",
+      "disposition": "tool",
+      "loc": 440
+    }
+  ],
+  "warnings": []
+}
