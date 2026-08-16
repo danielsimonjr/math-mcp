@@ -7,6 +7,32 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.9] - 2026-08-16
+
+### Fixed
+
+- **The plugin bundle has been running WASM-less since it was first bundled, and said so only
+  on stderr.** `scripts/bundle.mjs` inlines `@danielsimonjr/mathts-functions` into
+  `bundle/index.mjs`, and MathTS resolves its binary from `import.meta.url` — walking up from
+  the *calling module* testing `<dir>/wasm/` then `<dir>/dist/wasm/`. That is correct while
+  `WasmLoader.ts` sits inside its own package; inlining moves `import.meta.url` to this package,
+  so the walk finds nothing and reports `<pluginRoot>/dist/wasm/mathts-as.wasm` — a path that
+  never existed here. The bundler skipped the file because **a `.wasm` is a data file, not an
+  import**, so nothing followed it.
+  - **Why it survived: correctness was never affected.** The loader falls back to pure JS, so
+    every answer stayed right and merely got slower. All 12 integration tests passed throughout,
+    and no gate reads stderr. It took driving the *deployed* bundle over stdio and reading what
+    it printed.
+  - The bundler now stages `mathts-as.wasm` **and** `wasm-manifest.json` into `bundle/wasm/`,
+    which is the first candidate the resolver tests at depth 0. The manifest ships with it
+    because the loader verifies the binary's SHA-384 before instantiating, and that check is a
+    documented security invariant — shipping the binary alone would trade a performance bug for
+    a weaker one.
+  - **The staging step fails loudly if either file is absent.** A silent skip there would
+    reproduce exactly the defect being fixed.
+  - Verified on the rebuilt bundle: the `Failed to load AssemblyScript WASM module` line is
+    gone, and `matrix_operations multiply` returns `[[19, 22], [43, 50]]`.
+
 ## [4.1.8] - 2026-08-12
 
 ### Documentation (2026-08-05)
