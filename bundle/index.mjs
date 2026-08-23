@@ -11671,7 +11671,7 @@ var require_prom_client = __commonJS({
   }
 });
 
-// node_modules/@danielsimonjr/mathts-core/dist/chunk-7BUNGMQB.js
+// node_modules/@danielsimonjr/mathts-core/dist/chunk-VPK5YTKG.js
 function isComplex(value) {
   return value instanceof Complex;
 }
@@ -11953,9 +11953,7 @@ function toPrecision(value, precision, options) {
     if (precision && c.length < precision) {
       c = c.concat(zeros(precision - c.length));
     }
-    c = c.concat(
-      zeros(e2 - c.length + 1 + (precision && c.length < precision ? precision - c.length : 0))
-    );
+    c = c.concat(zeros(e2 - c.length + 1));
     c = zeros(-e2).concat(c);
     const dot9 = e2 > 0 ? e2 : 0;
     if (dot9 < c.length - 1) {
@@ -12350,8 +12348,8 @@ function formatValue(value, options) {
   return String(value);
 }
 var Complex, I, COMPLEX_ZERO, COMPLEX_ONE, COMPLEX_NEG_ONE, isArray, sign, log2, log10, log1p, cbrt, expm1, acosh, asinh, atanh, cosh, sinh, tanh, warnOnce, MathjsError, Fraction, FRACTION_ZERO, FRACTION_ONE, FRACTION_NEG_ONE, FRACTION_HALF, FRACTION_THIRD, FRACTION_QUARTER, defaultConfig, globalConfig2, BigNumber, BIGNUMBER_ZERO, BIGNUMBER_ONE, BIGNUMBER_NEG_ONE, BIGNUMBER_TEN, BIGNUMBER_PI, BIGNUMBER_E, BIGNUMBER_LN2, BIGNUMBER_LN10, DEFAULT_CONFIG2, UnitParseError, DimensionMismatchError, name, dependencies, createUnitClass, asBinary, asUnary, subtractScalar2, BigNumberCtor, ComplexCtor, config2, unitDependencies, Unit;
-var init_chunk_7BUNGMQB = __esm({
-  "node_modules/@danielsimonjr/mathts-core/dist/chunk-7BUNGMQB.js"() {
+var init_chunk_VPK5YTKG = __esm({
+  "node_modules/@danielsimonjr/mathts-core/dist/chunk-VPK5YTKG.js"() {
     Complex = class _Complex {
       type = "Complex";
       re;
@@ -12369,7 +12367,15 @@ var init_chunk_7BUNGMQB = __esm({
        * @param theta - angle in radians
        */
       static fromPolar(r, theta) {
-        return new _Complex(r * Math.cos(theta), r * Math.sin(theta));
+        const cosT = Math.cos(theta);
+        const sinT = Math.sin(theta);
+        let re4 = r * cosT;
+        let im4 = r * sinT;
+        if (!Number.isFinite(r) && !Number.isNaN(r)) {
+          if (cosT === 0) re4 = cosT;
+          if (sinT === 0) im4 = sinT;
+        }
+        return new _Complex(re4, im4);
       }
       /**
        * Create a Complex from a real number
@@ -15853,83 +15859,87 @@ var init_chunk_7BUNGMQB = __esm({
           "LUMINOUS_INTENSITY",
           "AMOUNT_OF_SUBSTANCE",
           "ANGLE",
-          "BIT"
+          "BIT",
+          "SOLID_ANGLE"
         ];
         const BASE_UNITS2 = {
           NONE: {
-            dimensions: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
           },
           MASS: {
-            dimensions: [1, 0, 0, 0, 0, 0, 0, 0, 0]
+            dimensions: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
           },
           LENGTH: {
-            dimensions: [0, 1, 0, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
           },
           TIME: {
-            dimensions: [0, 0, 1, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
           },
           CURRENT: {
-            dimensions: [0, 0, 0, 1, 0, 0, 0, 0, 0]
+            dimensions: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
           },
           TEMPERATURE: {
-            dimensions: [0, 0, 0, 0, 1, 0, 0, 0, 0]
+            dimensions: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
           },
           LUMINOUS_INTENSITY: {
-            dimensions: [0, 0, 0, 0, 0, 1, 0, 0, 0]
+            dimensions: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
           },
           AMOUNT_OF_SUBSTANCE: {
-            dimensions: [0, 0, 0, 0, 0, 0, 1, 0, 0]
+            dimensions: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
           },
           FORCE: {
-            dimensions: [1, 1, -2, 0, 0, 0, 0, 0, 0]
+            dimensions: [1, 1, -2, 0, 0, 0, 0, 0, 0, 0]
           },
           SURFACE: {
-            dimensions: [0, 2, 0, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 2, 0, 0, 0, 0, 0, 0, 0, 0]
           },
           VOLUME: {
-            dimensions: [0, 3, 0, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 3, 0, 0, 0, 0, 0, 0, 0, 0]
           },
           ENERGY: {
-            dimensions: [1, 2, -2, 0, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -2, 0, 0, 0, 0, 0, 0, 0]
           },
           POWER: {
-            dimensions: [1, 2, -3, 0, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -3, 0, 0, 0, 0, 0, 0, 0]
           },
           PRESSURE: {
-            dimensions: [1, -1, -2, 0, 0, 0, 0, 0, 0]
+            dimensions: [1, -1, -2, 0, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_CHARGE: {
-            dimensions: [0, 0, 1, 1, 0, 0, 0, 0, 0]
+            dimensions: [0, 0, 1, 1, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_CAPACITANCE: {
-            dimensions: [-1, -2, 4, 2, 0, 0, 0, 0, 0]
+            dimensions: [-1, -2, 4, 2, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_POTENTIAL: {
-            dimensions: [1, 2, -3, -1, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -3, -1, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_RESISTANCE: {
-            dimensions: [1, 2, -3, -2, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -3, -2, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_INDUCTANCE: {
-            dimensions: [1, 2, -2, -2, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -2, -2, 0, 0, 0, 0, 0, 0]
           },
           ELECTRIC_CONDUCTANCE: {
-            dimensions: [-1, -2, 3, 2, 0, 0, 0, 0, 0]
+            dimensions: [-1, -2, 3, 2, 0, 0, 0, 0, 0, 0]
           },
           MAGNETIC_FLUX: {
-            dimensions: [1, 2, -2, -1, 0, 0, 0, 0, 0]
+            dimensions: [1, 2, -2, -1, 0, 0, 0, 0, 0, 0]
           },
           MAGNETIC_FLUX_DENSITY: {
-            dimensions: [1, 0, -2, -1, 0, 0, 0, 0, 0]
+            dimensions: [1, 0, -2, -1, 0, 0, 0, 0, 0, 0]
           },
           FREQUENCY: {
-            dimensions: [0, 0, -1, 0, 0, 0, 0, 0, 0]
+            dimensions: [0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
           },
           ANGLE: {
-            dimensions: [0, 0, 0, 0, 0, 0, 0, 1, 0]
+            dimensions: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
           },
           BIT: {
-            dimensions: [0, 0, 0, 0, 0, 0, 0, 0, 1]
+            dimensions: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+          },
+          SOLID_ANGLE: {
+            dimensions: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           }
         };
         for (const key2 in BASE_UNITS2) {
@@ -16844,9 +16854,21 @@ var init_chunk_7BUNGMQB = __esm({
             value: 1,
             offset: 0
           },
-          // TODO: units STERADIAN
-          // {name: 'sr', base: BASE_UNITS.STERADIAN, prefixes: PREFIXES.NONE, value: 1, offset: 0},
-          // {name: 'steradian', base: BASE_UNITS.STERADIAN, prefixes: PREFIXES.NONE, value: 1, offset: 0},
+          // Solid angle
+          sr: {
+            name: "sr",
+            base: BASE_UNITS2.SOLID_ANGLE,
+            prefixes: PREFIXES.NONE,
+            value: 1,
+            offset: 0
+          },
+          steradian: {
+            name: "steradian",
+            base: BASE_UNITS2.SOLID_ANGLE,
+            prefixes: PREFIXES.LONG,
+            value: 1,
+            offset: 0
+          },
           // Force
           N: {
             name: "N",
@@ -17356,6 +17378,7 @@ var init_chunk_7BUNGMQB = __esm({
             LUMINOUS_INTENSITY: { unit: UNITS.cd, prefix: PREFIXES.SHORT[""] },
             AMOUNT_OF_SUBSTANCE: { unit: UNITS.mol, prefix: PREFIXES.SHORT[""] },
             ANGLE: { unit: UNITS.rad, prefix: PREFIXES.SHORT[""] },
+            SOLID_ANGLE: { unit: UNITS.sr, prefix: PREFIXES.NONE[""] },
             BIT: { unit: UNITS.bits, prefix: PREFIXES.SHORT[""] },
             // Derived units
             FORCE: { unit: UNITS.N, prefix: PREFIXES.SHORT[""] },
@@ -17784,13 +17807,31 @@ function format2(value, options) {
       return formatBigNumberToBase(v, 16, wordSize);
     case "auto": {
       const optionsObj = options;
-      const lowerExp = _toNumberOrDefault2(optionsObj?.lowerExp, -3);
-      const upperExp = _toNumberOrDefault2(optionsObj?.upperExp, 5);
+      const lowerExp = isNumber(optionsObj?.lowerExp) || isBigNumber(optionsObj?.lowerExp) ? optionsObj?.lowerExp : -3;
+      const upperExp = isNumber(optionsObj?.upperExp) || isBigNumber(optionsObj?.upperExp) ? optionsObj?.upperExp : 5;
       if (v.isZero()) return "0";
       let str;
       const rounded = v.toSignificantDigits(precision);
       const exp5 = rounded.e;
-      if (exp5 >= lowerExp && exp5 < upperExp) {
+      let condition = false;
+      if (isBigNumber(lowerExp) && isBigNumber(upperExp)) {
+        const lowerExpBn = lowerExp;
+        const upperExpBn = upperExp;
+        condition = !lowerExpBn.greaterThan(exp5) && upperExpBn.greaterThan(exp5);
+      } else if (isBigNumber(lowerExp)) {
+        const lowerExpBn = lowerExp;
+        const upperExpNum = upperExp;
+        condition = !lowerExpBn.greaterThan(exp5) && exp5 < upperExpNum;
+      } else if (isBigNumber(upperExp)) {
+        const upperExpBn = upperExp;
+        const lowerExpNum = lowerExp;
+        condition = exp5 >= lowerExpNum && upperExpBn.greaterThan(exp5);
+      } else {
+        const lowerExpNum = lowerExp;
+        const upperExpNum = upperExp;
+        condition = exp5 >= lowerExpNum && exp5 < upperExpNum;
+      }
+      if (condition) {
         str = rounded.toFixed();
       } else {
         str = toExponential2(v, precision);
@@ -17828,15 +17869,6 @@ function toExponential2(value, precision) {
 }
 function toFixed2(value, precision) {
   return value.toFixed(precision);
-}
-function _toNumberOrDefault2(value, defaultValue) {
-  if (isNumber(value)) {
-    return value;
-  } else if (isBigNumber(value)) {
-    return value.toNumber();
-  } else {
-    return defaultValue;
-  }
 }
 function format3(value, options) {
   const result = _format(value, options);
@@ -18478,7 +18510,7 @@ function deepMap2(array2, callback, skipZeros) {
 function reduce(mat, dim2, callback) {
   const size4 = Array.isArray(mat) ? arraySize(mat) : mat.size();
   if (dim2 < 0 || dim2 >= size4.length) {
-    throw new IndexError(dim2, 0, size4.length);
+    throw new DimensionError(dim2, size4.length, "<");
   }
   if (isMatrix(mat)) {
     const reduced = _reduce(mat.valueOf(), dim2, callback);
@@ -18744,7 +18776,7 @@ async function defaultWasmLocation(metaUrl, wasmFile, opts) {
 var DimensionError, IndexError, controlCharacters, safeNativeProperties, safeNativeMethods, ObjectWrappingMap, PartitionedMap, ALGO;
 var init_internal = __esm({
   "node_modules/@danielsimonjr/mathts-core/dist/internal.js"() {
-    init_chunk_7BUNGMQB();
+    init_chunk_VPK5YTKG();
     DimensionError = class _DimensionError extends RangeError {
       actual;
       expected;
@@ -21919,9 +21951,13 @@ var require_js = __commonJS({
     exports.cpus = cpus;
     exports.TerminateError = TerminateError;
     var Pool = require_Pool();
-    exports.getSharedPool = Pool.getSharedPool;
-    exports.terminateSharedPool = Pool.terminateSharedPool;
-    exports.hasSharedPool = Pool.hasSharedPool;
+    var getSharedPool = Pool.getSharedPool;
+    var terminateSharedPool = Pool.terminateSharedPool;
+    var hasSharedPool = Pool.hasSharedPool;
+    exports.getSharedPool = getSharedPool;
+    exports.terminateSharedPool = terminateSharedPool;
+    exports.hasSharedPool = hasSharedPool;
+    exports.Pool = Pool;
     exports.PoolEnhanced = Pool;
     exports.enhancedPool = function(script, options) {
       return new Pool(script, options);
@@ -32243,7 +32279,7 @@ async function stopTelemetryServer() {
 }
 
 // node_modules/@danielsimonjr/mathts-core/dist/index.js
-init_chunk_7BUNGMQB();
+init_chunk_VPK5YTKG();
 
 // node_modules/typed-function/build/typed-function.mjs
 var NOT_TYPED_FUNCTION = "Argument is not a typed-function.";
@@ -48398,6 +48434,7 @@ init_internal();
 init_internal();
 init_internal();
 init_internal();
+init_internal();
 var __create2 = Object.create;
 var __defProp4 = Object.defineProperty;
 var __getOwnPropDesc3 = Object.getOwnPropertyDescriptor;
@@ -48405,11 +48442,7 @@ var __getOwnPropNames3 = Object.getOwnPropertyNames;
 var __getProtoOf2 = Object.getPrototypeOf;
 var __hasOwnProp3 = Object.prototype.hasOwnProperty;
 var __commonJS2 = (cb, mod3) => function __require3() {
-  try {
-    return mod3 || (0, cb[__getOwnPropNames3(cb)[0]])((mod3 = { exports: {} }).exports, mod3), mod3.exports;
-  } catch (e2) {
-    throw mod3 = 0, e2;
-  }
+  return mod3 || (0, cb[__getOwnPropNames3(cb)[0]])((mod3 = { exports: {} }).exports, mod3), mod3.exports;
 };
 var __copyProps3 = (to3, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -48538,6 +48571,11 @@ function isRange3(x) {
   if (!x || typeof x !== "object") return false;
   const obj = x;
   return obj.constructor?.prototype?.isRange === true;
+}
+function isIndex2(x) {
+  if (!x || typeof x !== "object") return false;
+  const obj = x;
+  return obj.constructor?.prototype?.isIndex === true;
 }
 function isHelp(x) {
   if (!x || typeof x !== "object") return false;
@@ -48962,6 +49000,73 @@ function factory2(name473, dependencies473, create4, meta2) {
   }
   return assertAndCreate;
 }
+function getSafeProperty2(object3, prop) {
+  if (isSafeProperty2(object3, prop)) {
+    return object3[prop];
+  }
+  if (typeof object3[prop] === "function" && isSafeMethod2(object3, prop)) {
+    throw new Error('Cannot access method "' + String(prop) + '" as a property');
+  }
+  throw new Error('No access to property "' + String(prop) + '"');
+}
+function setSafeProperty2(object3, prop, value) {
+  if (isSafeProperty2(object3, prop)) {
+    object3[prop] = value;
+    return value;
+  }
+  throw new Error('No access to property "' + String(prop) + '"');
+}
+function isSafeProperty2(object3, prop) {
+  if (!isPlainObject5(object3) && !Array.isArray(object3)) {
+    return false;
+  }
+  if (hasOwnProperty(safeNativeProperties2, prop)) {
+    return true;
+  }
+  if (prop in Object.prototype) {
+    return false;
+  }
+  if (prop in Function.prototype) {
+    return false;
+  }
+  return true;
+}
+function getSafeMethod(object3, method) {
+  if (!isSafeMethod2(object3, method)) {
+    throw new Error('No access to method "' + String(method) + '"');
+  }
+  return object3[method];
+}
+function isSafeMethod2(object3, method) {
+  if (object3 === null || object3 === void 0 || typeof object3[method] !== "function") {
+    return false;
+  }
+  if (hasOwnProperty(object3, method) && Object.getPrototypeOf && method in Object.getPrototypeOf(object3)) {
+    return false;
+  }
+  if (hasOwnProperty(safeNativeMethods2, method)) {
+    return true;
+  }
+  if (method in Object.prototype) {
+    return false;
+  }
+  if (method in Function.prototype) {
+    return false;
+  }
+  return true;
+}
+function isPlainObject5(object3) {
+  return typeof object3 === "object" && !!object3 && object3.constructor === Object;
+}
+var safeNativeProperties2 = {
+  length: true,
+  name: true
+};
+var safeNativeMethods2 = {
+  toString: true,
+  valueOf: true,
+  toLocaleString: true
+};
 var name3 = "parse";
 var dependencies3 = [
   "typed",
@@ -49067,7 +49172,8 @@ var createParse = /* @__PURE__ */ factory2(
       ">=": true,
       "<<": true,
       ">>": true,
-      ">>>": true
+      ">>>": true,
+      ".": true
     };
     const NAMED_DELIMITERS = {
       mod: true,
@@ -49162,25 +49268,28 @@ var createParse = /* @__PURE__ */ factory2(
       const c1 = currentCharacter(state);
       const c2 = currentString(state, 2);
       const c3 = currentString(state, 3);
+      let delim = "";
       if (c3.length === 3 && DELIMITERS[c3]) {
-        state.tokenType = 1;
-        state.token = c3;
-        next(state);
-        next(state);
-        next(state);
-        return;
+        delim = c3;
+      } else if (c2.length === 2 && DELIMITERS[c2]) {
+        delim = c2;
+      } else if (DELIMITERS[c1]) {
+        delim = c1;
       }
-      if (c2.length === 2 && DELIMITERS[c2] && (c2 !== "?." || !parse4.isDigit(state.expression.charAt(state.index + 2)))) {
-        state.tokenType = 1;
-        state.token = c2;
-        next(state);
-        next(state);
-        return;
+      if (delim) {
+        if (delim.endsWith(".") && parse4.isDigit(state.expression.charAt(state.index + delim.length))) {
+          delim = delim.slice(0, -1);
+          if (delim.length > 0 && !DELIMITERS[delim]) {
+            delim = "";
+          }
+        }
       }
-      if (DELIMITERS[c1]) {
+      if (delim) {
         state.tokenType = 1;
-        state.token = c1;
-        next(state);
+        state.token = delim;
+        for (let i2 = 0; i2 < delim.length; i2++) {
+          next(state);
+        }
         return;
       }
       if (parse4.isDigitDot(c1)) {
@@ -49215,10 +49324,6 @@ var createParse = /* @__PURE__ */ factory2(
         if (currentCharacter(state) === ".") {
           state.token += currentCharacter(state);
           next(state);
-          if (!parse4.isDigit(currentCharacter(state))) {
-            state.tokenType = 1;
-            return;
-          }
         } else {
           while (parse4.isDigit(currentCharacter(state))) {
             state.token += currentCharacter(state);
@@ -49334,26 +49439,29 @@ var createParse = /* @__PURE__ */ factory2(
     function parseBlock(state) {
       let node;
       const blocks = [];
-      let visible;
-      if (state.token !== "" && state.token !== "\n" && state.token !== ";") {
-        node = parseAssignment(state);
-        if (state.comment) {
-          node.comment = state.comment;
-        }
-      }
-      while (state.token === "\n" || state.token === ";") {
-        if (blocks.length === 0 && node) {
-          visible = state.token !== ";";
-          blocks.push({ node, visible });
-        }
-        getToken(state);
-        if (state.token !== "\n" && state.token !== ";" && state.token !== "") {
+      let hasSeparators = false;
+      let nodePushed = true;
+      while (state.token !== "") {
+        if (state.token !== "\n" && state.token !== ";") {
           node = parseAssignment(state);
+          nodePushed = false;
           if (state.comment) {
             node.comment = state.comment;
           }
-          visible = state.token !== ";";
-          blocks.push({ node, visible });
+        }
+        if (state.token === "\n" || state.token === ";") {
+          hasSeparators = true;
+          if (node && !nodePushed) {
+            blocks.push({ node, visible: state.token !== ";" });
+            nodePushed = true;
+          }
+          getToken(state);
+        } else {
+          if (node && hasSeparators && !nodePushed) {
+            blocks.push({ node, visible: state.token !== ";" });
+            nodePushed = true;
+          }
+          break;
         }
       }
       if (blocks.length > 0) {
@@ -49999,7 +50107,7 @@ var createParse = /* @__PURE__ */ factory2(
               throw createSyntaxError(state, "Colon : expected after object key");
             }
             getToken(state);
-            properties22[key2] = parseAssignment(state);
+            setSafeProperty2(properties22, key2, parseAssignment(state));
           }
         } while (state.token === ",");
         if (state.token !== "}") {
@@ -50150,6 +50258,414 @@ var createHelpClass = /* @__PURE__ */ factory2(
   },
   { isClass: true }
 );
+var speedOfLightDocs = {
+  name: "speedOfLight",
+  category: "Physical Constants",
+  syntax: ["speedOfLight"],
+  description: "Speed of light in vacuum",
+  examples: ["speedOfLight"],
+  seealso: []
+};
+var gravitationConstantDocs = {
+  name: "gravitationConstant",
+  category: "Physical Constants",
+  syntax: ["gravitationConstant"],
+  description: "Newtonian constant of gravitation",
+  examples: ["gravitationConstant"],
+  seealso: []
+};
+var planckConstantDocs = {
+  name: "planckConstant",
+  category: "Physical Constants",
+  syntax: ["planckConstant"],
+  description: "Planck constant",
+  examples: ["planckConstant"],
+  seealso: []
+};
+var reducedPlanckConstantDocs = {
+  name: "reducedPlanckConstant",
+  category: "Physical Constants",
+  syntax: ["reducedPlanckConstant"],
+  description: "Reduced Planck constant",
+  examples: ["reducedPlanckConstant"],
+  seealso: []
+};
+var magneticConstantDocs = {
+  name: "magneticConstant",
+  category: "Physical Constants",
+  syntax: ["magneticConstant"],
+  description: "Magnetic constant (vacuum permeability)",
+  examples: ["magneticConstant"],
+  seealso: []
+};
+var electricConstantDocs = {
+  name: "electricConstant",
+  category: "Physical Constants",
+  syntax: ["electricConstant"],
+  description: "Electric constant (vacuum permeability)",
+  examples: ["electricConstant"],
+  seealso: []
+};
+var vacuumImpedanceDocs = {
+  name: "vacuumImpedance",
+  category: "Physical Constants",
+  syntax: ["vacuumImpedance"],
+  description: "Characteristic impedance of vacuum",
+  examples: ["vacuumImpedance"],
+  seealso: []
+};
+var coulombDocs = {
+  name: "coulomb",
+  category: "Physical Constants",
+  syntax: ["coulomb"],
+  description: "Coulomb's constant. Deprecated in favor of coulombConstant",
+  examples: ["coulomb"],
+  seealso: []
+};
+var coulombConstantDocs = {
+  name: "coulombConstant",
+  category: "Physical Constants",
+  syntax: ["coulombConstant"],
+  description: "Coulomb's constant",
+  examples: ["coulombConstant"],
+  seealso: []
+};
+var elementaryChargeDocs = {
+  name: "elementaryCharge",
+  category: "Physical Constants",
+  syntax: ["elementaryCharge"],
+  description: "Elementary charge",
+  examples: ["elementaryCharge"],
+  seealso: []
+};
+var bohrMagnetonDocs = {
+  name: "bohrMagneton",
+  category: "Physical Constants",
+  syntax: ["bohrMagneton"],
+  description: "Bohr magneton",
+  examples: ["bohrMagneton"],
+  seealso: []
+};
+var conductanceQuantumDocs = {
+  name: "conductanceQuantum",
+  category: "Physical Constants",
+  syntax: ["conductanceQuantum"],
+  description: "Conductance quantum",
+  examples: ["conductanceQuantum"],
+  seealso: []
+};
+var inverseConductanceQuantumDocs = {
+  name: "inverseConductanceQuantum",
+  category: "Physical Constants",
+  syntax: ["inverseConductanceQuantum"],
+  description: "Inverse conductance quantum",
+  examples: ["inverseConductanceQuantum"],
+  seealso: []
+};
+var magneticFluxQuantumDocs = {
+  name: "magneticFluxQuantum",
+  category: "Physical Constants",
+  syntax: ["magneticFluxQuantum"],
+  description: "Magnetic flux quantum",
+  examples: ["magneticFluxQuantum"],
+  seealso: []
+};
+var nuclearMagnetonDocs = {
+  name: "nuclearMagneton",
+  category: "Physical Constants",
+  syntax: ["nuclearMagneton"],
+  description: "Nuclear magneton",
+  examples: ["nuclearMagneton"],
+  seealso: []
+};
+var klitzingDocs = {
+  name: "klitzing",
+  category: "Physical Constants",
+  syntax: ["klitzing"],
+  description: "Von Klitzing constant",
+  examples: ["klitzing"],
+  seealso: []
+};
+var bohrRadiusDocs = {
+  name: "bohrRadius",
+  category: "Physical Constants",
+  syntax: ["bohrRadius"],
+  description: "Bohr radius",
+  examples: ["bohrRadius"],
+  seealso: []
+};
+var classicalElectronRadiusDocs = {
+  name: "classicalElectronRadius",
+  category: "Physical Constants",
+  syntax: ["classicalElectronRadius"],
+  description: "Classical electron radius",
+  examples: ["classicalElectronRadius"],
+  seealso: []
+};
+var electronMassDocs = {
+  name: "electronMass",
+  category: "Physical Constants",
+  syntax: ["electronMass"],
+  description: "Electron mass",
+  examples: ["electronMass"],
+  seealso: []
+};
+var fermiCouplingDocs = {
+  name: "fermiCoupling",
+  category: "Physical Constants",
+  syntax: ["fermiCoupling"],
+  description: "Fermi coupling constant",
+  examples: ["fermiCoupling"],
+  seealso: []
+};
+var fineStructureDocs = {
+  name: "fineStructure",
+  category: "Physical Constants",
+  syntax: ["fineStructure"],
+  description: "Fine-structure constant",
+  examples: ["fineStructure"],
+  seealso: []
+};
+var hartreeEnergyDocs = {
+  name: "hartreeEnergy",
+  category: "Physical Constants",
+  syntax: ["hartreeEnergy"],
+  description: "Hartree energy",
+  examples: ["hartreeEnergy"],
+  seealso: []
+};
+var protonMassDocs = {
+  name: "protonMass",
+  category: "Physical Constants",
+  syntax: ["protonMass"],
+  description: "Proton mass",
+  examples: ["protonMass"],
+  seealso: []
+};
+var deuteronMassDocs = {
+  name: "deuteronMass",
+  category: "Physical Constants",
+  syntax: ["deuteronMass"],
+  description: "Deuteron Mass",
+  examples: ["deuteronMass"],
+  seealso: []
+};
+var neutronMassDocs = {
+  name: "neutronMass",
+  category: "Physical Constants",
+  syntax: ["neutronMass"],
+  description: "Neutron mass",
+  examples: ["neutronMass"],
+  seealso: []
+};
+var quantumOfCirculationDocs = {
+  name: "quantumOfCirculation",
+  category: "Physical Constants",
+  syntax: ["quantumOfCirculation"],
+  description: "Quantum of circulation",
+  examples: ["quantumOfCirculation"],
+  seealso: []
+};
+var rydbergDocs = {
+  name: "rydberg",
+  category: "Physical Constants",
+  syntax: ["rydberg"],
+  description: "Rydberg constant",
+  examples: ["rydberg"],
+  seealso: []
+};
+var thomsonCrossSectionDocs = {
+  name: "thomsonCrossSection",
+  category: "Physical Constants",
+  syntax: ["thomsonCrossSection"],
+  description: "Thomson cross section",
+  examples: ["thomsonCrossSection"],
+  seealso: []
+};
+var weakMixingAngleDocs = {
+  name: "weakMixingAngle",
+  category: "Physical Constants",
+  syntax: ["weakMixingAngle"],
+  description: "Weak mixing angle",
+  examples: ["weakMixingAngle"],
+  seealso: []
+};
+var efimovFactorDocs = {
+  name: "efimovFactor",
+  category: "Physical Constants",
+  syntax: ["efimovFactor"],
+  description: "Efimov factor",
+  examples: ["efimovFactor"],
+  seealso: []
+};
+var atomicMassDocs = {
+  name: "atomicMass",
+  category: "Physical Constants",
+  syntax: ["atomicMass"],
+  description: "Atomic mass constant",
+  examples: ["atomicMass"],
+  seealso: []
+};
+var avogadroDocs = {
+  name: "avogadro",
+  category: "Physical Constants",
+  syntax: ["avogadro"],
+  description: "Avogadro's number",
+  examples: ["avogadro"],
+  seealso: []
+};
+var boltzmannDocs = {
+  name: "boltzmann",
+  category: "Physical Constants",
+  syntax: ["boltzmann"],
+  description: "Boltzmann constant",
+  examples: ["boltzmann"],
+  seealso: []
+};
+var faradayDocs = {
+  name: "faraday",
+  category: "Physical Constants",
+  syntax: ["faraday"],
+  description: "Faraday constant",
+  examples: ["faraday"],
+  seealso: []
+};
+var firstRadiationDocs = {
+  name: "firstRadiation",
+  category: "Physical Constants",
+  syntax: ["firstRadiation"],
+  description: "First radiation constant",
+  examples: ["firstRadiation"],
+  seealso: []
+};
+var loschmidtDocs = {
+  name: "loschmidt",
+  category: "Physical Constants",
+  syntax: ["loschmidt"],
+  description: "Loschmidt constant at T=273.15 K and p=101.325 kPa",
+  examples: ["loschmidt"],
+  seealso: []
+};
+var gasConstantDocs = {
+  name: "gasConstant",
+  category: "Physical Constants",
+  syntax: ["gasConstant"],
+  description: "Gas constant",
+  examples: ["gasConstant"],
+  seealso: []
+};
+var molarPlanckConstantDocs = {
+  name: "molarPlanckConstant",
+  category: "Physical Constants",
+  syntax: ["molarPlanckConstant"],
+  description: "Molar Planck constant",
+  examples: ["molarPlanckConstant"],
+  seealso: []
+};
+var molarVolumeDocs = {
+  name: "molarVolume",
+  category: "Physical Constants",
+  syntax: ["molarVolume"],
+  description: "Molar volume of an ideal gas at T=273.15 K and p=101.325 kPa",
+  examples: ["molarVolume"],
+  seealso: []
+};
+var sackurTetrodeDocs = {
+  name: "sackurTetrode",
+  category: "Physical Constants",
+  syntax: ["sackurTetrode"],
+  description: "Sackur-Tetrode constant at T=1 K and p=101.325 kPa",
+  examples: ["sackurTetrode"],
+  seealso: []
+};
+var secondRadiationDocs = {
+  name: "secondRadiation",
+  category: "Physical Constants",
+  syntax: ["secondRadiation"],
+  description: "Second radiation constant",
+  examples: ["secondRadiation"],
+  seealso: []
+};
+var stefanBoltzmannDocs = {
+  name: "stefanBoltzmann",
+  category: "Physical Constants",
+  syntax: ["stefanBoltzmann"],
+  description: "Stefan-Boltzmann constant",
+  examples: ["stefanBoltzmann"],
+  seealso: []
+};
+var wienDisplacementDocs = {
+  name: "wienDisplacement",
+  category: "Physical Constants",
+  syntax: ["wienDisplacement"],
+  description: "Wien displacement law constant",
+  examples: ["wienDisplacement"],
+  seealso: []
+};
+var molarMassDocs = {
+  name: "molarMass",
+  category: "Physical Constants",
+  syntax: ["molarMass"],
+  description: "Molar mass constant",
+  examples: ["molarMass"],
+  seealso: []
+};
+var molarMassC12Docs = {
+  name: "molarMassC12",
+  category: "Physical Constants",
+  syntax: ["molarMassC12"],
+  description: "Molar mass constant of carbon-12",
+  examples: ["molarMassC12"],
+  seealso: []
+};
+var gravityDocs = {
+  name: "gravity",
+  category: "Physical Constants",
+  syntax: ["gravity"],
+  description: "Standard acceleration of gravity (standard acceleration of free-fall on Earth)",
+  examples: ["gravity"],
+  seealso: []
+};
+var planckLengthDocs = {
+  name: "planckLength",
+  category: "Physical Constants",
+  syntax: ["planckLength"],
+  description: "Planck length",
+  examples: ["planckLength"],
+  seealso: []
+};
+var planckMassDocs = {
+  name: "planckMass",
+  category: "Physical Constants",
+  syntax: ["planckMass"],
+  description: "Planck mass",
+  examples: ["planckMass"],
+  seealso: []
+};
+var planckTimeDocs = {
+  name: "planckTime",
+  category: "Physical Constants",
+  syntax: ["planckTime"],
+  description: "Planck time",
+  examples: ["planckTime"],
+  seealso: []
+};
+var planckChargeDocs = {
+  name: "planckCharge",
+  category: "Physical Constants",
+  syntax: ["planckCharge"],
+  description: "Planck charge",
+  examples: ["planckCharge"],
+  seealso: []
+};
+var planckTemperatureDocs = {
+  name: "planckTemperature",
+  category: "Physical Constants",
+  syntax: ["planckTemperature"],
+  description: "Planck temperature",
+  examples: ["planckTemperature"],
+  seealso: []
+};
 var eDocs = {
   name: "e",
   category: "Constants",
@@ -53761,102 +54277,59 @@ var embeddedDocs = {
   true: trueDocs,
   version: versionDocs,
   // physical constants
-  // TODO: more detailed docs for physical constants
-  speedOfLight: { description: "Speed of light in vacuum", examples: ["speedOfLight"] },
-  gravitationConstant: {
-    description: "Newtonian constant of gravitation",
-    examples: ["gravitationConstant"]
-  },
-  planckConstant: { description: "Planck constant", examples: ["planckConstant"] },
-  reducedPlanckConstant: {
-    description: "Reduced Planck constant",
-    examples: ["reducedPlanckConstant"]
-  },
-  magneticConstant: {
-    description: "Magnetic constant (vacuum permeability)",
-    examples: ["magneticConstant"]
-  },
-  electricConstant: {
-    description: "Electric constant (vacuum permeability)",
-    examples: ["electricConstant"]
-  },
-  vacuumImpedance: {
-    description: "Characteristic impedance of vacuum",
-    examples: ["vacuumImpedance"]
-  },
-  coulomb: {
-    description: "Coulomb's constant. Deprecated in favor of coulombConstant",
-    examples: ["coulombConstant"]
-  },
-  coulombConstant: { description: "Coulomb's constant", examples: ["coulombConstant"] },
-  elementaryCharge: { description: "Elementary charge", examples: ["elementaryCharge"] },
-  bohrMagneton: { description: "Bohr magneton", examples: ["bohrMagneton"] },
-  conductanceQuantum: { description: "Conductance quantum", examples: ["conductanceQuantum"] },
-  inverseConductanceQuantum: {
-    description: "Inverse conductance quantum",
-    examples: ["inverseConductanceQuantum"]
-  },
+  speedOfLight: speedOfLightDocs,
+  gravitationConstant: gravitationConstantDocs,
+  planckConstant: planckConstantDocs,
+  reducedPlanckConstant: reducedPlanckConstantDocs,
+  magneticConstant: magneticConstantDocs,
+  electricConstant: electricConstantDocs,
+  vacuumImpedance: vacuumImpedanceDocs,
+  coulomb: coulombDocs,
+  coulombConstant: coulombConstantDocs,
+  elementaryCharge: elementaryChargeDocs,
+  bohrMagneton: bohrMagnetonDocs,
+  conductanceQuantum: conductanceQuantumDocs,
+  inverseConductanceQuantum: inverseConductanceQuantumDocs,
   // josephson: {description: 'Josephson constant', examples: ['josephson']},
-  magneticFluxQuantum: { description: "Magnetic flux quantum", examples: ["magneticFluxQuantum"] },
-  nuclearMagneton: { description: "Nuclear magneton", examples: ["nuclearMagneton"] },
-  klitzing: { description: "Von Klitzing constant", examples: ["klitzing"] },
-  bohrRadius: { description: "Bohr radius", examples: ["bohrRadius"] },
-  classicalElectronRadius: {
-    description: "Classical electron radius",
-    examples: ["classicalElectronRadius"]
-  },
-  electronMass: { description: "Electron mass", examples: ["electronMass"] },
-  fermiCoupling: { description: "Fermi coupling constant", examples: ["fermiCoupling"] },
-  fineStructure: { description: "Fine-structure constant", examples: ["fineStructure"] },
-  hartreeEnergy: { description: "Hartree energy", examples: ["hartreeEnergy"] },
-  protonMass: { description: "Proton mass", examples: ["protonMass"] },
-  deuteronMass: { description: "Deuteron Mass", examples: ["deuteronMass"] },
-  neutronMass: { description: "Neutron mass", examples: ["neutronMass"] },
-  quantumOfCirculation: {
-    description: "Quantum of circulation",
-    examples: ["quantumOfCirculation"]
-  },
-  rydberg: { description: "Rydberg constant", examples: ["rydberg"] },
-  thomsonCrossSection: { description: "Thomson cross section", examples: ["thomsonCrossSection"] },
-  weakMixingAngle: { description: "Weak mixing angle", examples: ["weakMixingAngle"] },
-  efimovFactor: { description: "Efimov factor", examples: ["efimovFactor"] },
-  atomicMass: { description: "Atomic mass constant", examples: ["atomicMass"] },
-  avogadro: { description: "Avogadro's number", examples: ["avogadro"] },
-  boltzmann: { description: "Boltzmann constant", examples: ["boltzmann"] },
-  faraday: { description: "Faraday constant", examples: ["faraday"] },
-  firstRadiation: { description: "First radiation constant", examples: ["firstRadiation"] },
-  loschmidt: {
-    description: "Loschmidt constant at T=273.15 K and p=101.325 kPa",
-    examples: ["loschmidt"]
-  },
-  gasConstant: { description: "Gas constant", examples: ["gasConstant"] },
-  molarPlanckConstant: { description: "Molar Planck constant", examples: ["molarPlanckConstant"] },
-  molarVolume: {
-    description: "Molar volume of an ideal gas at T=273.15 K and p=101.325 kPa",
-    examples: ["molarVolume"]
-  },
-  sackurTetrode: {
-    description: "Sackur-Tetrode constant at T=1 K and p=101.325 kPa",
-    examples: ["sackurTetrode"]
-  },
-  secondRadiation: { description: "Second radiation constant", examples: ["secondRadiation"] },
-  stefanBoltzmann: { description: "Stefan-Boltzmann constant", examples: ["stefanBoltzmann"] },
-  wienDisplacement: {
-    description: "Wien displacement law constant",
-    examples: ["wienDisplacement"]
-  },
+  magneticFluxQuantum: magneticFluxQuantumDocs,
+  nuclearMagneton: nuclearMagnetonDocs,
+  klitzing: klitzingDocs,
+  bohrRadius: bohrRadiusDocs,
+  classicalElectronRadius: classicalElectronRadiusDocs,
+  electronMass: electronMassDocs,
+  fermiCoupling: fermiCouplingDocs,
+  fineStructure: fineStructureDocs,
+  hartreeEnergy: hartreeEnergyDocs,
+  protonMass: protonMassDocs,
+  deuteronMass: deuteronMassDocs,
+  neutronMass: neutronMassDocs,
+  quantumOfCirculation: quantumOfCirculationDocs,
+  rydberg: rydbergDocs,
+  thomsonCrossSection: thomsonCrossSectionDocs,
+  weakMixingAngle: weakMixingAngleDocs,
+  efimovFactor: efimovFactorDocs,
+  atomicMass: atomicMassDocs,
+  avogadro: avogadroDocs,
+  boltzmann: boltzmannDocs,
+  faraday: faradayDocs,
+  firstRadiation: firstRadiationDocs,
+  loschmidt: loschmidtDocs,
+  gasConstant: gasConstantDocs,
+  molarPlanckConstant: molarPlanckConstantDocs,
+  molarVolume: molarVolumeDocs,
+  sackurTetrode: sackurTetrodeDocs,
+  secondRadiation: secondRadiationDocs,
+  stefanBoltzmann: stefanBoltzmannDocs,
+  wienDisplacement: wienDisplacementDocs,
   // spectralRadiance: {description: 'First radiation constant for spectral radiance', examples: ['spectralRadiance']},
-  molarMass: { description: "Molar mass constant", examples: ["molarMass"] },
-  molarMassC12: { description: "Molar mass constant of carbon-12", examples: ["molarMassC12"] },
-  gravity: {
-    description: "Standard acceleration of gravity (standard acceleration of free-fall on Earth)",
-    examples: ["gravity"]
-  },
-  planckLength: { description: "Planck length", examples: ["planckLength"] },
-  planckMass: { description: "Planck mass", examples: ["planckMass"] },
-  planckTime: { description: "Planck time", examples: ["planckTime"] },
-  planckCharge: { description: "Planck charge", examples: ["planckCharge"] },
-  planckTemperature: { description: "Planck temperature", examples: ["planckTemperature"] },
+  molarMass: molarMassDocs,
+  molarMassC12: molarMassC12Docs,
+  gravity: gravityDocs,
+  planckLength: planckLengthDocs,
+  planckMass: planckMassDocs,
+  planckTime: planckTimeDocs,
+  planckCharge: planckChargeDocs,
+  planckTemperature: planckTemperatureDocs,
   // functions - algebra
   derivative: derivativeDocs,
   lsolve: lsolveDocs,
@@ -54194,73 +54667,6 @@ var embeddedDocs = {
   digamma: digammaDocs,
   erfc: erfcDocs,
   gammainc: gammaincDocs
-};
-function getSafeProperty2(object3, prop) {
-  if (isSafeProperty2(object3, prop)) {
-    return object3[prop];
-  }
-  if (typeof object3[prop] === "function" && isSafeMethod2(object3, prop)) {
-    throw new Error('Cannot access method "' + String(prop) + '" as a property');
-  }
-  throw new Error('No access to property "' + String(prop) + '"');
-}
-function setSafeProperty2(object3, prop, value) {
-  if (isSafeProperty2(object3, prop)) {
-    object3[prop] = value;
-    return value;
-  }
-  throw new Error('No access to property "' + String(prop) + '"');
-}
-function isSafeProperty2(object3, prop) {
-  if (!isPlainObject5(object3) && !Array.isArray(object3)) {
-    return false;
-  }
-  if (hasOwnProperty(safeNativeProperties2, prop)) {
-    return true;
-  }
-  if (prop in Object.prototype) {
-    return false;
-  }
-  if (prop in Function.prototype) {
-    return false;
-  }
-  return true;
-}
-function getSafeMethod(object3, method) {
-  if (!isSafeMethod2(object3, method)) {
-    throw new Error('No access to method "' + String(method) + '"');
-  }
-  return object3[method];
-}
-function isSafeMethod2(object3, method) {
-  if (object3 === null || object3 === void 0 || typeof object3[method] !== "function") {
-    return false;
-  }
-  if (hasOwnProperty(object3, method) && Object.getPrototypeOf && method in Object.getPrototypeOf(object3)) {
-    return false;
-  }
-  if (hasOwnProperty(safeNativeMethods2, method)) {
-    return true;
-  }
-  if (method in Object.prototype) {
-    return false;
-  }
-  if (method in Function.prototype) {
-    return false;
-  }
-  return true;
-}
-function isPlainObject5(object3) {
-  return typeof object3 === "object" && !!object3 && object3.constructor === Object;
-}
-var safeNativeProperties2 = {
-  length: true,
-  name: true
-};
-var safeNativeMethods2 = {
-  toString: true,
-  valueOf: true,
-  toLocaleString: true
 };
 function compile(node, mathScope2) {
   const evalFn = compileNode(node, mathScope2, {});
@@ -55323,6 +55729,32 @@ function errorTransform(err) {
   }
   return err;
 }
+function getStringSubset(str, index) {
+  if (!isIndex2(index)) {
+    throw new TypeError("Index expected");
+  }
+  if (isEmptyIndex(index)) {
+    return "";
+  }
+  validateIndexSourceSize(Array.from(str), index);
+  if (index.size().length !== 1) {
+    throw new DimensionError(index.size().length, 1);
+  }
+  const strLen = str.length;
+  validateIndex(index.min()[0], strLen);
+  validateIndex(index.max()[0], strLen);
+  const range2 = index.dimension(0);
+  let substr = "";
+  function callback(v) {
+    substr += str.charAt(v);
+  }
+  if (Number.isInteger(range2)) {
+    callback(range2);
+  } else {
+    range2.forEach(callback);
+  }
+  return substr;
+}
 function accessFactory({ subset: subset3 }) {
   return function access(object3, index) {
     try {
@@ -55331,7 +55763,7 @@ function accessFactory({ subset: subset3 }) {
       } else if (object3 && typeof object3.subset === "function") {
         return object3.subset(index);
       } else if (typeof object3 === "string") {
-        return subset3(object3, index);
+        return getStringSubset(object3, index);
       } else if (typeof object3 === "object") {
         if (!index.isObjectProperty()) {
           throw new TypeError("Cannot apply a numeric index as object property");
@@ -57833,14 +58265,14 @@ var createObjectNode = /* @__PURE__ */ factory2(
             const stringifiedKey = stringify(key2);
             const parsedKey = JSON.parse(stringifiedKey);
             const prop = getSafeProperty2(this.properties, key2);
-            evalEntries[parsedKey] = prop._compile(math2, argNames);
+            setSafeProperty2(evalEntries, parsedKey, prop._compile(math2, argNames));
           }
         }
         return function evalObjectNode(scope, args, context2) {
           const obj = {};
           for (const key2 in evalEntries) {
             if (hasOwnProperty(evalEntries, key2)) {
-              obj[key2] = evalEntries[key2](scope, args, context2);
+              setSafeProperty2(obj, key2, evalEntries[key2](scope, args, context2));
             }
           }
           return obj;
@@ -64204,6 +64636,28 @@ var xgcd = mathTyped("xgcd", {
       [y, lastY] = [lastY - q * y, y];
     }
     return a < 0n ? [-a, -lastX, -lastY] : [a, lastX, lastY];
+  },
+  "Fraction, Fraction": (a, b) => {
+    if (!a.isInteger() || !b.isInteger()) {
+      throw new Error("Parameters in function xgcd must be integer numbers");
+    }
+    const zero = new Fraction(0n, 1n);
+    const one = new Fraction(1n, 1n);
+    let x = zero, lastX = one;
+    let y = one, lastY = zero;
+    while (!b.isZero()) {
+      const q = a.divide(b).floor();
+      const r = a.mod(b);
+      const nextX = lastX.subtract(q.multiply(x));
+      const nextY = lastY.subtract(q.multiply(y));
+      lastX = x;
+      x = nextX;
+      lastY = y;
+      y = nextY;
+      a = b;
+      b = r;
+    }
+    return a.lessThan(zero) ? [a.negate(), lastX.negate(), lastY.negate()] : [a, !a.isZero() ? lastX : zero, lastY];
   }
 });
 function is2DArray(arr10) {
@@ -71618,13 +72072,23 @@ function normalize(p) {
     if (existing) existing.coeff += t.coeff;
     else byKey.set(key2, { coeff: t.coeff, powers: [...t.powers] });
   }
-  return [...byKey.values()].filter((t) => Math.abs(t.coeff) > EPS).sort((a, b) => cmpPowers(b.powers, a.powers));
+  const out = [];
+  for (const t of byKey.values()) {
+    if (Math.abs(t.coeff) > EPS) {
+      out.push(t);
+    }
+  }
+  return out.sort((a, b) => cmpPowers(b.powers, a.powers));
 }
 function polyAdd(a, b) {
   return normalize([...a, ...b]);
 }
 function polyNeg(a) {
-  return a.map((t) => ({ coeff: -t.coeff, powers: [...t.powers] }));
+  const out = [];
+  for (let i2 = 0; i2 < a.length; i2++) {
+    out.push({ coeff: -a[i2].coeff, powers: [...a[i2].powers] });
+  }
+  return out;
 }
 function polySub(a, b) {
   return polyAdd(a, polyNeg(b));
@@ -71633,9 +72097,13 @@ function polyMul(a, b) {
   const out = [];
   for (const ta of a) {
     for (const tb of b) {
+      const powers = new Array(ta.powers.length);
+      for (let i2 = 0; i2 < ta.powers.length; i2++) {
+        powers[i2] = ta.powers[i2] + tb.powers[i2];
+      }
       out.push({
         coeff: ta.coeff * tb.coeff,
-        powers: ta.powers.map((p, i2) => p + tb.powers[i2])
+        powers
       });
     }
   }
@@ -71648,12 +72116,24 @@ function polyPow(a, n, nVars) {
 }
 function polyFromExpression(expr, vars) {
   const nVars = vars.length;
-  const varIndex = new Map(vars.map((v, i2) => [v, i2]));
+  const varIndex = /* @__PURE__ */ new Map();
+  for (let i2 = 0; i2 < vars.length; i2++) {
+    varIndex.set(vars[i2], i2);
+  }
   let pos = 0;
   const constPoly = (v) => normalize([{ coeff: v, powers: new Array(nVars).fill(0) }]);
   function constOf(p) {
     if (p.length === 0) return 0;
-    if (p.length === 1 && p[0].powers.every((x) => x === 0)) return p[0].coeff;
+    if (p.length === 1) {
+      let isConst2 = true;
+      for (let i2 = 0; i2 < p[0].powers.length; i2++) {
+        if (p[0].powers[i2] !== 0) {
+          isConst2 = false;
+          break;
+        }
+      }
+      if (isConst2) return p[0].coeff;
+    }
     return null;
   }
   const skipWs = () => {
@@ -71736,7 +72216,11 @@ function polyFromExpression(expr, vars) {
         if (denom === null || Math.abs(denom) <= EPS) {
           return fail("division only by a nonzero numeric constant");
         }
-        p = normalize(p.map((t) => ({ coeff: t.coeff / denom, powers: t.powers })));
+        const nextP = [];
+        for (let i2 = 0; i2 < p.length; i2++) {
+          nextP.push({ coeff: p[i2].coeff / denom, powers: p[i2].powers });
+        }
+        p = normalize(nextP);
       } else {
         break;
       }
@@ -71765,23 +72249,64 @@ function polyFromExpression(expr, vars) {
   return result;
 }
 function divides(a, b) {
-  return a.every((p, i2) => p <= b[i2]);
+  for (let i2 = 0; i2 < a.length; i2++) {
+    if (a[i2] > b[i2]) return false;
+  }
+  return true;
 }
+function totalDegree(powers) {
+  let sum32 = 0;
+  for (let i2 = 0; i2 < powers.length; i2++) sum32 += powers[i2];
+  return sum32;
+}
+var DivisorGeobucket = class {
+  buckets = [];
+  maxDeg = 0;
+  constructor(polys) {
+    for (const p of polys) this.insert(p);
+  }
+  insert(poly) {
+    if (poly.length === 0) return;
+    const d = totalDegree(poly[0].powers);
+    if (!this.buckets[d]) this.buckets[d] = [];
+    this.buckets[d].push(poly);
+    if (d > this.maxDeg) this.maxDeg = d;
+  }
+  find(target) {
+    const d = totalDegree(target);
+    const limit2 = d < this.maxDeg ? d : this.maxDeg;
+    for (let i2 = 0; i2 <= limit2; i2++) {
+      const bucket = this.buckets[i2];
+      if (!bucket) continue;
+      for (let j = 0; j < bucket.length; j++) {
+        if (divides(bucket[j][0].powers, target)) {
+          return bucket[j];
+        }
+      }
+    }
+    return void 0;
+  }
+};
 function polyReduce(p, G) {
   const rem = [];
   let work = normalize(p);
   let guard = 0;
+  const index = Array.isArray(G) ? new DivisorGeobucket(G) : G;
   while (work.length > 0) {
     if (++guard > 2e4) {
       throw new Error("polyReduce: iteration cap exceeded (system too large for this CAS)");
     }
     const lt = work[0];
-    const g = G.find((q) => q.length > 0 && divides(q[0].powers, lt.powers));
+    const g = index.find(lt.powers);
     if (g) {
+      const powers = new Array(lt.powers.length);
+      for (let i2 = 0; i2 < lt.powers.length; i2++) {
+        powers[i2] = lt.powers[i2] - g[0].powers[i2];
+      }
       const factor2 = [
         {
           coeff: lt.coeff / g[0].coeff,
-          powers: lt.powers.map((x, i2) => x - g[0].powers[i2])
+          powers
         }
       ];
       work = polySub(work, polyMul(factor2, g));
@@ -71793,52 +72318,88 @@ function polyReduce(p, G) {
   return normalize(rem);
 }
 function lcmPowers(a, b) {
-  return a.map((x, i2) => Math.max(x, b[i2]));
+  const len = a.length;
+  const out = new Array(len);
+  for (let i2 = 0; i2 < len; i2++) {
+    out[i2] = Math.max(a[i2], b[i2]);
+  }
+  return out;
 }
 function sPoly(f, g) {
   const l = lcmPowers(f[0].powers, g[0].powers);
-  const mf = [{ coeff: 1 / f[0].coeff, powers: l.map((x, i2) => x - f[0].powers[i2]) }];
-  const mg = [{ coeff: 1 / g[0].coeff, powers: l.map((x, i2) => x - g[0].powers[i2]) }];
+  const mfPowers = new Array(l.length);
+  const mgPowers = new Array(l.length);
+  for (let i2 = 0; i2 < l.length; i2++) {
+    mfPowers[i2] = l[i2] - f[0].powers[i2];
+    mgPowers[i2] = l[i2] - g[0].powers[i2];
+  }
+  const mf = [{ coeff: 1 / f[0].coeff, powers: mfPowers }];
+  const mg = [{ coeff: 1 / g[0].coeff, powers: mgPowers }];
   return polySub(polyMul(mf, f), polyMul(mg, g));
 }
 function monic(p) {
   if (p.length === 0) return p;
   const c = p[0].coeff;
-  return p.map((t) => ({ coeff: t.coeff / c, powers: [...t.powers] }));
+  const out = [];
+  for (let i2 = 0; i2 < p.length; i2++) {
+    out.push({ coeff: p[i2].coeff / c, powers: [...p[i2].powers] });
+  }
+  return out;
 }
 function buchberger(input) {
-  let G = input.map(normalize).filter((p) => p.length > 0).map(monic);
+  let G = [];
+  for (let i2 = 0; i2 < input.length; i2++) {
+    const p = normalize(input[i2]);
+    if (p.length > 0) {
+      G.push(monic(p));
+    }
+  }
   if (G.length === 0) return [];
   const pairs = [];
   for (let i2 = 0; i2 < G.length; i2++) {
     for (let j = i2 + 1; j < G.length; j++) pairs.push([i2, j]);
   }
   let iter = 0;
+  const index = new DivisorGeobucket(G);
   while (pairs.length > 0) {
     if (++iter > 2e3 || G.length > 64) {
       throw new Error("groebnerBasis: system too large (iteration/basis cap exceeded)");
     }
     const [i2, j] = pairs.shift();
-    const s = polyReduce(sPoly(G[i2], G[j]), G);
+    const s = polyReduce(sPoly(G[i2], G[j]), index);
     if (s.length > 0) {
       const k = G.length;
-      G.push(monic(s));
+      const newPoly = monic(s);
+      G.push(newPoly);
+      index.insert(newPoly);
       for (let t = 0; t < k; t++) pairs.push([t, k]);
     }
   }
-  G = G.filter(
-    (g, i2) => !G.some(
-      (h, j) => j !== i2 && h.length > 0 && divides(h[0].powers, g[0].powers) && (cmpPowers(h[0].powers, g[0].powers) !== 0 || j < i2)
-    )
-  );
-  G = G.map(
-    (g, i2) => monic(
-      polyReduce(
-        g,
-        G.filter((_, j) => j !== i2)
-      )
-    )
-  ).filter((g) => g.length > 0);
+  const minimalG = [];
+  for (let i2 = 0; i2 < G.length; i2++) {
+    const g = G[i2];
+    let isDivisible = false;
+    for (let j = 0; j < G.length; j++) {
+      if (i2 === j) continue;
+      const h = G[j];
+      if (h.length > 0 && divides(h[0].powers, g[0].powers) && (cmpPowers(h[0].powers, g[0].powers) !== 0 || j < i2)) {
+        isDivisible = true;
+        break;
+      }
+    }
+    if (!isDivisible) minimalG.push(g);
+  }
+  G = minimalG;
+  const reducedG = [];
+  for (let i2 = 0; i2 < G.length; i2++) {
+    const others = [];
+    for (let j = 0; j < G.length; j++) {
+      if (i2 !== j) others.push(G[j]);
+    }
+    const reduced = monic(polyReduce(G[i2], others));
+    if (reduced.length > 0) reducedG.push(reduced);
+  }
+  G = reducedG;
   G.sort((a, b) => cmpPowers(b[0].powers, a[0].powers));
   return G;
 }
@@ -71848,10 +72409,18 @@ function polyToString(p, vars) {
     const r = Math.round(c);
     return Math.abs(c - r) < 1e-9 ? String(r) : String(Number(c.toPrecision(12)));
   };
-  const terms = [...p].reverse().map((t) => {
-    const varPart = t.powers.map((e2, i2) => e2 === 0 ? "" : e2 === 1 ? vars[i2] : `${vars[i2]}^${e2}`).filter(Boolean).join("*");
-    return varPart ? `${fmt(t.coeff)}*${varPart}` : fmt(t.coeff);
-  });
+  const terms = [];
+  for (let i2 = p.length - 1; i2 >= 0; i2--) {
+    const t = p[i2];
+    const parts = [];
+    for (let j = 0; j < t.powers.length; j++) {
+      const e2 = t.powers[j];
+      if (e2 === 1) parts.push(vars[j]);
+      else if (e2 > 1) parts.push(`${vars[j]}^${e2}`);
+    }
+    const varPart = parts.join("*");
+    terms.push(varPart ? `${fmt(t.coeff)}*${varPart}` : fmt(t.coeff));
+  }
   return terms.join(" + ").replace(/\+ -/g, "- ");
 }
 function trim(p) {
@@ -72633,7 +73202,7 @@ function degreeIn(p, varIndex) {
   }
   return d;
 }
-function totalDegree(p) {
+function totalDegree2(p) {
   let d = -1;
   for (const k of p.terms.keys()) {
     const exps = unkey(k);
@@ -72915,7 +73484,7 @@ function candidateFor(pool, indices, bases, degBounds, vars) {
     return null;
   }
   const cand = primitivePartMP(back);
-  if (totalDegree(cand) < 1) {
+  if (totalDegree2(cand) < 1) {
     return null;
   }
   return cand;
@@ -72933,7 +73502,7 @@ function factorMultivariateKronecker(p) {
   if (p.vars.length < 2) {
     return null;
   }
-  if (isZero2(p) || totalDegree(p) < 1) {
+  if (isZero2(p) || totalDegree2(p) < 1) {
     return null;
   }
   const cont = integerContentMP(p);
@@ -73012,7 +73581,7 @@ function factorMultivariateKronecker(p) {
     const l = leadingTerm(gCur);
     const sgn = l !== null && l.coeff < 0n ? -1n : 1n;
     constant *= c * sgn;
-    if (totalDegree(gCur) >= 1) {
+    if (totalDegree2(gCur) >= 1) {
       found.push({ poly: primitivePartMP(gCur), mult: 1 });
     }
   }
@@ -74969,7 +75538,7 @@ function isRange4(x) {
   const obj = x;
   return obj.constructor?.prototype?.isRange === true;
 }
-function isIndex2(x) {
+function isIndex3(x) {
   if (!x || typeof x !== "object") return false;
   const obj = x;
   return obj.constructor?.prototype?.isIndex === true;
@@ -79404,6 +79973,8 @@ function _betweennessOnce(adj, directed, normalise, seed) {
     if (denom > 0) {
       for (let i2 = 0; i2 < n; i2++) cb[i2] /= denom;
     }
+  } else if (!directed) {
+    for (let i2 = 0; i2 < n; i2++) cb[i2] /= 2;
   }
   return cb;
 }
@@ -83826,11 +84397,11 @@ var createSubtractScalar = /* @__PURE__ */ factory3(
   }
 );
 var name142 = "unaryMinus";
-var dependencies142 = ["typed", "config", "?bignumber"];
+var dependencies142 = ["typed", "config", "?bignumber", "?fraction"];
 var createUnaryMinus = /* @__PURE__ */ factory3(
   name142,
   dependencies142,
-  ({ typed: typed3, config: config22, bignumber: bignumber22 }) => {
+  ({ typed: typed3, config: config22, bignumber: bignumber22, fraction: fraction22 }) => {
     return typed3(name142, {
       number: unaryMinusNumber,
       "Complex | BigNumber | Fraction": (x) => x.neg(),
@@ -83853,7 +84424,10 @@ var createUnaryMinus = /* @__PURE__ */ factory3(
           case "bigint":
             return BigInt(negValue);
           case "Fraction":
-            return negValue;
+            if (!fraction22) {
+              throw new Error("Fraction not available. Configure mathjs with Fraction support.");
+            }
+            return fraction22(negValue);
           case "number":
           default:
             return negValue;
@@ -84132,6 +84706,36 @@ function rightArithShiftBigNumber(x, y) {
   }
   return x.div(new BigNumber9(2).pow(y)).floor();
 }
+function rightLogShiftBigNumber(x, y) {
+  if (x.isFinite() && !x.isInteger() || y.isFinite() && !y.isInteger()) {
+    throw new Error("Integers expected in function rightLogShift");
+  }
+  const BigNumber9 = x.constructor;
+  if (x.isNaN() || y.isNaN() || y.isNegative() && !y.isZero()) {
+    return new BigNumber9(NaN);
+  }
+  if (x.isZero() || y.isZero()) {
+    return x;
+  }
+  if (!y.isFinite()) {
+    if (x.isNegative() || !x.isFinite()) {
+      return new BigNumber9(NaN);
+    }
+    return new BigNumber9(0);
+  }
+  let val = x;
+  if (val.isNegative()) {
+    const MASK = new BigNumber9(4294967296);
+    val = val.mod(MASK);
+    if (val.isNegative()) {
+      val = val.plus(MASK);
+    }
+  }
+  if (y.lt(55)) {
+    return val.div(Math.pow(2, y.toNumber()) + "").floor();
+  }
+  return val.div(new BigNumber9(2).pow(y)).floor();
+}
 var name152 = "bitNot";
 var dependencies152 = ["typed"];
 var createBitNot = /* @__PURE__ */ factory3(
@@ -84164,7 +84768,6 @@ var createArg = /* @__PURE__ */ factory3(
       Complex: function(x) {
         return x.arg();
       },
-      // TODO: implement BigNumber support for function arg
       "Array | Matrix": typed3.referToSelf(
         (self2) => (x) => deepMap2(x, self2)
       )
@@ -84930,26 +85533,36 @@ function randomMatrix(size22, random32) {
 }
 var name322 = "random";
 var dependencies322 = ["typed", "config", "?on"];
+function _createRng(config22, on) {
+  let rng = createRng(config22.randomSeed);
+  if (on) {
+    on("config", function(curr, prev) {
+      if (curr.randomSeed !== prev.randomSeed) {
+        rng = createRng(curr.randomSeed);
+      }
+    });
+  }
+  return () => rng();
+}
+function _createRandomSignatures(rng) {
+  function _random(min22, max22) {
+    return min22 + rng() * (max22 - min22);
+  }
+  return {
+    _random,
+    signatures: {
+      "": () => _random(0, 1),
+      number: (max22) => _random(0, max22),
+      "number, number": (min22, max22) => _random(min22, max22)
+    }
+  };
+}
 var createRandom = /* @__PURE__ */ factory3(
   name322,
   dependencies322,
   ({ typed: typed3, config: config22, on }) => {
-    let rng = createRng(config22.randomSeed);
-    if (on) {
-      on("config", function(curr, prev) {
-        if (curr.randomSeed !== prev.randomSeed) {
-          rng = createRng(curr.randomSeed);
-        }
-      });
-    }
-    return typed3(name322, {
-      "": () => _random(0, 1),
-      number: (max22) => _random(0, max22),
-      "number, number": (min22, max22) => _random(min22, max22),
-      "Array | Matrix": (size22) => _randomMatrix(size22, 0, 1),
-      "Array | Matrix, number": (size22, max22) => _randomMatrix(size22, 0, max22),
-      "Array | Matrix, number, number": (size22, min22, max22) => _randomMatrix(size22, min22, max22)
-    });
+    const rng = _createRng(config22, on);
+    const { _random, signatures } = _createRandomSignatures(rng);
     function _randomMatrix(size22, min22, max22) {
       const res = randomMatrix(
         size22.valueOf(),
@@ -84957,9 +85570,12 @@ var createRandom = /* @__PURE__ */ factory3(
       );
       return isMatrix5(size22) ? size22.create(res, "number") : res;
     }
-    function _random(min22, max22) {
-      return min22 + rng() * (max22 - min22);
-    }
+    return typed3(name322, {
+      ...signatures,
+      "Array | Matrix": (size22) => _randomMatrix(size22, 0, 1),
+      "Array | Matrix, number": (size22, max22) => _randomMatrix(size22, 0, max22),
+      "Array | Matrix, number, number": (size22, min22, max22) => _randomMatrix(size22, min22, max22)
+    });
   }
 );
 function nearlyEqual2(a, b, relTol = 1e-9, absTol = 0) {
@@ -86290,9 +86906,7 @@ var createProd = /* @__PURE__ */ factory3(
       // prod([a, b, c, d, ...])
       "Array | Matrix": _prod,
       // prod([a, b, c, d, ...], dim)
-      "Array | Matrix, number | BigNumber": function(_array2, _dim) {
-        throw new Error("prod(A, dim) is not yet supported");
-      },
+      "Array | Matrix, number | BigNumber": _nprodDim,
       // prod(a, b, c, d, ...)
       "...": function(args) {
         return _prod(args);
@@ -86328,6 +86942,15 @@ var createProd = /* @__PURE__ */ factory3(
         throw new Error("Cannot calculate prod of an empty array");
       }
       return prod2;
+    }
+    function _nprodDim(array2, dim2) {
+      try {
+        const dimValue = typeof dim2 === "number" ? dim2 : dim2.valueOf();
+        const prod2 = reduce(array2, dimValue, multiplyScalar22);
+        return prod2;
+      } catch (err) {
+        throw improveErrorMessage(err, "prod", void 0);
+      }
     }
   }
 );
@@ -86427,11 +87050,11 @@ var createIsZero = /* @__PURE__ */ factory3(
   }
 );
 var name83 = "parseNumberWithConfig";
-var dependencies83 = ["config", "?bignumber"];
+var dependencies83 = ["config", "?bignumber", "?fraction"];
 var createParseNumberWithConfig = /* @__PURE__ */ factory3(
   name83,
   dependencies83,
-  ({ config: config22, bignumber: bignumber22 }) => {
+  ({ config: config22, bignumber: bignumber22, fraction: fraction22 }) => {
     function parseNumberWithConfig2(str) {
       if (typeof str !== "string") {
         throw new TypeError(`parseNumberWithConfig expects string, got ${typeof str}`);
@@ -86457,11 +87080,10 @@ var createParseNumberWithConfig = /* @__PURE__ */ factory3(
             throw new SyntaxError(`String "${str}" is not a valid number`);
           }
         case "Fraction": {
-          const fracNum = Number(str);
-          if (isNaN(fracNum)) {
-            throw new SyntaxError(`String "${str}" is not a valid number`);
+          if (!fraction22) {
+            throw new Error("Fraction not available. Configure mathjs with Fraction support.");
           }
-          return fracNum;
+          return fraction22(str);
         }
         case "number":
         default: {
@@ -87052,17 +87674,79 @@ var createMatrixFromColumns = /* @__PURE__ */ factory3(
           (item) => typeof item.toArray === "function"
         );
         const hasArray = arr10.some((item) => Array.isArray(item));
+        const isSparse = allMatrix && !hasArray && arr10.some(
+          (item) => typeof item.storage === "function" && item.storage() === "sparse"
+        );
+        if (isSparse) {
+          return _createSparseMatrixFromColumns(arr10);
+        }
         const arrays = arr10.map(
           (item) => typeof item.toArray === "function" ? item.toArray() : item
         );
         const result = _createArray(arrays);
         if (allMatrix && !hasArray) {
-          return matrix22(result);
+          return matrix22(result, "dense");
         }
         return result;
       }
-      // TODO implement this properly for SparseMatrix
     });
+    function _createSparseMatrixFromColumns(arr10) {
+      const M = arr10.length;
+      const N2 = checkVectorTypeAndReturnLength(arr10[0]);
+      const entries = [];
+      for (let j = 0; j < M; j++) {
+        const colVec = arr10[j];
+        const colLength = checkVectorTypeAndReturnLength(colVec);
+        if (colLength !== N2) {
+          throw new TypeError(
+            "The vectors had different length: " + (N2 | 0) + " \u2260 " + (colLength | 0)
+          );
+        }
+        if (typeof colVec.forEach === "function") {
+          const s = size22(colVec);
+          const is1D = s.length === 1;
+          const isCol = s.length === 2 && s[1] === 1;
+          colVec.forEach((val, idx) => {
+            let row22;
+            if (is1D) {
+              row22 = idx[0];
+            } else if (isCol) {
+              row22 = idx[0];
+            } else {
+              row22 = idx[1];
+            }
+            if (val !== 0) {
+              entries.push({ row: row22, col: j, value: val });
+            }
+          });
+        } else {
+          const f = flatten5(colVec);
+          for (let i2 = 0; i2 < N2; i2++) {
+            if (f[i2] !== 0) {
+              entries.push({ row: i2, col: j, value: f[i2] });
+            }
+          }
+        }
+      }
+      entries.sort((a, b) => {
+        if (a.col !== b.col) return a.col - b.col;
+        return a.row - b.row;
+      });
+      const values = [];
+      const index = [];
+      const ptr = new Array(M + 1).fill(0);
+      for (let i2 = 0; i2 < entries.length; i2++) {
+        ptr[entries[i2].col + 1]++;
+      }
+      for (let j = 1; j <= M; j++) {
+        ptr[j] += ptr[j - 1];
+      }
+      for (let i2 = 0; i2 < entries.length; i2++) {
+        values.push(entries[i2].value);
+        index.push(entries[i2].row);
+      }
+      return matrix22({ values, index, ptr, size: [N2, M] }, "sparse");
+    }
     function _createArray(arr10) {
       if (arr10.length === 0)
         throw new TypeError("At least one column is needed to construct a matrix.");
@@ -87119,17 +87803,79 @@ var createMatrixFromRows = /* @__PURE__ */ factory3(
           (item) => typeof item.toArray === "function"
         );
         const hasArray = arr10.some((item) => Array.isArray(item));
+        const isSparse = allMatrix && !hasArray && arr10.some(
+          (item) => typeof item.storage === "function" && item.storage() === "sparse"
+        );
+        if (isSparse) {
+          return _createSparseMatrixFromRows(arr10);
+        }
         const arrays = arr10.map(
           (item) => typeof item.toArray === "function" ? item.toArray() : item
         );
         const result = _createArray(arrays);
         if (allMatrix && !hasArray) {
-          return matrix22(result);
+          return matrix22(result, "dense");
         }
         return result;
       }
-      // TODO implement this properly for SparseMatrix
     });
+    function _createSparseMatrixFromRows(arr10) {
+      const N2 = arr10.length;
+      const M = checkVectorTypeAndReturnLength(arr10[0]);
+      const entries = [];
+      for (let i2 = 0; i2 < N2; i2++) {
+        const rowVec = arr10[i2];
+        const rowLength = checkVectorTypeAndReturnLength(rowVec);
+        if (rowLength !== M) {
+          throw new TypeError(
+            "The vectors had different length: " + (M | 0) + " \u2260 " + (rowLength | 0)
+          );
+        }
+        if (typeof rowVec.forEach === "function") {
+          const s = size22(rowVec);
+          const is1D = s.length === 1;
+          const isCol = s.length === 2 && s[1] === 1;
+          rowVec.forEach((val, idx) => {
+            let col;
+            if (is1D) {
+              col = idx[0];
+            } else if (isCol) {
+              col = idx[0];
+            } else {
+              col = idx[1];
+            }
+            if (val !== 0) {
+              entries.push({ row: i2, col, value: val });
+            }
+          });
+        } else {
+          const f = flatten5(rowVec);
+          for (let j = 0; j < M; j++) {
+            if (f[j] !== 0) {
+              entries.push({ row: i2, col: j, value: f[j] });
+            }
+          }
+        }
+      }
+      entries.sort((a, b) => {
+        if (a.col !== b.col) return a.col - b.col;
+        return a.row - b.row;
+      });
+      const values = [];
+      const index = [];
+      const ptr = new Array(M + 1).fill(0);
+      for (let i2 = 0; i2 < entries.length; i2++) {
+        ptr[entries[i2].col + 1]++;
+      }
+      for (let j = 1; j <= M; j++) {
+        ptr[j] += ptr[j - 1];
+      }
+      for (let i2 = 0; i2 < entries.length; i2++) {
+        values.push(entries[i2].value);
+        index.push(entries[i2].row);
+      }
+      return matrix22({ values, index, ptr, size: [N2, M] }, "sparse");
+    }
     function _createArray(arr10) {
       if (arr10.length === 0)
         throw new TypeError("At least one row is needed to construct a matrix.");
@@ -89292,6 +90038,10 @@ var createMatAlgo11xS0s = /* @__PURE__ */ factory3(
   name108,
   dependencies108,
   ({ typed: typed3, equalScalar: equalScalar3 }) => {
+    let _dtCache;
+    let _cbCache;
+    let _eqCache;
+    let _cfCache;
     return function matAlgo11xS0s(s, b, callback, inverse) {
       const avalues = s._values;
       const aindex = s._index;
@@ -89309,10 +90059,19 @@ var createMatAlgo11xS0s = /* @__PURE__ */ factory3(
       let cf = callback;
       if (typeof adt === "string") {
         dt = adt;
-        eq = typed3.find(equalScalar3, [dt, dt]);
+        if (dt === _dtCache && callback === _cbCache) {
+          eq = _eqCache;
+          cf = _cfCache;
+        } else {
+          eq = typed3.find(equalScalar3, [dt, dt]) || equalScalar3;
+          cf = typed3.find(callback, [dt, dt]) || callback;
+          _dtCache = dt;
+          _cbCache = callback;
+          _eqCache = eq;
+          _cfCache = cf;
+        }
         zero = typed3.convert(0, dt);
         b = typed3.convert(b, dt);
-        cf = typed3.find(callback, [dt, dt]);
       }
       const cvalues = [];
       const cindex = [];
@@ -89595,19 +90354,22 @@ var createRound = /* @__PURE__ */ factory3(
   }
 );
 var name1122 = "xgcd";
-var dependencies1122 = ["typed", "config", "matrix", "BigNumber"];
+var dependencies1122 = ["typed", "config", "matrix", "BigNumber", "?Fraction"];
 var createXgcd = /* @__PURE__ */ factory3(
   name1122,
   dependencies1122,
-  ({ typed: typed3, config: config22, matrix: matrix22, BigNumber: BigNumber9 }) => {
-    return typed3(name1122, {
+  ({ typed: typed3, config: config22, matrix: matrix22, BigNumber: BigNumber9, Fraction: Fraction5 }) => {
+    const typedSignatures = {
       "number, number": function(a, b) {
         const res = xgcdNumber(a, b);
         return config22.matrix === "Array" ? res : matrix22(res);
       },
       "BigNumber, BigNumber": _xgcdBigNumber
-      // TODO: implement support for Fraction
-    });
+    };
+    if (Fraction5) {
+      typedSignatures["Fraction, Fraction"] = _xgcdFraction;
+    }
+    return typed3(name1122, typedSignatures);
     function _xgcdBigNumber(a, b) {
       let t;
       let q;
@@ -89636,6 +90398,42 @@ var createXgcd = /* @__PURE__ */ factory3(
       let res;
       if (a.lt(zero)) {
         res = [a.neg(), lastx.neg(), lasty.neg()];
+      } else {
+        res = [a, !a.isZero() ? lastx : 0, lasty];
+      }
+      return config22.matrix === "Array" ? res : matrix22(res);
+    }
+    function _xgcdFraction(a, b) {
+      if (!Fraction5) {
+        throw new Error("Fraction is not available");
+      }
+      let t;
+      let q;
+      let r;
+      const zero = new Fraction5(0);
+      const one = new Fraction5(1);
+      let x = zero;
+      let lastx = one;
+      let y = one;
+      let lasty = zero;
+      if (!a.isInteger() || !b.isInteger()) {
+        throw new Error("Parameters in function xgcd must be integer numbers");
+      }
+      while (!b.isZero()) {
+        q = a.divide(b).floor();
+        r = a.mod(b);
+        t = x;
+        x = lastx.subtract(q.multiply(x));
+        lastx = t;
+        t = y;
+        y = lasty.subtract(q.multiply(y));
+        lasty = t;
+        a = b;
+        b = r;
+      }
+      let res;
+      if (a.lessThan(zero)) {
+        res = [a.negate(), lastx.negate(), lasty.negate()];
       } else {
         res = [a, !a.isZero() ? lastx : 0, lasty];
       }
@@ -89726,44 +90524,51 @@ var createConcat = /* @__PURE__ */ factory3(
   dependencies115,
   ({ typed: typed3, matrix: matrix22, isInteger: isInteger3 }) => {
     return typed3(name115, {
-      // TODO: change signature to '...Array | Matrix, dim?' when supported
       "...Array | Matrix | number | BigNumber": function(args) {
-        let i2;
         const len = args.length;
+        if (len === 0) {
+          throw new SyntaxError("At least one matrix expected");
+        }
+        const lastArg = args[len - 1];
+        const hasDim = isNumber4(lastArg) || isBigNumber5(lastArg);
+        const dimIndex = hasDim ? len - 1 : len;
         let dim2 = -1;
-        let prevDim;
+        if (hasDim) {
+          dim2 = lastArg.valueOf();
+          if (!isInteger3(dim2)) {
+            throw new TypeError("Integer number expected for dimension");
+          }
+        }
         let asMatrix = false;
+        let prevDim = -1;
         const matrices = [];
-        for (i2 = 0; i2 < len; i2++) {
+        for (let i2 = 0; i2 < dimIndex; i2++) {
           const arg32 = args[i2];
+          if (isNumber4(arg32) || isBigNumber5(arg32)) {
+            throw new Error("Dimension must be specified as last argument");
+          }
           if (isMatrix5(arg32)) {
             asMatrix = true;
           }
-          if (isNumber4(arg32) || isBigNumber5(arg32)) {
-            if (i2 !== len - 1) {
-              throw new Error("Dimension must be specified as last argument");
-            }
-            prevDim = dim2;
-            dim2 = arg32.valueOf();
-            if (!isInteger3(dim2)) {
-              throw new TypeError("Integer number expected for dimension");
-            }
-            if (dim2 < 0 || i2 > 0 && dim2 > prevDim) {
-              throw new IndexError(dim2, prevDim + 1);
-            }
-          } else {
-            const m = clone2(arg32).valueOf();
-            const size22 = arraySize(m);
-            matrices[i2] = m;
-            prevDim = dim2;
-            dim2 = size22.length - 1;
-            if (i2 > 0 && dim2 !== prevDim) {
-              throw new DimensionError(prevDim + 1, dim2 + 1);
-            }
+          const m = clone2(arg32).valueOf();
+          const size22 = arraySize(m);
+          matrices.push(m);
+          const currentDim = size22.length - 1;
+          if (i2 === 0) {
+            prevDim = currentDim;
+          } else if (currentDim !== prevDim) {
+            throw new DimensionError(prevDim + 1, currentDim + 1);
           }
         }
         if (matrices.length === 0) {
           throw new SyntaxError("At least one matrix expected");
+        }
+        if (hasDim) {
+          if (dim2 < 0 || dim2 > prevDim) {
+            throw new DimensionError(dim2, dim2 < 0 ? 0 : prevDim, dim2 < 0 ? "<" : ">");
+          }
+        } else {
+          dim2 = prevDim;
         }
         let res = matrices.shift();
         while (matrices.length) {
@@ -90253,8 +91058,8 @@ var createSubset = /* @__PURE__ */ factory3(
   }
 );
 function _getSubstring(str, index) {
-  if (!isIndex2(index)) {
-    throw new TypeError("Index expected");
+  if (!isIndex3(index)) {
+    throw new TypeError("Invalid index: must be an Index or Index-like object");
   }
   if (isEmptyIndex(index)) {
     return "";
@@ -90280,7 +91085,7 @@ function _getSubstring(str, index) {
 }
 function _setSubstring(str, index, replacement, defaultValue) {
   if (!index || index.isIndex !== true) {
-    throw new TypeError("Index expected");
+    throw new TypeError("Invalid index: must be an Index or Index-like object");
   }
   if (isEmptyIndex(index)) {
     return str;
@@ -90446,6 +91251,7 @@ var createMatAlgo03xDSf = /* @__PURE__ */ factory3(
   name121,
   dependencies121,
   ({ typed: typed3 }) => {
+    const signaturesCache = /* @__PURE__ */ new WeakMap();
     return function matAlgo03xDSf(denseMatrix, sparseMatrix, callback, inverse) {
       const adata = denseMatrix._data;
       const asize = denseMatrix._size;
@@ -90474,7 +91280,17 @@ var createMatAlgo03xDSf = /* @__PURE__ */ factory3(
       if (typeof adt === "string" && adt === bdt && adt !== "mixed") {
         dt = adt;
         zero = typed3.convert(0, dt);
-        cf = typed3.find(callback, [dt, dt]);
+        let callbacksForDt = signaturesCache.get(callback);
+        if (!callbacksForDt) {
+          callbacksForDt = /* @__PURE__ */ new Map();
+          signaturesCache.set(callback, callbacksForDt);
+        }
+        let cachedCf = callbacksForDt.get(dt);
+        if (!cachedCf) {
+          cachedCf = typed3.find(callback, [dt, dt]);
+          callbacksForDt.set(dt, cachedCf);
+        }
+        cf = cachedCf;
       }
       const cdata = [];
       for (let z = 0; z < rows; z++) {
@@ -91012,7 +91828,7 @@ var createCumSum = /* @__PURE__ */ factory3(
       const size22 = arraySize(array2);
       const dimValue = typeof dim2 === "number" ? dim2 : dim2.valueOf();
       if (dimValue < 0 || dimValue >= size22.length) {
-        throw new IndexError(dimValue, 0, size22.length);
+        throw new DimensionError(dimValue, size22.length, "<");
       }
       try {
         return _cumsumDimensional(array2, dimValue);
@@ -92890,7 +93706,7 @@ var createRightLogShift = /* @__PURE__ */ factory3(
       name153,
       {
         "number, number": rightLogShiftNumber,
-        // 'BigNumber, BigNumber': ..., // TODO: implement BigNumber support for rightLogShift
+        "BigNumber, BigNumber": rightLogShiftBigNumber,
         "SparseMatrix, number | BigNumber": typed3.referToSelf(
           (self2) => (x, y) => {
             if (equalScalar3(y, 0)) {
@@ -95509,8 +96325,16 @@ var createPermutations = /* @__PURE__ */ factory3(
           result = result.times(i2);
         }
         return result;
-      }
-      // TODO: implement support for collection in permutations
+      },
+      "Array | Matrix": typed3.referToSelf(
+        (self2) => (n) => deepMap2(n, self2)
+      ),
+      "Array | Matrix, number | BigNumber": typed3.referToSelf(
+        (self2) => (n, k) => deepMap2(n, (n_val) => self2(n_val, k))
+      ),
+      "number | BigNumber, Array | Matrix": typed3.referToSelf(
+        (self2) => (n, k) => deepMap2(k, (k_val) => self2(n, k_val))
+      )
     });
   }
 );
@@ -96706,13 +97530,21 @@ var dependencies199 = [
   "multiply",
   "equalScalar",
   "divideScalar",
-  "inv",
+  "pinv",
   "nodeOperations"
 ];
 var createDivide = /* @__PURE__ */ factory3(
   name199,
   dependencies199,
-  ({ typed: typed3, matrix: matrix22, multiply: multiply22, equalScalar: equalScalar3, divideScalar: divideScalar22, inv: inv3, nodeOperations: nodeOperations2 }) => {
+  ({
+    typed: typed3,
+    matrix: matrix22,
+    multiply: multiply22,
+    equalScalar: equalScalar3,
+    divideScalar: divideScalar22,
+    pinv: pinv22,
+    nodeOperations: nodeOperations2
+  }) => {
     const matAlgo11xS0s = createMatAlgo11xS0s({ typed: typed3, equalScalar: equalScalar3 });
     const matAlgo14xDs = createMatAlgo14xDs({ typed: typed3 });
     return typed3(
@@ -96740,7 +97572,7 @@ var createDivide = /* @__PURE__ */ factory3(
           // MATRIX SIGNATURES - Deal with matrices
           // =========================================================================
           "Array | Matrix, Array | Matrix": function(x, y) {
-            return multiply22(x, inv3(y));
+            return multiply22(x, pinv22(y));
           },
           "DenseMatrix, any": function(x, y) {
             return matAlgo14xDs(
@@ -96767,7 +97599,7 @@ var createDivide = /* @__PURE__ */ factory3(
             ).valueOf();
           },
           "any, Array | Matrix": function(x, y) {
-            return multiply22(x, inv3(y));
+            return multiply22(x, pinv22(y));
           }
         },
         divideScalar22.signatures
@@ -98848,7 +99680,6 @@ var dependencies218 = [
   "abs",
   "add",
   "addScalar",
-  "matrix",
   "multiply",
   "multiplyScalar",
   "divideScalar",
@@ -98868,7 +99699,6 @@ var createIntersect = /* @__PURE__ */ factory3(
     abs: abs22,
     add: add52,
     addScalar: addScalar22,
-    matrix: matrix22,
     multiply: multiply22,
     multiplyScalar: multiplyScalar22,
     divideScalar: divideScalar22,
@@ -98888,7 +99718,7 @@ var createIntersect = /* @__PURE__ */ factory3(
           y.valueOf(),
           plane.valueOf()
         );
-        return arr10 === null ? null : matrix22(arr10);
+        return arr10 === null ? null : x.create(arr10, x.datatype());
       },
       "Matrix, Matrix, Matrix, Matrix": function(w, x, y, z) {
         const arr10 = _AAAA(
@@ -98897,7 +99727,7 @@ var createIntersect = /* @__PURE__ */ factory3(
           y.valueOf(),
           z.valueOf()
         );
-        return arr10 === null ? null : matrix22(arr10);
+        return arr10 === null ? null : w.create(arr10, w.datatype());
       }
     });
     function _AAA(x, y, plane) {
@@ -99098,6 +99928,15 @@ var createIntersect = /* @__PURE__ */ factory3(
         ),
         z1z
       );
+      if (isZero4(denominator) || smaller2(abs22(denominator), config22.relTol)) {
+        if (isZero4(numerator) || smaller2(abs22(numerator), config22.relTol)) {
+          return [
+            [x1, y1, z1],
+            [x2, y2, z2]
+          ];
+        }
+        return null;
+      }
       const t = divideScalar22(numerator, denominator);
       const px = addScalar22(x1, multiplyScalar22(t, subtract32(x2, x1)));
       const py = addScalar22(y1, multiplyScalar22(t, subtract32(y2, y1)));
@@ -99179,11 +100018,11 @@ var createMean = /* @__PURE__ */ factory3(
   }
 );
 var name220 = "median";
-var dependencies220 = ["typed", "add", "divide", "compare", "partitionSelect"];
+var dependencies220 = ["typed", "add", "divide", "compare", "partitionSelect", "mapSlices"];
 var createMedian = /* @__PURE__ */ factory3(
   name220,
   dependencies220,
-  ({ typed: typed3, add: add52, divide: divide22, compare: compare2, partitionSelect: partitionSelect2 }) => {
+  ({ typed: typed3, add: add52, divide: divide22, compare: compare2, partitionSelect: partitionSelect2, mapSlices: mapSlices2 }) => {
     function _median2(array2) {
       try {
         const flat2 = flatten(array2.valueOf());
@@ -99224,7 +100063,11 @@ var createMedian = /* @__PURE__ */ factory3(
       "Array | Matrix": _median2,
       // median([a, b, c, d, ...], dim)
       "Array | Matrix, number | BigNumber": function(_array2, _dim) {
-        throw new Error("median(A, dim) is not yet supported");
+        try {
+          return mapSlices2(_array2, _dim, (x) => _median2(x));
+        } catch (err) {
+          throw improveErrorMessage(err, "median", void 0);
+        }
       },
       // median(a, b, c, d, ...)
       "...": function(args) {
@@ -103120,19 +103963,30 @@ var createDerivative = /* @__PURE__ */ factory3(
     SymbolNode
   }) => {
     function plainDerivative(expr, variable, options = { simplify: true }) {
-      const cache = /* @__PURE__ */ new Map();
-      const variableName = variable.name;
-      function isConstCached(node) {
-        const cached2 = cache.get(node);
-        if (cached2 !== void 0) {
-          return cached2;
-        }
-        const res2 = _isConst(isConstCached, node, variableName);
-        cache.set(node, res2);
-        return res2;
+      const order = options.order !== void 0 ? options.order : 1;
+      if (!Number.isInteger(order) || order < 0) {
+        throw new TypeError('Option "order" must be a non-negative integer');
       }
-      const res = _derivative(expr, isConstCached);
-      return options.simplify ? simplify2(res) : res;
+      const variableName = variable.name;
+      let res = expr;
+      for (let i2 = 0; i2 < order; i2++) {
+        let isConstCached2 = function(node) {
+          const cached2 = cache.get(node);
+          if (cached2 !== void 0) {
+            return cached2;
+          }
+          const r = _isConst(isConstCached2, node, variableName);
+          cache.set(node, r);
+          return r;
+        };
+        var isConstCached = isConstCached2;
+        const cache = /* @__PURE__ */ new Map();
+        res = _derivative(res, isConstCached2);
+        if (options.simplify !== false && i2 < order - 1) {
+          res = simplify2(res);
+        }
+      }
+      return options.simplify !== false ? simplify2(res) : res;
     }
     function parseIdentifier(string22) {
       const symbol = parse32(string22);
@@ -103148,16 +104002,6 @@ var createDerivative = /* @__PURE__ */ factory3(
       "Node, SymbolNode, Object": plainDerivative,
       "Node, string": (node, symbol) => plainDerivative(node, parseIdentifier(symbol)),
       "Node, string, Object": (node, symbol, options) => plainDerivative(node, parseIdentifier(symbol), options)
-      /* TODO: implement and test syntax with order of derivatives -> implement as an option {order: number}
-      'Node, SymbolNode, ConstantNode': function (expr, variable, {order}) {
-        let res = expr
-        for (let i = 0; i < order; i++) {
-          <create caching isConst>
-          res = _derivative(res, isConst)
-        }
-        return res
-      }
-      */
     });
     derivative3._simplify = true;
     derivative3.toTex = function(deriv) {
@@ -103166,7 +104010,11 @@ var createDerivative = /* @__PURE__ */ factory3(
     const _derivTex = typed3("_derivTex", {
       "Node, SymbolNode": function(expr, x) {
         if (isConstantNode2(expr) && typeOf3(expr.value) === "string") {
-          return _derivTex(parse32(expr.value).toString(), x.toString(), 1);
+          return _derivTex(
+            parse32(expr.value).toString(),
+            x.toString(),
+            1
+          );
         } else {
           return _derivTex(expr.toTex(), x.toString(), 1);
         }
@@ -103222,7 +104070,9 @@ var createDerivative = /* @__PURE__ */ factory3(
         return createConstantNode2(1);
       },
       "ParenthesisNode, function": function(node, isConst2) {
-        return new ParenthesisNode(_derivative(node.content, isConst2));
+        return new ParenthesisNode(
+          _derivative(node.content, isConst2)
+        );
       },
       "FunctionAssignmentNode, function": function(node, isConst2) {
         if (isConst2(node)) {
@@ -103988,7 +104838,6 @@ var createRationalize = /* @__PURE__ */ factory3(
       const variables2 = [];
       const node = simplify2(expr, rules, scope, { exactFractions: false });
       extended = !!extended;
-      const oper = "+-*" + (extended ? "/" : "");
       recPoly(node);
       const retFunc = {};
       retFunc.expression = node;
@@ -104006,9 +104855,10 @@ var createRationalize = /* @__PURE__ */ factory3(
               recPoly(node2.args[0]);
             }
           } else {
-            if (!oper.includes(node2.op)) {
+            const op = node2.op;
+            if (op !== "+" && op !== "-" && op !== "*" && op !== "^" && (!extended || op !== "/")) {
               throw new Error(
-                "Operator " + node2.op + " invalid in polynomial expression"
+                "Operator " + op + " invalid in polynomial expression"
               );
             }
             for (let i2 = 0; i2 < node2.args.length; i2++) {
@@ -104248,8 +105098,9 @@ var createRationalize = /* @__PURE__ */ factory3(
         if (tp === "FunctionNode") {
           throw new Error("There is an unsolved function call");
         } else if (tp === "OperatorNode") {
-          if (!"+-*^".includes(node2.op))
-            throw new Error("Operator " + node2.op + " invalid");
+          const op = node2.op;
+          if (op !== "+" && op !== "-" && op !== "*" && op !== "^")
+            throw new Error("Operator " + op + " invalid");
           if (noPai !== null) {
             if ((node2.fn === "unaryMinus" || node2.fn === "pow") && noPai.fn !== "add" && noPai.fn !== "subtract" && noPai.fn !== "multiply") {
               throw new Error("Invalid " + node2.op + " placing");
@@ -104814,7 +105665,7 @@ var createNuclearMagneton = /* @__PURE__ */ unitFactory(
 var createKlitzing = /* @__PURE__ */ unitFactory("klitzing", "25812.807459304513", "ohm");
 var createJosephson = /* @__PURE__ */ unitFactory(
   "josephson",
-  "4.835978484169836e14 Hz V",
+  "4.835978484169836e14",
   "Hz V^-1"
 );
 var createBohrRadius = /* @__PURE__ */ unitFactory("bohrRadius", "5.29177210544e-11", "m");
@@ -107347,15 +108198,17 @@ function _combineLikeTerms(expr) {
   return parts.join(" + ").replace(/\+\s*-/g, "- ");
 }
 function _casDerivativeOne(expr, variable) {
+  if (expr.indexOf(variable) === -1) return "0";
   const terms = expr.split(/\s*\+\s*/);
   const derivedTerms = [];
+  const powerRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + variable + "\\^(\\d+)$");
+  const linearRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + variable + "$");
   for (const term of terms) {
     const t = term.trim();
-    if (!t.includes(variable)) {
+    if (t.indexOf(variable) === -1) {
       derivedTerms.push("0");
       continue;
     }
-    const powerRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + variable + "\\^(\\d+)$");
     const powerMatch = t.match(powerRe);
     if (powerMatch) {
       const coeff = powerMatch[1] === "" || powerMatch[1] === void 0 ? 1 : parseFloat(powerMatch[1]);
@@ -107369,7 +108222,6 @@ function _casDerivativeOne(expr, variable) {
       }
       continue;
     }
-    const linearRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + variable + "$");
     const linearMatch = t.match(linearRe);
     if (linearMatch) {
       const coeff = linearMatch[1] === "" ? 1 : parseFloat(linearMatch[1]);
@@ -107408,199 +108260,14 @@ function casSimplify(input) {
     return _casSimplifyOne(_nodeToStr(input));
   }
   const strs = input.map(_nodeToStr);
-  if (strs.length < CAS_BATCH_THRESHOLD || !computePool.isReady()) {
-    return Promise.resolve(strs.map(_casSimplifyOne));
-  }
-  return computePool.map(strs, (exprStr) => {
-    function _evalNumeric2(exprStr2) {
-      let pos = 0;
-      const s = exprStr2.replace(/\s+/g, "");
-      const parseExpr = () => {
-        let val = parseTerm();
-        while (pos < s.length) {
-          if (s[pos] === "+") {
-            pos++;
-            val += parseTerm();
-          } else if (s[pos] === "-") {
-            pos++;
-            val -= parseTerm();
-          } else break;
-        }
-        return val;
-      };
-      const parseTerm = () => {
-        let val = parseFactor();
-        while (pos < s.length) {
-          if (s[pos] === "*") {
-            pos++;
-            val *= parseFactor();
-          } else if (s[pos] === "/") {
-            pos++;
-            val /= parseFactor();
-          } else break;
-        }
-        return val;
-      };
-      const parseFactor = () => {
-        let val = parseBase();
-        if (pos < s.length && s[pos] === "^") {
-          pos++;
-          val = Math.pow(val, parseFactor());
-        }
-        return val;
-      };
-      const parseBase = () => {
-        if (s[pos] === "+") {
-          pos++;
-          return parseBase();
-        }
-        if (s[pos] === "-") {
-          pos++;
-          return -parseBase();
-        }
-        if (s[pos] === "(") {
-          pos++;
-          const val = parseExpr();
-          if (s[pos] === ")") pos++;
-          return val;
-        }
-        const start = pos;
-        while (pos < s.length && /[\d.]/.test(s[pos])) pos++;
-        if (start === pos) throw new Error();
-        return parseFloat(s.substring(start, pos));
-      };
-      try {
-        const val = parseExpr();
-        if (pos === s.length && typeof val === "number" && isFinite(val)) {
-          return String(val);
-        }
-      } catch {
-      }
-      return void 0;
-    }
-    function _combineLikeTermsW(expr) {
-      const normalised = expr.replace(/\s*-\s*/g, " + -");
-      const rawTerms = normalised.split(/\s*\+\s*/);
-      const termMap = /* @__PURE__ */ new Map();
-      const otherTerms = [];
-      for (const raw of rawTerms) {
-        const t = raw.trim();
-        if (!t) continue;
-        if (/^-?\d+(\.\d+)?$/.test(t)) {
-          termMap.set("__const__", (termMap.get("__const__") ?? 0) + Number(t));
-          continue;
-        }
-        const cvpMatch = t.match(/^(-?\d*\.?\d*)\s*\*?\s*(\w+)\^(\d+)$/);
-        if (cvpMatch) {
-          const c = cvpMatch[1] === "" || cvpMatch[1] === "+" ? 1 : cvpMatch[1] === "-" ? -1 : Number(cvpMatch[1]);
-          const key2 = cvpMatch[2] + "^" + cvpMatch[3];
-          termMap.set(key2, (termMap.get(key2) ?? 0) + c);
-          continue;
-        }
-        const cvMatch = t.match(/^(-?\d*\.?\d*)\s*\*?\s*(\w+)$/);
-        if (cvMatch && !/^\d+$/.test(cvMatch[2])) {
-          const c = cvMatch[1] === "" || cvMatch[1] === "+" ? 1 : cvMatch[1] === "-" ? -1 : Number(cvMatch[1]);
-          termMap.set(cvMatch[2], (termMap.get(cvMatch[2]) ?? 0) + c);
-          continue;
-        }
-        otherTerms.push(t);
-      }
-      const parts = [];
-      for (const [key2, c] of termMap) {
-        if (Math.abs(c) < 1e-12) continue;
-        if (key2 === "__const__") {
-          parts.push(String(c));
-        } else if (Math.abs(c - 1) < 1e-12) {
-          parts.push(key2);
-        } else if (Math.abs(c + 1) < 1e-12) {
-          parts.push("-" + key2);
-        } else {
-          parts.push(c + "*" + key2);
-        }
-      }
-      parts.push(...otherTerms);
-      if (parts.length === 0) return "0";
-      return parts.join(" + ").replace(/\+\s*-/g, "- ");
-    }
-    let r = exprStr.trim();
-    r = r.replace(/\b(\w+)\^0\b/g, "1");
-    r = r.replace(/\b(\w+)\^1\b/g, "$1");
-    r = r.replace(/\b1\s*\*\s*/g, "");
-    r = r.replace(/\s*\*\s*1\b/g, "");
-    r = r.replace(/\b0\s*\+\s*/g, "");
-    r = r.replace(/\s*\+\s*0\b/g, "");
-    r = r.replace(/\b0\s*\*\s*[^+-]*/g, "0");
-    if (/^[\d\s+\-*/().^]+$/.test(r)) {
-      const val = _evalNumeric2(r);
-      if (val !== void 0) return val;
-    }
-    return _combineLikeTermsW(r) || "0";
-  }).then((r) => r.result);
+  return Promise.resolve(strs.map(_casSimplifyOne));
 }
 function casDerivative(input, variable) {
   if (!Array.isArray(input)) {
     return _casDerivativeOne(_nodeToStr(input), variable);
   }
   const strs = input.map(_nodeToStr);
-  if (strs.length < CAS_BATCH_THRESHOLD || !computePool.isReady()) {
-    return Promise.resolve(strs.map((s) => _casDerivativeOne(s, variable)));
-  }
-  const varName = variable;
-  return computePool.map(strs, (exprStr) => {
-    const _variable = varName;
-    const terms = exprStr.split(/\s*\+\s*/);
-    const derivedTerms = [];
-    for (const term of terms) {
-      const t = term.trim();
-      if (!t.includes(_variable)) {
-        derivedTerms.push("0");
-        continue;
-      }
-      const powerRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + _variable + "\\^(\\d+)$");
-      const powerMatch = t.match(powerRe);
-      if (powerMatch) {
-        const coeff = powerMatch[1] === "" || powerMatch[1] === void 0 ? 1 : parseFloat(powerMatch[1]);
-        const n = parseInt(powerMatch[2], 10);
-        if (n === 0) {
-          derivedTerms.push("0");
-        } else if (n === 1) {
-          derivedTerms.push(String(coeff));
-        } else {
-          derivedTerms.push(coeff * n + "*" + _variable + "^" + (n - 1));
-        }
-        continue;
-      }
-      const linearRe = new RegExp("^(-?\\d*\\.?\\d*)\\s*\\*?\\s*" + _variable + "$");
-      const linearMatch = t.match(linearRe);
-      if (linearMatch) {
-        const coeff = linearMatch[1] === "" ? 1 : parseFloat(linearMatch[1]);
-        derivedTerms.push(String(coeff));
-        continue;
-      }
-      if (t === _variable) {
-        derivedTerms.push("1");
-        continue;
-      }
-      if (t === "sin(" + _variable + ")") {
-        derivedTerms.push("cos(" + _variable + ")");
-        continue;
-      }
-      if (t === "cos(" + _variable + ")") {
-        derivedTerms.push("-sin(" + _variable + ")");
-        continue;
-      }
-      if (t === "exp(" + _variable + ")") {
-        derivedTerms.push("exp(" + _variable + ")");
-        continue;
-      }
-      if (t === "ln(" + _variable + ")") {
-        derivedTerms.push("1/" + _variable);
-        continue;
-      }
-      derivedTerms.push("d/d" + _variable + "(" + t + ")");
-    }
-    return derivedTerms.join(" + ");
-  }).then((r) => r.result);
+  return Promise.resolve(strs.map((s) => _casDerivativeOne(s, variable)));
 }
 function casExpand(input) {
   if (!Array.isArray(input)) {
