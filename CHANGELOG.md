@@ -7,6 +7,26 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.1.10] - 2026-08-25
+
+### Fixed
+
+- **The bundle is rebuilt against the current `@danielsimonjr/mathts-compat`.** The committed
+  `bundle/index.mjs` is the artifact that actually ships, so a dependency bump that is not
+  followed by a rebuild changes nothing for users.
+- **Dependabot no longer watches `/wasm`**, a directory deleted back in v4.0.0 — the entry had
+  been generating updates for a path that no longer exists.
+- **Returned to npm for installs**: Bun cannot install this project's git dependency, so the
+  Bun migration was reverted here specifically. CI still installs Bun in the jobs that use it.
+- **Architecture claims refreshed.** `totalLinesOfCode` now reads **10,866** rather than
+  129,302: `repo_map` skips the committed `bundle/`, which had been making a ~4k-line server
+  look like a 130k-line one. Orphaned/no-importer counts fell 7 -> 3 for the same reason.
+
+### Dependencies
+
+- `@danielsimonjr/mathts-compat`; development-dependency groups (3 + 6 updates);
+  `eslint-plugin-jsdoc` 63.3.3 -> 64.1.0.
+
 ## [4.1.9] - 2026-08-16
 
 ### Fixed

@@ -31,9 +31,10 @@ src/
 test/                    15 vitest *.test.ts files + 2 direct-run .js drivers
 ```
 
-Real source is **3,777 LOC under `src/`**; the repo-wide `totalLinesOfCode` of 129,302 is
-dominated by the committed `bundle/index.mjs` (118,477 lines). Do not read the repo total
-as source size.
+Real source is **3,777 LOC under `src/`**, and `totalLinesOfCode` now reports **10,866**
+because `repo_map` skips the committed `bundle/` directory. It previously reported 129,302 —
+dominated by `bundle/index.mjs` (118,477 lines), which made a ~4k-line server look like a
+130k-line one and threw off every per-file average computed from it.
 
 ## Reading the generated reports
 
@@ -58,9 +59,9 @@ Check: `python repo_map.py check <repo> --docs docs/architecture`
 
 | Claim | Value | Source |
 |---|---|---|
-| totalFiles | 38 | file-inventory.json |
-| totalTypeScriptFiles | 38 | dependency-graph.json |
-| totalLinesOfCode | 129302 | dependency-graph.json |
+| totalFiles | 37 | file-inventory.json |
+| totalTypeScriptFiles | 37 | dependency-graph.json |
+| totalLinesOfCode | 10866  | dependency-graph.json |
 | entryRoots | 1 | dependency-graph.json |
-| orphanedFiles | 7 | dependency-graph.json |
-| noImporterFileCount | 7 | unused-analysis.json |
+| orphanedFiles | 3 | dependency-graph.json |
+| noImporterFileCount | 3 | unused-analysis.json |
