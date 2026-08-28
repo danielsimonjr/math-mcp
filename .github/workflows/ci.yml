@@ -15,6 +15,12 @@ on:
     - cron: '0 7 * * *'
   workflow_dispatch:
 
+# Pinned explicitly rather than inheriting the repository default. The default is `read`
+# today, but it is a repo-level setting that any future change can widen silently. These
+# jobs only check out, build, test and upload an artifact, so they never need more.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test on Node.js ${{ matrix.node-version }} (${{ matrix.os }})

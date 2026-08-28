@@ -7,6 +7,14 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Security
+
+- **`ci.yml` now pins `permissions: contents: read` explicitly** instead of inheriting the
+  repository default. The default is `read` today, but it is a repo-level setting that any future
+  change can widen silently — and a workflow with no `permissions:` block inherits whatever it
+  becomes. These jobs only check out, build, test and upload an artifact, so they never need more.
+  Found during the workflow-invariant audit of the four CI files edited earlier the same day.
+
 ### Fixed
 
 - **Auto-merged Dependabot commits could land on the default branch with no CI run.** The
