@@ -57,3 +57,6 @@ __pycache__/
 
 # subagent-driven-development scratch/ledger
 .superpowers/
+
+# Agent infrastructure, not project content (seeded by tracker-discipline-hook)
+.tracker-watch.json
