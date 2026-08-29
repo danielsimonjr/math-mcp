@@ -5,11 +5,12 @@ holds only what is still outstanding.
 
 ## Open
 
-- [ ] **Confirm the nightly `schedule` on `ci.yml` actually fires.** Added 2026-08-28 (`4d8f2d3`) at
-  07:00 UTC to cover auto-merged Dependabot commits, which GitHub's recursion guard leaves with no
-  `on: push` run — two such commits were measured in this repo's recent history (`3904d585`,
-  `932b6f70`). The trigger is in place and the YAML validates, but **no scheduled run has happened
-  yet.** The gap is not closed until one lands; verifying the syntax is not verifying the behaviour.
+- [x] **Confirm the nightly `schedule` on `ci.yml` actually fires.** — **VERIFIED 2026-08-29**:
+  first scheduled run fired at 07:06:45Z, conclusion `success`, event `schedule`. Closed by
+  behaviour rather than by syntax. Added 2026-08-28 (`4d8f2d3`) at 07:00 UTC to cover auto-merged
+  Dependabot commits, which GitHub's recursion guard leaves with no `on: push` run — two such
+  commits were measured in this repo's history (`3904d585`, `932b6f70`), and both stay permanently
+  ungauged since they predate the `workflow_dispatch` trigger.
 
 ## Five-axis assessment — 2026-08-28
 
