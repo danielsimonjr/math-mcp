@@ -6,14 +6,12 @@
  * @since 3.3.0
  */
 
+import type { CallToolResult } from "@modelcontextprotocol/server";
 import { logger, perfTracker } from './utils.js';
 import { MathMCPError } from './errors.js';
 
 /** Standard response format for tool handlers */
-export interface ToolResponse {
-  content: Array<{ type: string; text: string }>;
-  isError: boolean;
-}
+export type ToolResponse = CallToolResult;
 
 /**
  * Creates a success response with formatted result.
