@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "test": "node test/integration-test.js",
+    "test:mcp": "node test/mcp-protocol-test.js",
     "test:correctness": "node test/correctness-tests.js",
     "test:all": "npm test && npm run test:correctness",
     "test:unit": "vitest",
@@ -57,8 +58,9 @@
   "dependencies": {
     "@danielsimonjr/mathts-compat": "^0.4.18",
     "@danielsimonjr/mathts-matrix": "^0.7.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "prom-client": "^15.1.3"
+    "@modelcontextprotocol/server": "^2.0.0",
+    "prom-client": "^15.1.3",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
