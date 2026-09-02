@@ -7,6 +7,8 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-09-03
+
 ### Security
 
 - **`ci.yml` now pins `permissions: contents: read` explicitly** instead of inheriting the
