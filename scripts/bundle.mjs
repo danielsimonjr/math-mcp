@@ -55,7 +55,7 @@ if (missing.length) {
   // Fail loudly. A silent skip here reproduces exactly the defect this code fixes.
   console.error(
     `bundle: cannot stage WASM, missing ${missing.join(", ")} in ${WASM_SRC}. ` +
-    `Run npm install, or npm run build:wasm in the MathTS monorepo.`,
+    `Run bun install, or bun run build:wasm in the MathTS monorepo.`,
   );
   process.exit(1);
 }

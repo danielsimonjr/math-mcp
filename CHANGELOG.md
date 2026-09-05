@@ -7,6 +7,21 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Changed
+
+- **TypeScript-on-Bun toolchain.** Bun (≥ 1.4.0) is now the install/script driver
+  (`packageManager: bun@1.4.0`, `bun.lock` authoritative; `package-lock.json`
+  removed). Node (≥ 22) remains the **shipped** MCP runtime — consumers still
+  launch `node dist/index.js`. CI installs Bun first in every job that runs it,
+  uses `bun install --frozen-lockfile` / `bun run …`, and adds a Node smoke check
+  that `dist/index.js` loads under Node. Dependabot stays on the **npm**
+  ecosystem on purpose: it only parses `bun.lock` lockfileVersion 1, while Bun
+  writes v2, so a bun updater proposes nothing (same lesson as memory-mcp /
+  fzf-mcp). This re-attempts the Aug 2026 migration that was reverted because
+  Bun could not materialize MathTS's `typed-function` git dependency; Bun 1.4.x
+  now resolves `github:danielsimonjr/typed-function` correctly on a clean
+  install (verified before committing).
+
 ## [4.2.0] - 2026-09-03
 
 ### Security

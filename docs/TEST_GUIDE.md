@@ -73,25 +73,25 @@ The math-mcp project uses a multi-level testing strategy:
 
 ```bash
 # 1. Build the project
-npm run build
+bun run build
 
 # 2. Run unit tests
-npm run test:unit
+bun run test:unit
 
 # 3. Run integration tests
-npm test
+bun run test
 
 # 4. Run correctness tests
-npm run test:correctness
+bun run test:correctness
 
 # 5. Run security tests
-npm run test:security
+bun run test:security
 ```
 
 ### Run Everything at Once
 
 ```bash
-npm run test:all
+bun run test:all
 ```
 
 ---
@@ -116,7 +116,7 @@ The integration suite exercises the real tool handlers directly (no MCP transpor
 
 ```bash
 # Full test run
-npm test
+bun run test
 
 # Equivalent direct invocation
 node test/integration-test.js
@@ -180,10 +180,10 @@ Total: 12  Passed: 12  Failed: 0
 
 ```bash
 # Run once (CI mode)
-npm run test:unit
+bun run test:unit
 
 # With coverage
-npm run test:coverage
+bun run test:coverage
 ```
 
 ---
@@ -205,7 +205,7 @@ npm run test:coverage
 ### Running Security Tests
 
 ```bash
-npm run test:security
+bun run test:security
 ```
 
 **What it protects against:** since the engine is synchronous JavaScript (no
@@ -354,7 +354,7 @@ error) or a bounded, correct result.
 
 ```bash
 # Run before committing
-npm run build && npm run test:unit && npm test && npm run test:security
+bun run build && bun run test:unit && bun run test && bun run test:security
 ```
 
 ### CI/CD Pipeline (Recommended)
@@ -370,15 +370,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.4.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - run: npm install
-      - run: npm run build
-      - run: npm run test:unit
-      - run: npm test
-      - run: npm run test:correctness
-      - run: npm run test:security
+          node-version: '22'
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run test:unit
+      - run: bun run test
+      - run: bun run test:correctness
+      - run: bun run test:security
 ```
 
 ---
@@ -390,10 +393,10 @@ jobs:
 **Unit tests fail:**
 ```bash
 # 1. Rebuild the project
-npm run build
+bun run build
 
 # 2. Check Node.js version
-node --version  # Should be 18+
+node --version  # Should be 22+
 
 # 3. Run with verbose output
 npx vitest run test/unit --reporter=verbose
@@ -402,13 +405,13 @@ npx vitest run test/unit --reporter=verbose
 **Integration tests fail:**
 ```bash
 # 1. Rebuild the project
-npm run build
+bun run build
 
 # 2. Check Node.js version
-node --version  # Should be 18+
+node --version  # Should be 22+
 
 # 3. Check for errors in build output
-npm run build 2>&1 | grep error
+bun run build 2>&1 | grep error
 
 # 4. Confirm the entry point exists
 ls -la dist/index.js
@@ -429,7 +432,7 @@ npx vitest run test/security --reporter=verbose
 **Solution:** Check for infinite loops / unbounded recursion in the expression being evaluated; verify async operations complete.
 
 **Issue:** `dist/index.js` missing
-**Solution:** Run `npm run build` (tsc) first — there is no other build step.
+**Solution:** Run `bun run build` (tsc) first — there is no other build step.
 
 ---
 
@@ -463,13 +466,13 @@ The math-mcp testing strategy ensures:
 **Test Command Summary:**
 ```bash
 # Quick test
-npm run build && npm run test:unit && npm test
+bun run build && bun run test:unit && bun run test
 
 # Full test suite
-npm run build
-npm run test:unit
-npm test
-npm run test:correctness
-npm run test:security
-npm run test:coverage
+bun run build
+bun run test:unit
+bun run test
+bun run test:correctness
+bun run test:security
+bun run test:coverage
 ```

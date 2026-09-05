@@ -2,7 +2,8 @@
 
 [![CI](https://github.com/danielsimonjr/math-mcp/workflows/CI/badge.svg)](https://github.com/danielsimonjr/math-mcp/actions)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
+[![Bun](https://img.shields.io/badge/bun-%3E%3D1.4.0-f9f1e1)](https://bun.sh/)
 
 A secure, production-ready MCP (Model Context Protocol) server exposing seven
 mathematical tools — expression evaluation, symbolic calculus (derivative,
@@ -68,24 +69,25 @@ unit_conversion("5 inches", "cm")   // "12.7 cm"
 ## 📦 Installation
 
 ### Requirements
-- **Node.js** ≥ 18.0.0
-- **npm** ≥ 8.0.0
+- **Bun** ≥ 1.4.0 — install/script toolchain (`bun.lock` is authoritative)
+- **Node.js** ≥ 22.0.0 — shipped MCP runtime (`node dist/index.js`)
 - **Platform:** Windows, macOS, or Linux
 
 ### Quick start
 ```bash
 git clone https://github.com/danielsimonjr/math-mcp.git
 cd math-mcp
-npm install
-npm run build      # tsc — the only build step
-npm test           # integration tests
+bun install
+bun run build      # tsc — the only build step
+bun run test       # integration tests
 ```
 
 ### Verify installation
 ```bash
-node --version     # v18.0.0 or higher
-npm run type-check # completes without errors
-npm test           # integration tests pass
+bun --version      # v1.4.0 or higher
+node --version     # v22.0.0 or higher
+bun run type-check # completes without errors
+bun run test       # integration tests pass
 ```
 
 ### Integration with Claude Desktop
@@ -228,22 +230,24 @@ math-mcp/
 
 ## 🧪 Development
 
+Bun is the TypeScript-on-Bun toolchain; Node runs the shipped server.
+
 ```bash
-npm run build         # tsc
-npm start             # node dist/index.js
-npm run dev           # tsc && node dist/index.js
+bun run build         # tsc
+bun start             # node dist/index.js
+bun run dev           # tsc && node dist/index.js
 
-npm test              # integration tests
-npm run test:correctness
-npm run test:unit     # Vitest
-npm run test:security # Vitest security suite
-npm run test:coverage
+bun run test          # integration tests
+bun run test:correctness
+bun run test:unit     # Vitest
+bun run test:security # Vitest security suite
+bun run test:coverage
 
-npm run type-check    # tsc --noEmit
-npm run lint          # ESLint
-npm run lint:fix
-npm run format        # Prettier
-npm run format:check
+bun run type-check    # tsc --noEmit
+bun run lint          # ESLint
+bun run lint:fix
+bun run format        # Prettier
+bun run format:check
 ```
 
 ## 🔧 Configuration
@@ -278,7 +282,7 @@ environment-configurable): max matrix dimension 1000×1000, max array length
 - **`Unit "X" not found.`** — the unit isn't in MathTS's set. Use compound speed forms (`mi/h`, not `mph`); some astronomical/nautical units aren't available.
 - **`Undefined symbol x`** — an expression left a free variable (e.g. mixing a symbolic term with a numeric one in `evaluate`). Supply `scope`, or keep symbolic and numeric parts separate.
 - **Input rejected as too large** — inputs above the size limits (matrix 1000×1000, array 100000, expression 10000 chars, nesting depth 50) are refused by design. These limits are fixed constants in `src/validation.ts`.
-- **Build/test issues** — ensure Node ≥ 18, then `npm install && npm run build && npm test`.
+- **Build/test issues** — ensure Bun ≥ 1.4 and Node ≥ 22, then `bun install && bun run build && bun run test`.
 
 ## 📚 Documentation
 
@@ -290,7 +294,7 @@ environment-configurable): max matrix dimension 1000×1000, max array length
 ## 🤝 Contributing
 
 Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Fork, branch,
-make changes, `npm test`, commit with a conventional-commit message, and open a
+make changes, `bun run test`, commit with a conventional-commit message, and open a
 pull request.
 
 ## 📄 License
