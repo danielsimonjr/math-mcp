@@ -75,31 +75,31 @@ dependency — it is not compiled as part of this project's build.
 ```bash
 # Check version
 node --version
-# Required: v18.0.0 or higher
+# Required: v22.0.0 or higher (shipped runtime)
 ```
 
-**npm:**
+**Bun:**
 ```bash
 # Check version
-npm --version
+bun --version
 ```
 
 **TypeScript:**
 ```bash
-# Installed as a dev dependency; available after npm install
-npx tsc --version
+# Installed as a dev dependency; available after bun install
+bunx tsc --version
 ```
 
 ### Installation
 
 ```bash
-npm install
+bun install
 ```
 
 ### Verify Installation
 
 ```bash
-npx tsc --version
+bunx tsc --version
 ```
 
 ---
@@ -110,7 +110,7 @@ npx tsc --version
 
 ```bash
 # From project root
-npm run build
+bun run build
 ```
 
 This runs `tsc`, compiling `src/*.ts` → `dist/*.js` per `tsconfig.json`. This
@@ -119,7 +119,7 @@ is the **only** build step — there is no separate native/WASM build.
 ### Development Build
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 This runs `tsc && node dist/index.js` — compile, then start the server.
@@ -137,7 +137,7 @@ This runs `tsc && node dist/index.js` — compile, then start the server.
 
 ```bash
 # Standard TypeScript compilation
-npm run build
+bun run build
 ```
 
 **What happens:**
@@ -150,14 +150,14 @@ npm run build
 
 ```bash
 # Auto-recompile on file changes
-npx tsc --watch
+bunx tsc --watch
 ```
 
 ### Clean Build
 
 ```bash
 rm -rf dist/
-npm run build
+bun run build
 ```
 
 ---
@@ -180,18 +180,18 @@ npm run build
 
 **Build:**
 ```bash
-npm run build
+bun run build
 ```
 
 **Start production server:**
 ```bash
-npm start
+bun start
 # Runs: node dist/index.js
 ```
 
 **Development mode:**
 ```bash
-npm run dev
+bun run dev
 # 1. Compiles TypeScript
 # 2. Starts the server
 ```
@@ -199,22 +199,22 @@ npm run dev
 ### Test Scripts
 
 ```bash
-npm test               # Integration tests (test/integration-test.js)
-npm run test:correctness  # Mathematical correctness tests
-npm run test:unit         # Vitest unit tests
-npm run test:security     # Vitest security tests (test/security/)
-npm run test:coverage     # Vitest with coverage
-npm run test:all          # test + test:correctness
+bun run test               # Integration tests (test/integration-test.js)
+bun run test:correctness  # Mathematical correctness tests
+bun run test:unit         # Vitest unit tests
+bun run test:security     # Vitest security tests (test/security/)
+bun run test:coverage     # Vitest with coverage
+bun run test:all          # test + test:correctness
 ```
 
 ### Code Quality Scripts
 
 ```bash
-npm run type-check    # tsc --noEmit
-npm run lint           # eslint on src/ and test/
-npm run lint:fix       # eslint --fix
-npm run format         # prettier --write
-npm run format:check   # prettier --check
+bun run type-check    # tsc --noEmit
+bun run lint           # eslint on src/ and test/
+bun run lint:fix       # eslint --fix
+bun run format         # prettier --write
+bun run format:check   # prettier --check
 ```
 
 ---
@@ -225,7 +225,7 @@ npm run format:check   # prettier --check
 
 ```bash
 # Check dist/ directory exists and index.js is present
-npm run verify:dist
+bun run verify:dist
 ```
 
 This runs the `verify:dist` script, which checks that `dist/` exists and
@@ -240,7 +240,7 @@ node dist/index.js
 ### Full Build Verification
 
 ```bash
-npm run build && npm test
+bun run build && bun run test
 
 # Expected:
 # - TypeScript builds with 0 errors
@@ -253,7 +253,7 @@ npm run build && npm test
 
 TypeScript compiler options that affect build output size/speed (e.g.
 `sourceMap`, `declaration`, `incremental`) are controlled entirely in
-`tsconfig.json`. There is no separate optimization pass — `npm run build`
+`tsconfig.json`. There is no separate optimization pass — `bun run build`
 is a single `tsc` invocation.
 
 **Incremental builds:**
@@ -278,14 +278,14 @@ is a single `tsc` invocation.
 rm -rf dist/ node_modules/
 
 # 2. Fresh install
-npm install
+bun install
 
 # 3. Build
-npm run build
+bun run build
 
 # 4. Verify
-npm run verify:dist
-npm test
+bun run verify:dist
+bun run test
 
 # 5. Test startup
 node dist/index.js
@@ -320,7 +320,7 @@ npm pack
 npm link
 
 # Or install globally from a tarball
-npm install -g <tarball>
+bun add -g <tarball>
 ```
 
 ---
@@ -331,16 +331,16 @@ npm install -g <tarball>
 
 **Issue:** `Cannot find module '@modelcontextprotocol/sdk'`
 ```bash
-npm install
+bun install
 ```
 
 **Issue:** TypeScript compilation errors
 ```bash
-npx tsc --version
+bunx tsc --version
 
 # Clean build
 rm -rf dist/ .tsbuildinfo
-npm run build
+bun run build
 ```
 
 **Issue:** Module resolution errors
@@ -354,8 +354,8 @@ npm run build
 
 **Issue:** Tests fail after build
 ```bash
-npm run build
-npm test
+bun run build
+bun run test
 ```
 
 ### Build Environment Issues
@@ -365,7 +365,7 @@ npm test
 git config core.autocrlf true  # Windows
 git config core.autocrlf input # Linux/Mac
 
-npm run build
+bun run build
 ```
 
 **Issue:** Permission errors (Linux/Mac)
@@ -381,10 +381,10 @@ chmod +x dist/index.js
 
 ```bash
 # GOOD
-npm run build && npm test
+bun run build && bun run test
 
 # BAD
-npm test  # Using a stale build's compiled output is not the concern here,
+bun run test  # Using a stale build's compiled output is not the concern here,
           # since tests run against source/dist directly — but always
           # rebuild after source changes before testing manually.
 ```
@@ -393,14 +393,14 @@ npm test  # Using a stale build's compiled output is not the concern here,
 
 ```bash
 rm -rf dist/ .tsbuildinfo
-npm run build
+bun run build
 ```
 
 ### 3. Verify After Build
 
 ```bash
-npm run verify:dist
-npm test
+bun run verify:dist
+bun run test
 ```
 
 ### 4. Version Control
@@ -410,8 +410,8 @@ npm test
 - `package.json`, `tsconfig.json` - Config
 
 **Files not committed (gitignored / regenerated):**
-- `dist/` - Build output (regenerate with `npm run build`)
-- `node_modules/` - Dependencies (reinstall with `npm install`)
+- `dist/` - Build output (regenerate with `bun run build`)
+- `node_modules/` - Dependencies (reinstall with `bun install`)
 
 ---
 
@@ -421,16 +421,16 @@ npm test
 
 ```bash
 # Standard build
-npm run build
+bun run build
 
 # Development mode
-npm run dev
+bun run dev
 
 # Build verification
-npm run build && npm test
+bun run build && bun run test
 
 # Clean and rebuild
-rm -rf dist/ && npm run build
+rm -rf dist/ && bun run build
 
 # Distribution package
 npm pack
@@ -443,6 +443,6 @@ npm pack
 ### Build Success Criteria
 
 - TypeScript compiles with 0 errors
-- `dist/index.js` present (`npm run verify:dist`)
+- `dist/index.js` present (`bun run verify:dist`)
 - Server starts without errors
-- Integration tests pass (`npm test`)
+- Integration tests pass (`bun run test`)

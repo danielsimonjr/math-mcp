@@ -31,12 +31,13 @@ degree-≤3 closed form to the engine's Algebra solver `polynomialRoot`.
   stack (router/adapter/wasm-executor/gpu/workers, the `wasm/` AS project) were
   **deleted** — MathTS does its own internal tier dispatch. Entry point is
   `dist/index.js` (the old `index-wasm.js` is gone).
-- **Dependencies (hybrid):** dev uses local links —
-  `npm install file:../mathts/compat file:../mathts/matrix` — so changes to the
-  local `~/Github/mathts` monorepo are picked up after a `npm install` refresh +
-  `npm run build`. For a committed/published release, pin the published
+- **Dependencies (hybrid):** Bun is the install/script toolchain (`bun.lock`
+  authoritative). Dev can use local links —
+  `bun add file:../mathts/compat file:../mathts/matrix` — so changes to the
+  local `~/Github/mathts` monorepo are picked up after a `bun install` refresh +
+  `bun run build`. For a committed/published release, pin the published
   `@danielsimonjr/mathts-*@^x.y.z` versions (after the MathTS packages are
-  published to npm) and `npm install`.
+  published to npm) and `bun install`.
 - **Known limitations:**
   - Large dense matrices are slower than the old WASM path: MathTS's JS matmul
     does ~21s for 800×800 (was 114s before a perf fix; Rust WASM is not yet
@@ -52,67 +53,71 @@ degree-≤3 closed form to the engine's Algebra solver `polynomialRoot`.
     (`Undefined symbol mph`); the `unit_conversion` description used to give
     `'mph'` as an example, which never worked on either engine — corrected to
     `'mi/h'` on 2026-06-23.
-- **Build is `npm run build` (tsc) only.** There is no `wasm/` project and no
+- **Build is `bun run build` (tsc) only.** There is no `wasm/` project and no
   `build:wasm`/`build:all`/`generate:hashes` scripts — they were removed with the
   accel stack in v4. (CI's obsolete `cd wasm` step was likewise dropped 2026-06-30.)
+- **Runtime:** Node ships the MCP server (`node dist/index.js`). Bun is the
+  TypeScript-on-Bun toolchain only (install + `bun run` scripts) — same split as
+  the sibling `*-mcp` repos.
 
 ## Build Commands
 
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (bun.lock is authoritative)
+bun install
 
 # Build TypeScript to JavaScript (the only build step; tsc)
-npm run build
+bun run build
 
-# Development mode (build + run)
-npm run dev
+# Development mode (build + run under Node)
+bun run dev
 ```
 
 ## Testing
 
 ```bash
 # Integration tests (12 tests)
-npm test
+bun run test
 
 # Correctness tests
-npm run test:correctness
+bun run test:correctness
 
 # Unit tests (Vitest)
-npm run test:unit
+bun run test:unit
 
 # Security tests (121 tests)
-npm run test:security
+bun run test:security
 
 # Test coverage
-npm run test:coverage
+bun run test:coverage
 
 # Run all tests
-npm run test:all
+bun run test:all
 ```
 
 ## Code Quality
 
 ```bash
 # Type checking
-npm run type-check
+bun run type-check
 
 # Linting
-npm run lint
-npm run lint:fix
+bun run lint
+bun run lint:fix
 
 # Formatting
-npm run format
-npm run format:check
+bun run format
+bun run format:check
 ```
 
 ## Running the Server
 
 ```bash
 # Entry point (the only one; src/index.ts → dist/index.js, also the bin)
+# Node is the shipped runtime — Bun is the toolchain, not the MCP host.
 node dist/index.js
 # or:
-npm start
+bun start
 
 # With performance logging
 ENABLE_PERF_LOGGING=true node dist/index.js

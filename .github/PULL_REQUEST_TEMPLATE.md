@@ -25,7 +25,7 @@ Please delete options that are not relevant.
 
 Please describe the tests that you ran to verify your changes.
 
-- [ ] Integration tests pass (`node test/integration-test.js`)
+- [ ] Integration tests pass (`bun run test`)
 - [ ] WASM differential tests pass (if applicable)
 - [ ] Performance benchmarks run (if applicable)
 - [ ] Tested on multiple platforms (Windows/macOS/Linux)

@@ -9,11 +9,12 @@
     "LICENSE",
     "CHANGELOG.md"
   ],
+  "packageManager": "bun@1.4.0",
   "scripts": {
     "test": "node test/integration-test.js",
     "test:mcp": "node test/mcp-protocol-test.js",
     "test:correctness": "node test/correctness-tests.js",
-    "test:all": "npm test && npm run test:correctness",
+    "test:all": "bun run test && bun run test:correctness",
     "test:unit": "vitest",
     "test:coverage": "vitest --coverage",
     "test:security": "vitest run test/security/",
@@ -30,7 +31,7 @@
     "type-check": "tsc --noEmit",
     "graph": "tsx tools/generate-dependency-graph.ts",
     "prepare": "husky install",
-    "prepublishOnly": "npm run type-check && npm run build && npm test && npm run test:correctness"
+    "prepublishOnly": "bun run type-check && bun run build && bun run test && bun run test:correctness"
   },
   "keywords": [
     "mcp",
@@ -91,7 +92,8 @@
     "math-mcp": "./dist/index.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0",
+    "bun": ">=1.4.0"
   },
   "overrides": {
     "ip-address": "^10.1.1",

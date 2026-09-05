@@ -16,15 +16,15 @@ This project follows a standard code of conduct. Please be respectful and profes
    ```
 3. **Install dependencies**:
    ```bash
-   npm install
+   bun install
    ```
 4. **Build the project**:
    ```bash
-   npm run build
+   bun run build
    ```
 5. **Run tests**:
    ```bash
-   node test/integration-test.js
+   bun run test
    ```
 
 ## Development Workflow
@@ -47,8 +47,8 @@ This project follows a standard code of conduct. Please be respectful and profes
 
 3. **Test your changes**:
    ```bash
-   npm run build
-   node test/integration-test.js
+   bun run build
+   bun run test
    ```
 
 4. **Commit your changes**:
@@ -103,11 +103,11 @@ export function calc_mean(data: any): any {
 Run the full integration test suite:
 
 ```bash
-node test/integration-test.js
+bun run test
 ```
 
-Also run `npm run test:unit` (Vitest unit tests) and `npm run test:security`
-(security test suite) — see `npm run test:all` for the full set.
+Also run `bun run test:unit` (Vitest unit tests) and `bun run test:security`
+(security test suite) — see `bun run test:all` for the full set.
 
 ## Adding New Features
 
