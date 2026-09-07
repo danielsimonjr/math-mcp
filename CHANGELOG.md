@@ -9,6 +9,16 @@ Documentation in reverse chronological order (latest first).
 
 ### Changed
 
+- **Bun pinned to 1.4.2** in `packageManager`, `engines.bun` and the CI workflow.
+
+- **TypeScript stays at `6.0.3`: TypeScript 7 is BLOCKED here by `typescript-eslint`.**
+  The tool refuses outright -- `Error: typescript-eslint does not support TS 7.0.` --
+  because TS 7.0 shipped without the stable programmatic Compiler API that its parser
+  needs. Upstream issue #12518 is CLOSED AS NOT PLANNED, so this is not a lag that
+  waiting fixes. Revisit when TS 7.1 lands the API.
+
+### Changed
+
 - **vitest 4.1.11 -> 5.0.0 and `@vitest/coverage-v8` 4.1.11 -> 5.0.0 (majors), plus
   `eslint-plugin-jsdoc` 64.3.4 -> 64.3.5** (#106, #105, #104). The full suite passes on 5.
 
