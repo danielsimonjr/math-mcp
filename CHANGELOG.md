@@ -9,6 +9,32 @@ Documentation in reverse chronological order (latest first).
 
 ### Changed
 
+- **TypeScript raised to `^7.0.2`, unblocked by replacing ESLint/typescript-eslint with
+  `oxlint`.** The previous entry recorded TS 7 as blocked here; the blocker was the
+  LINTER. `typescript-eslint` needs TypeScript's programmatic Compiler API, which
+  TS 7.0 does not ship. oxlint parses TypeScript itself and never loads that API.
+
+  **The port was matched rule-by-rule against the old flat config, not approximated:**
+  `no-explicit-any` stays a WARNING (deliberate here -- the AST traversal, mathjs Node
+  interfaces and worker IPC payload have legitimately dynamic shapes),
+  `explicit-function-return-type` and `no-unused-vars` stay errors with the same
+  `^_` ignore patterns, the three jsdoc description/tag rules stay warnings, and
+  `no-console` stays off. The old config's `ignorePatterns` excluded plain
+  `**/*.js` -- reproduced, without which a `.js` test file failed the port.
+
+  **One rule is genuinely lost: `jsdoc/check-types` (a warning), which oxlint 1.82
+  does not implement.** `jsdoc/require-jsdoc` is also absent but was `off` here, so
+  nothing changes. Both were established with a probe carrying a control that must
+  report MISSING -- the first version of that probe reported everything as available,
+  including a rule name I invented.
+
+  `eslint`, `@eslint/js`, both `@typescript-eslint/*` packages, `eslint-plugin-jsdoc`,
+  `eslint-config-prettier` and `globals` are removed, with `eslint.config.js` and
+  `tsconfig.eslint.json`. Prettier itself is untouched -- `eslint-config-prettier`
+  only disabled style rules, and oxlint does no formatting.
+
+### Changed
+
 - **Bun pinned to 1.4.2** in `packageManager`, `engines.bun` and the CI workflow.
 
 - **TypeScript stays at `6.0.3`: TypeScript 7 is BLOCKED here by `typescript-eslint`.**
