@@ -1286,28 +1286,28 @@ var require_rbtree = __commonJS({
         var gp = null;
         var ggp = head;
         var p = null;
-        var node = this._root;
+        var node2 = this._root;
         ggp.right = this._root;
         while (true) {
-          if (node === null) {
-            node = new Node(data);
-            p.set_child(dir, node);
+          if (node2 === null) {
+            node2 = new Node(data);
+            p.set_child(dir, node2);
             ret2 = true;
             this.size++;
-          } else if (is_red(node.left) && is_red(node.right)) {
-            node.red = true;
-            node.left.red = false;
-            node.right.red = false;
+          } else if (is_red(node2.left) && is_red(node2.right)) {
+            node2.red = true;
+            node2.left.red = false;
+            node2.right.red = false;
           }
-          if (is_red(node) && is_red(p)) {
+          if (is_red(node2) && is_red(p)) {
             var dir2 = ggp.right === gp;
-            if (node === p.get_child(last3)) {
+            if (node2 === p.get_child(last3)) {
               ggp.set_child(dir2, single_rotate(gp, !last3));
             } else {
               ggp.set_child(dir2, double_rotate(gp, !last3));
             }
           }
-          var cmp = this._comparator(node.data, data);
+          var cmp = this._comparator(node2.data, data);
           if (cmp === 0) {
             break;
           }
@@ -1317,8 +1317,8 @@ var require_rbtree = __commonJS({
             ggp = gp;
           }
           gp = p;
-          p = node;
-          node = node.get_child(dir);
+          p = node2;
+          node2 = node2.get_child(dir);
         }
         this._root = head.right;
       }
@@ -1330,34 +1330,34 @@ var require_rbtree = __commonJS({
         return false;
       }
       var head = new Node(void 0);
-      var node = head;
-      node.right = this._root;
+      var node2 = head;
+      node2.right = this._root;
       var p = null;
       var gp = null;
       var found = null;
       var dir = 1;
-      while (node.get_child(dir) !== null) {
+      while (node2.get_child(dir) !== null) {
         var last3 = dir;
         gp = p;
-        p = node;
-        node = node.get_child(dir);
-        var cmp = this._comparator(data, node.data);
+        p = node2;
+        node2 = node2.get_child(dir);
+        var cmp = this._comparator(data, node2.data);
         dir = cmp > 0;
         if (cmp === 0) {
-          found = node;
+          found = node2;
         }
-        if (!is_red(node) && !is_red(node.get_child(dir))) {
-          if (is_red(node.get_child(!dir))) {
-            var sr = single_rotate(node, dir);
+        if (!is_red(node2) && !is_red(node2.get_child(dir))) {
+          if (is_red(node2.get_child(!dir))) {
+            var sr = single_rotate(node2, dir);
             p.set_child(last3, sr);
             p = sr;
-          } else if (!is_red(node.get_child(!dir))) {
+          } else if (!is_red(node2.get_child(!dir))) {
             var sibling = p.get_child(!last3);
             if (sibling !== null) {
               if (!is_red(sibling.get_child(!last3)) && !is_red(sibling.get_child(last3))) {
                 p.red = false;
                 sibling.red = true;
-                node.red = true;
+                node2.red = true;
               } else {
                 var dir2 = gp.right === p;
                 if (is_red(sibling.get_child(last3))) {
@@ -1367,7 +1367,7 @@ var require_rbtree = __commonJS({
                 }
                 var gpc = gp.get_child(dir2);
                 gpc.red = true;
-                node.red = true;
+                node2.red = true;
                 gpc.left.red = false;
                 gpc.right.red = false;
               }
@@ -1376,8 +1376,8 @@ var require_rbtree = __commonJS({
         }
       }
       if (found !== null) {
-        found.data = node.data;
-        p.set_child(p.right === node, node.get_child(node.left === null));
+        found.data = node2.data;
+        p.set_child(p.right === node2, node2.get_child(node2.left === null));
         this.size--;
       }
       this._root = head.right;
@@ -1386,8 +1386,8 @@ var require_rbtree = __commonJS({
       }
       return found !== null;
     };
-    function is_red(node) {
-      return node !== null && node.red;
+    function is_red(node2) {
+      return node2 !== null && node2.red;
     }
     function single_rotate(root2, dir) {
       var save = root2.get_child(!dir);
@@ -1438,21 +1438,21 @@ var require_bintree = __commonJS({
       }
       var dir = 0;
       var p = null;
-      var node = this._root;
+      var node2 = this._root;
       while (true) {
-        if (node === null) {
-          node = new Node(data);
-          p.set_child(dir, node);
+        if (node2 === null) {
+          node2 = new Node(data);
+          p.set_child(dir, node2);
           ret = true;
           this.size++;
           return true;
         }
-        if (this._comparator(node.data, data) === 0) {
+        if (this._comparator(node2.data, data) === 0) {
           return false;
         }
-        dir = this._comparator(node.data, data) < 0;
-        p = node;
-        node = node.get_child(dir);
+        dir = this._comparator(node2.data, data) < 0;
+        p = node2;
+        node2 = node2.get_child(dir);
       }
     };
     BinTree.prototype.remove = function(data) {
@@ -1460,23 +1460,23 @@ var require_bintree = __commonJS({
         return false;
       }
       var head = new Node(void 0);
-      var node = head;
-      node.right = this._root;
+      var node2 = head;
+      node2.right = this._root;
       var p = null;
       var found = null;
       var dir = 1;
-      while (node.get_child(dir) !== null) {
-        p = node;
-        node = node.get_child(dir);
-        var cmp = this._comparator(data, node.data);
+      while (node2.get_child(dir) !== null) {
+        p = node2;
+        node2 = node2.get_child(dir);
+        var cmp = this._comparator(data, node2.data);
         dir = cmp > 0;
         if (cmp === 0) {
-          found = node;
+          found = node2;
         }
       }
       if (found !== null) {
-        found.data = node.data;
-        p.set_child(p.right === node, node.get_child(node.left === null));
+        found.data = node2.data;
+        p.set_child(p.right === node2, node2.get_child(node2.left === null));
         this._root = head.right;
         this.size--;
         return true;
@@ -4789,9 +4789,19 @@ var require_prom_client = __commonJS({
   }
 });
 
-// node_modules/@danielsimonjr/mathts-core/dist/chunk-VPK5YTKG.js
+// node_modules/@danielsimonjr/mathts-core/dist/chunk-L5MWGOLB.js
 function isComplex(value) {
   return value instanceof Complex;
+}
+function hypotFast(re4, im4) {
+  if (im4 === 0) return Math.abs(re4);
+  if (re4 === 0) return Math.abs(im4);
+  const a = re4 < 0 ? -re4 : re4;
+  const b = im4 < 0 ? -im4 : im4;
+  if (a < 1e150 && b < 1e150 && (a > 1e-150 || b > 1e-150)) {
+    return Math.sqrt(re4 * re4 + im4 * im4);
+  }
+  return Math.hypot(re4, im4);
 }
 function hasPrototypeFlag(x, flag) {
   return !!x && x.constructor.prototype[flag] === true;
@@ -5350,6 +5360,18 @@ function gcd(a, b) {
   }
   return a;
 }
+function reducePair(num2, den) {
+  if (den === 0n) {
+    throw new Error("Fraction denominator cannot be zero");
+  }
+  if (den < 0n) {
+    num2 = -num2;
+    den = -den;
+  }
+  if (num2 === 0n) return [0n, 1n];
+  const g = gcd(num2, den);
+  return [num2 / g, den / g];
+}
 function isBigNumber2(value) {
   return value instanceof BigNumber;
 }
@@ -5466,8 +5488,8 @@ function formatValue(value, options) {
   return String(value);
 }
 var Complex, I, COMPLEX_ZERO, COMPLEX_ONE, COMPLEX_NEG_ONE, isArray, sign, log2, log10, log1p, cbrt, expm1, acosh, asinh, atanh, cosh, sinh, tanh, warnOnce, MathjsError, Fraction, FRACTION_ZERO, FRACTION_ONE, FRACTION_NEG_ONE, FRACTION_HALF, FRACTION_THIRD, FRACTION_QUARTER, defaultConfig, globalConfig2, BigNumber, BIGNUMBER_ZERO, BIGNUMBER_ONE, BIGNUMBER_NEG_ONE, BIGNUMBER_TEN, BIGNUMBER_PI, BIGNUMBER_E, BIGNUMBER_LN2, BIGNUMBER_LN10, DEFAULT_CONFIG2, UnitParseError, DimensionMismatchError, name, dependencies, createUnitClass, asBinary, asUnary, subtractScalar2, BigNumberCtor, ComplexCtor, config2, unitDependencies, Unit;
-var init_chunk_VPK5YTKG = __esm({
-  "node_modules/@danielsimonjr/mathts-core/dist/chunk-VPK5YTKG.js"() {
+var init_chunk_L5MWGOLB = __esm({
+  "node_modules/@danielsimonjr/mathts-core/dist/chunk-L5MWGOLB.js"() {
     Complex = class _Complex {
       type = "Complex";
       re;
@@ -5616,7 +5638,7 @@ var init_chunk_VPK5YTKG = __esm({
        * Magnitude (absolute value) |z| = √(re² + im²)
        */
       abs() {
-        return Math.hypot(this.re, this.im);
+        return hypotFast(this.re, this.im);
       }
       /**
        * Phase angle (argument) in radians, range (-π, π]
@@ -5732,13 +5754,28 @@ var init_chunk_VPK5YTKG = __esm({
       // Transcendental Functions
       // ============================================================
       /**
-       * Square root using principal branch
-       * √z = √r · e^(iθ/2) where r = |z|, θ = arg(z)
+       * Square root using the principal branch (Re ≥ 0; Im has the sign of `this.im`).
+       *
+       * Algebraic form, not polar: one hypot + one sqrt instead of hypot + atan2 +
+       * cos + sin. Same branch cut as C99 / the previous polar implementation,
+       * including `sqrt(-x - 0i) = −√x · i`.
        */
       sqrt() {
-        const r = this.abs();
-        const theta = this.arg();
-        return _Complex.fromPolar(Math.sqrt(r), theta / 2);
+        const x = this.re;
+        const y = this.im;
+        if (y === 0) {
+          if (x >= 0) return new _Complex(Math.sqrt(x), y);
+          const im22 = Math.sqrt(-x);
+          return new _Complex(0, Object.is(y, -0) ? -im22 : im22);
+        }
+        const r = hypotFast(x, y);
+        if (x >= 0) {
+          const t2 = Math.sqrt(0.5 * (r + x));
+          return new _Complex(t2, y / (2 * t2));
+        }
+        const t = Math.sqrt(0.5 * (r - x));
+        const im4 = y < 0 ? -t : t;
+        return new _Complex(y / (2 * im4), im4);
       }
       /**
        * n-th root (returns principal root)
@@ -5778,13 +5815,15 @@ var init_chunk_VPK5YTKG = __esm({
        * Logarithm base 10
        */
       log10() {
-        return this.log().divide(new _Complex(Math.LN10, 0));
+        const ln10 = Math.LN10;
+        return new _Complex(Math.log(hypotFast(this.re, this.im)) / ln10, this.arg() / ln10);
       }
       /**
        * Logarithm base 2
        */
       log2() {
-        return this.log().divide(new _Complex(Math.LN2, 0));
+        const ln2 = Math.LN2;
+        return new _Complex(Math.log(hypotFast(this.re, this.im)) / ln2, this.arg() / ln2);
       }
       /**
        * Power: z^w = e^(w·ln(z))
@@ -5825,16 +5864,24 @@ var init_chunk_VPK5YTKG = __esm({
         );
       }
       /**
-       * Tangent: tan(z) = sin(z) / cos(z)
+       * Tangent: tan(x+iy) = (sin 2x + i sinh 2y) / (cos 2x + cosh 2y)
+       *
+       * Closed form — no intermediate `sin`/`cos` Complex allocations.
        */
       tan() {
-        return this.sin().divide(this.cos());
+        const x2 = this.re * 2;
+        const y2 = this.im * 2;
+        const d = Math.cos(x2) + Math.cosh(y2);
+        return new _Complex(Math.sin(x2) / d, Math.sinh(y2) / d);
       }
       /**
-       * Cotangent: cot(z) = cos(z) / sin(z)
+       * Cotangent: cot(x+iy) = (sin 2x − i sinh 2y) / (cosh 2y − cos 2x)
        */
       cot() {
-        return this.cos().divide(this.sin());
+        const x2 = this.re * 2;
+        const y2 = this.im * 2;
+        const d = Math.cosh(y2) - Math.cos(x2);
+        return new _Complex(Math.sin(x2) / d, -Math.sinh(y2) / d);
       }
       /**
        * Secant: sec(z) = 1 / cos(z)
@@ -5870,16 +5917,22 @@ var init_chunk_VPK5YTKG = __esm({
         );
       }
       /**
-       * Hyperbolic tangent: tanh(z) = sinh(z) / cosh(z)
+       * Hyperbolic tangent: tanh(x+iy) = (sinh 2x + i sin 2y) / (cosh 2x + cos 2y)
        */
       tanh() {
-        return this.sinh().divide(this.cosh());
+        const x2 = this.re * 2;
+        const y2 = this.im * 2;
+        const d = Math.cosh(x2) + Math.cos(y2);
+        return new _Complex(Math.sinh(x2) / d, Math.sin(y2) / d);
       }
       /**
-       * Hyperbolic cotangent: coth(z) = cosh(z) / sinh(z)
+       * Hyperbolic cotangent: coth(x+iy) = (sinh 2x − i sin 2y) / (cosh 2x − cos 2y)
        */
       coth() {
-        return this.cosh().divide(this.sinh());
+        const x2 = this.re * 2;
+        const y2 = this.im * 2;
+        const d = Math.cosh(x2) - Math.cos(y2);
+        return new _Complex(Math.sinh(x2) / d, -Math.sin(y2) / d);
       }
       /**
        * Hyperbolic secant: sech(z) = 1 / cosh(z)
@@ -6122,6 +6175,32 @@ var init_chunk_VPK5YTKG = __esm({
       numerator;
       denominator;
       constructor(numerator, denominator = 1n) {
+        if (typeof numerator === "bigint" && typeof denominator === "bigint") {
+          const [num22, den2] = reducePair(numerator, denominator);
+          this.numerator = num22;
+          this.denominator = den2;
+          return;
+        }
+        if (typeof numerator === "number" && Number.isInteger(numerator)) {
+          if (typeof denominator === "bigint") {
+            const [num22, den2] = reducePair(BigInt(numerator), denominator);
+            this.numerator = num22;
+            this.denominator = den2;
+            return;
+          }
+          if (typeof denominator === "number" && Number.isInteger(denominator)) {
+            const [num22, den2] = reducePair(BigInt(numerator), BigInt(denominator));
+            this.numerator = num22;
+            this.denominator = den2;
+            return;
+          }
+        }
+        if (typeof numerator === "bigint" && typeof denominator === "number" && Number.isInteger(denominator)) {
+          const [num22, den2] = reducePair(numerator, BigInt(denominator));
+          this.numerator = num22;
+          this.denominator = den2;
+          return;
+        }
         const toRatio = (x) => {
           if (isFraction2(x)) {
             return [x.numerator, x.denominator];
@@ -6318,6 +6397,9 @@ var init_chunk_VPK5YTKG = __esm({
        */
       add(other) {
         if (other instanceof _Fraction) {
+          if (this.denominator === other.denominator) {
+            return new _Fraction(this.numerator + other.numerator, this.denominator);
+          }
           const num2 = this.numerator * other.denominator + other.numerator * this.denominator;
           const den = this.denominator * other.denominator;
           return new _Fraction(num2, den);
@@ -6329,6 +6411,9 @@ var init_chunk_VPK5YTKG = __esm({
        */
       subtract(other) {
         if (other instanceof _Fraction) {
+          if (this.denominator === other.denominator) {
+            return new _Fraction(this.numerator - other.numerator, this.denominator);
+          }
           const num2 = this.numerator * other.denominator - other.numerator * this.denominator;
           const den = this.denominator * other.denominator;
           return new _Fraction(num2, den);
@@ -6662,6 +6747,9 @@ var init_chunk_VPK5YTKG = __esm({
         if (n === 0) {
           return new _BigNumber(0, 0n, 0);
         }
+        if (Number.isSafeInteger(n)) {
+          return _BigNumber.fromBigInt(BigInt(n));
+        }
         return _BigNumber.parse(n.toString());
       }
       /**
@@ -6726,19 +6814,13 @@ var init_chunk_VPK5YTKG = __esm({
           return new _BigNumber(0, 0n, 0);
         }
         const sign22 = n < 0n ? -1 : 1;
-        let str = (n < 0n ? -n : n).toString();
-        let trailingZeros = 0;
-        for (let i2 = str.length - 1; i2 >= 0; i2--) {
-          if (str[i2] === "0") {
-            trailingZeros++;
-          } else {
-            break;
-          }
+        let coef = n < 0n ? -n : n;
+        let exp5 = 0;
+        while (coef % 10n === 0n) {
+          coef /= 10n;
+          exp5++;
         }
-        if (trailingZeros > 0) {
-          str = str.slice(0, -trailingZeros);
-        }
-        return new _BigNumber(sign22, BigInt(str), trailingZeros);
+        return new _BigNumber(sign22, coef, exp5);
       }
       /**
        * Create a BigNumber from a JSON object
@@ -10709,7 +10791,7 @@ var init_chunk_VPK5YTKG = __esm({
           } else {
             prefixes = PREFIXES.NONE;
           }
-          let newUnit = {};
+          let newUnit;
           if (!defUnit) {
             baseName = baseName || name254 + "_STUFF";
             if (BASE_DIMENSIONS.indexOf(baseName) >= 0) {
@@ -10931,7 +11013,7 @@ function format2(value, options) {
       let str;
       const rounded = v.toSignificantDigits(precision);
       const exp5 = rounded.e;
-      let condition = false;
+      let condition;
       if (isBigNumber(lowerExp) && isBigNumber(upperExp)) {
         const lowerExpBn = lowerExp;
         const upperExpBn = upperExp;
@@ -11212,7 +11294,9 @@ function reshape(array2, sizes) {
     return _reshape(flatArray, processedSizes);
   } catch (e2) {
     if (e2 instanceof DimensionError) {
-      throw new DimensionError(newLength, currentLength, "!=");
+      const dimErr = new DimensionError(newLength, currentLength, "!=");
+      dimErr.cause = e2;
+      throw dimErr;
     }
     throw e2;
   }
@@ -11894,7 +11978,7 @@ async function defaultWasmLocation(metaUrl, wasmFile, opts) {
 var DimensionError, IndexError, controlCharacters, safeNativeProperties, safeNativeMethods, ObjectWrappingMap, PartitionedMap, ALGO;
 var init_internal = __esm({
   "node_modules/@danielsimonjr/mathts-core/dist/internal.js"() {
-    init_chunk_VPK5YTKG();
+    init_chunk_L5MWGOLB();
     DimensionError = class _DimensionError extends RangeError {
       actual;
       expected;
@@ -15945,86 +16029,11 @@ function declaredDialect(schema, remedy) {
   throw new Error(`JSON Schema declares an unsupported dialect ("$schema": "${schema.$schema.slice(0, 200)}"). The default validator supports JSON Schema 2020-12, 2019-09, draft-07, and draft-06; ${remedy}`);
 }
 
-// node_modules/zod/v4/core/core.js
-var _a;
-var NEVER = /* @__PURE__ */ Object.freeze({
-  status: "aborted"
-});
-// @__NO_SIDE_EFFECTS__
-function $constructor(name254, initializer3, params) {
-  function init(inst, def) {
-    if (!inst._zod) {
-      Object.defineProperty(inst, "_zod", {
-        value: {
-          def,
-          constr: _,
-          traits: /* @__PURE__ */ new Set()
-        },
-        enumerable: false
-      });
-    }
-    if (inst._zod.traits.has(name254)) {
-      return;
-    }
-    inst._zod.traits.add(name254);
-    initializer3(inst, def);
-    const proto = _.prototype;
-    const keys = Object.keys(proto);
-    for (let i2 = 0; i2 < keys.length; i2++) {
-      const k = keys[i2];
-      if (!(k in inst)) {
-        inst[k] = proto[k].bind(inst);
-      }
-    }
-  }
-  const Parent = params?.Parent ?? Object;
-  class Definition extends Parent {
-  }
-  Object.defineProperty(Definition, "name", { value: name254 });
-  function _(def) {
-    var _a3;
-    const inst = params?.Parent ? new Definition() : this;
-    init(inst, def);
-    (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
-    for (const fn of inst._zod.deferred) {
-      fn();
-    }
-    return inst;
-  }
-  Object.defineProperty(_, "init", { value: init });
-  Object.defineProperty(_, Symbol.hasInstance, {
-    value: (inst) => {
-      if (params?.Parent && inst instanceof params.Parent)
-        return true;
-      return inst?._zod?.traits?.has(name254);
-    }
-  });
-  Object.defineProperty(_, "name", { value: name254 });
-  return _;
-}
-var $ZodAsyncError = class extends Error {
-  constructor() {
-    super(`Encountered Promise during synchronous parse. Use .parseAsync() instead.`);
-  }
-};
-var $ZodEncodeError = class extends Error {
-  constructor(name254) {
-    super(`Encountered unidirectional transform during encode: ${name254}`);
-    this.name = "ZodEncodeError";
-  }
-};
-(_a = globalThis).__zod_globalConfig ?? (_a.__zod_globalConfig = {});
-var globalConfig = globalThis.__zod_globalConfig;
-function config(newConfig) {
-  if (newConfig)
-    Object.assign(globalConfig, newConfig);
-  return globalConfig;
-}
-
 // node_modules/zod/v4/core/util.js
 var util_exports = {};
 __export(util_exports, {
   BIGINT_FORMAT_RANGES: () => BIGINT_FORMAT_RANGES,
+  CONSTANT_CATCH: () => CONSTANT_CATCH,
   Class: () => Class,
   NUMBER_FORMAT_RANGES: () => NUMBER_FORMAT_RANGES,
   aborted: () => aborted,
@@ -16035,6 +16044,7 @@ __export(util_exports, {
   assertNever: () => assertNever,
   assertNotEqual: () => assertNotEqual,
   assignProp: () => assignProp,
+  attachSchema: () => attachSchema,
   base64ToUint8Array: () => base64ToUint8Array,
   base64urlToUint8Array: () => base64urlToUint8Array,
   cached: () => cached,
@@ -16043,8 +16053,11 @@ __export(util_exports, {
   cleanRegex: () => cleanRegex,
   clone: () => clone,
   cloneDef: () => cloneDef,
+  codePointLength: () => codePointLength,
+  constantCatch: () => constantCatch,
   createTransparentProxy: () => createTransparentProxy,
   defineLazy: () => defineLazy,
+  defineLazyInternal: () => defineLazyInternal,
   esc: () => esc,
   escapeRegex: () => escapeRegex,
   explicitlyAborted: () => explicitlyAborted,
@@ -16057,11 +16070,14 @@ __export(util_exports, {
   getParsedType: () => getParsedType,
   getSizableOrigin: () => getSizableOrigin,
   hexToUint8Array: () => hexToUint8Array,
+  hide: () => hide,
+  installLazyProp: () => installLazyProp,
   isObject: () => isObject,
   isPlainObject: () => isPlainObject,
   issue: () => issue,
   joinValues: () => joinValues,
   jsonStringifyReplacer: () => jsonStringifyReplacer,
+  members: () => members,
   merge: () => merge,
   mergeDefs: () => mergeDefs,
   normalizeParams: () => normalizeParams,
@@ -16070,6 +16086,7 @@ __export(util_exports, {
   objectClone: () => objectClone,
   omit: () => omit,
   optionalKeys: () => optionalKeys,
+  own: () => own,
   parsedType: () => parsedType,
   partial: () => partial,
   pick: () => pick,
@@ -16083,6 +16100,7 @@ __export(util_exports, {
   shallowClone: () => shallowClone,
   slugify: () => slugify,
   stringifyPrimitive: () => stringifyPrimitive,
+  toZod: () => toZod,
   uint8ArrayToBase64: () => uint8ArrayToBase64,
   uint8ArrayToBase64url: () => uint8ArrayToBase64url,
   uint8ArrayToHex: () => uint8ArrayToHex,
@@ -16093,6 +16111,9 @@ function assertEqual(val) {
 }
 function assertNotEqual(val) {
   return val;
+}
+function toZod() {
+  return (schema) => schema;
 }
 function assertIs(_arg) {
 }
@@ -16138,7 +16159,7 @@ function cleanRegex(source) {
 function floatSafeRemainder(val, step) {
   const ratio = val / step;
   const roundedRatio = Math.round(ratio);
-  const tolerance = Number.EPSILON * Math.max(Math.abs(ratio), 1);
+  const tolerance = 4 * Number.EPSILON * Math.max(Math.abs(ratio), 1);
   if (Math.abs(ratio - roundedRatio) < tolerance)
     return 0;
   return ratio - roundedRatio;
@@ -16394,16 +16415,16 @@ function stringifyPrimitive(value) {
 }
 function optionalKeys(shape) {
   return Object.keys(shape).filter((k) => {
-    return shape[k]._zod.optin === "optional" && shape[k]._zod.optout === "optional";
+    return shape[k]._zod.optin !== void 0 && shape[k]._zod.optout === "optional";
   });
 }
-var NUMBER_FORMAT_RANGES = {
+var NUMBER_FORMAT_RANGES = /* @__PURE__ */ (() => ({
   safeint: [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
   int32: [-2147483648, 2147483647],
   uint32: [0, 4294967295],
   float32: [-34028234663852886e22, 34028234663852886e22],
   float64: [-Number.MAX_VALUE, Number.MAX_VALUE]
-};
+}))();
 var BIGINT_FORMAT_RANGES = {
   int64: [/* @__PURE__ */ BigInt("-9223372036854775808"), /* @__PURE__ */ BigInt("9223372036854775807")],
   uint64: [/* @__PURE__ */ BigInt(0), /* @__PURE__ */ BigInt("18446744073709551615")]
@@ -16418,13 +16439,13 @@ function pick(schema, mask) {
   const def = mergeDefs(schema._zod.def, {
     get shape() {
       const newShape = {};
-      for (const key2 in mask) {
-        if (!(key2 in currDef.shape)) {
-          throw new Error(`Unrecognized key: "${key2}"`);
+      for (const key2 of Reflect.ownKeys(mask)) {
+        if (!Object.prototype.hasOwnProperty.call(currDef.shape, key2)) {
+          throw new Error(`Unrecognized key: "${String(key2)}"`);
         }
         if (!mask[key2])
           continue;
-        newShape[key2] = currDef.shape[key2];
+        assignProp(newShape, key2, currDef.shape[key2]);
       }
       assignProp(this, "shape", newShape);
       return newShape;
@@ -16443,9 +16464,9 @@ function omit(schema, mask) {
   const def = mergeDefs(schema._zod.def, {
     get shape() {
       const newShape = { ...schema._zod.def.shape };
-      for (const key2 in mask) {
-        if (!(key2 in currDef.shape)) {
-          throw new Error(`Unrecognized key: "${key2}"`);
+      for (const key2 of Reflect.ownKeys(mask)) {
+        if (!Object.prototype.hasOwnProperty.call(currDef.shape, key2)) {
+          throw new Error(`Unrecognized key: "${String(key2)}"`);
         }
         if (!mask[key2])
           continue;
@@ -16466,7 +16487,7 @@ function extend(schema, shape) {
   const hasChecks = checks && checks.length > 0;
   if (hasChecks) {
     const existingShape = schema._zod.def.shape;
-    for (const key2 in shape) {
+    for (const key2 of Reflect.ownKeys(shape)) {
       if (Object.getOwnPropertyDescriptor(existingShape, key2) !== void 0) {
         throw new Error("Cannot overwrite keys on object schemas containing refinements. Use `.safeExtend()` instead.");
       }
@@ -16495,6 +16516,9 @@ function safeExtend(schema, shape) {
   return clone(schema, def);
 }
 function merge(a, b) {
+  if (!b?._zod?.def) {
+    throw new Error("Invalid input to merge: expected an object schema. To merge a plain shape, use `.extend()`.");
+  }
   if (a._zod.def.checks?.length) {
     throw new Error(".merge() cannot be used on object schemas containing refinements. Use .safeExtend() instead.");
   }
@@ -16511,21 +16535,21 @@ function merge(a, b) {
   });
   return clone(a, def);
 }
-function partial(Class2, schema, mask) {
+function partial(Class2, schema, mask, name254 = "partial") {
   const currDef = schema._zod.def;
   const checks = currDef.checks;
   const hasChecks = checks && checks.length > 0;
   if (hasChecks) {
-    throw new Error(".partial() cannot be used on object schemas containing refinements");
+    throw new Error(`.${name254}() cannot be used on object schemas containing refinements`);
   }
   const def = mergeDefs(schema._zod.def, {
     get shape() {
       const oldShape = schema._zod.def.shape;
       const shape = { ...oldShape };
       if (mask) {
-        for (const key2 in mask) {
-          if (!(key2 in oldShape)) {
-            throw new Error(`Unrecognized key: "${key2}"`);
+        for (const key2 of Reflect.ownKeys(mask)) {
+          if (!Object.prototype.hasOwnProperty.call(oldShape, key2)) {
+            throw new Error(`Unrecognized key: "${String(key2)}"`);
           }
           if (!mask[key2])
             continue;
@@ -16535,7 +16559,7 @@ function partial(Class2, schema, mask) {
           }) : oldShape[key2];
         }
       } else {
-        for (const key2 in oldShape) {
+        for (const key2 of Reflect.ownKeys(oldShape)) {
           shape[key2] = Class2 ? new Class2({
             type: "optional",
             innerType: oldShape[key2]
@@ -16555,9 +16579,9 @@ function required(Class2, schema, mask) {
       const oldShape = schema._zod.def.shape;
       const shape = { ...oldShape };
       if (mask) {
-        for (const key2 in mask) {
-          if (!(key2 in shape)) {
-            throw new Error(`Unrecognized key: "${key2}"`);
+        for (const key2 of Reflect.ownKeys(mask)) {
+          if (!Object.prototype.hasOwnProperty.call(shape, key2)) {
+            throw new Error(`Unrecognized key: "${String(key2)}"`);
           }
           if (!mask[key2])
             continue;
@@ -16567,7 +16591,7 @@ function required(Class2, schema, mask) {
           });
         }
       } else {
-        for (const key2 in oldShape) {
+        for (const key2 of Reflect.ownKeys(oldShape)) {
           shape[key2] = new Class2({
             type: "nonoptional",
             innerType: oldShape[key2]
@@ -16611,9 +16635,24 @@ function prefixIssues(path, issues) {
 function unwrapMessage(message) {
   return typeof message === "string" ? message : message?.message;
 }
+function attachSchema(issues, start, inst) {
+  var _a3;
+  for (let i2 = start; i2 < issues.length; i2++) {
+    (_a3 = issues[i2]).schema ?? (_a3.schema = inst);
+  }
+}
 function finalizeIssue(iss, ctx, config6) {
-  const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config6.customError?.(iss)) ?? unwrapMessage(config6.localeError?.(iss)) ?? "Invalid input";
-  const { inst: _inst, continue: _continue, input: _input, ...rest } = iss;
+  var _a3;
+  const traits = iss.inst?._zod?.traits;
+  if (traits?.has("$ZodType")) {
+    if (traits.has("$ZodCheck"))
+      (_a3 = iss).schema ?? (_a3.schema = iss.inst);
+    else
+      iss.schema = iss.inst;
+  }
+  const schemaError = iss.schema !== iss.inst ? iss.schema?._zod.def?.error : void 0;
+  const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(schemaError?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config6.customError?.(iss)) ?? unwrapMessage(config6.localeError?.(iss)) ?? "Invalid input";
+  const { inst: _inst, schema: _schema, continue: _continue, input: _input, ...rest } = iss;
   rest.path ?? (rest.path = []);
   rest.message = message;
   if (ctx?.reportInput) {
@@ -16629,6 +16668,20 @@ function getSizableOrigin(input) {
   if (input instanceof File)
     return "file";
   return "unknown";
+}
+var highSurrogate = /[\uD800-\uDBFF]/;
+function codePointLength(str) {
+  const units = str.length;
+  if (!highSurrogate.test(str))
+    return units;
+  let count2 = units;
+  for (let i2 = 0; i2 < units - 1; i2++) {
+    if ((str.charCodeAt(i2) & 64512) === 55296 && (str.charCodeAt(i2 + 1) & 64512) === 56320) {
+      count2--;
+      i2++;
+    }
+  }
+  return count2;
 }
 function getLengthableOrigin(input) {
   if (Array.isArray(input))
@@ -16716,33 +16769,289 @@ var Class = class {
   constructor(..._args) {
   }
 };
+function members(proto, table) {
+  for (const key2 in table) {
+    const desc = Object.getOwnPropertyDescriptor(table, key2);
+    if (desc.get)
+      Object.defineProperty(proto, key2, { ...desc, enumerable: false });
+    else
+      defineBound(proto, key2, desc.value);
+  }
+}
+function own(inst, key2, value, enumerable = true) {
+  Object.defineProperty(inst, key2, { configurable: true, writable: true, enumerable, value });
+  return value;
+}
+function hide(inst, key2, value) {
+  return own(inst, key2, value, false);
+}
+function defineBound(proto, key2, fn) {
+  Object.defineProperty(proto, key2, {
+    configurable: true,
+    get() {
+      return this == null ? fn : own(this, key2, fn.bind(this));
+    },
+    set(value) {
+      own(this, key2, value);
+    }
+  });
+}
+function claim(inst, sentinel) {
+  const proto = Object.getPrototypeOf(inst);
+  return sentinel in proto ? void 0 : proto;
+}
+var installing;
+var broke = false;
+var breaker = {
+  configurable: true,
+  get() {
+    broke = true;
+    return void 0;
+  }
+};
+function defineLazyInternal(inst, key2, compute) {
+  const proto = Object.getPrototypeOf(inst._zod);
+  if (key2 in proto && installing !== inst._zod) {
+    installing = void 0;
+    return;
+  }
+  installing = inst._zod;
+  Object.defineProperty(proto, key2, {
+    configurable: true,
+    get() {
+      Object.defineProperty(this, key2, breaker);
+      const outer2 = broke;
+      broke = false;
+      try {
+        const value = compute(this);
+        if (broke)
+          delete this[key2];
+        else
+          Object.defineProperty(this, key2, { configurable: true, writable: true, value });
+        broke = broke || outer2;
+        return value;
+      } catch (err) {
+        delete this[key2];
+        broke = broke || outer2;
+        throw err;
+      }
+    },
+    set(value) {
+      Object.defineProperty(this, key2, { configurable: true, writable: true, value });
+    }
+  });
+}
+function installLazyProp(inst, key2, make, enumerable) {
+  const proto = claim(inst, key2);
+  if (!proto)
+    return;
+  Object.defineProperty(proto, key2, {
+    configurable: true,
+    get() {
+      const desc = { configurable: true, writable: true, enumerable, value: void 0 };
+      Object.defineProperty(this, key2, desc);
+      desc.value = make(this);
+      Object.defineProperty(this, key2, desc);
+      return desc.value;
+    },
+    set(value) {
+      Object.defineProperty(this, key2, { configurable: true, writable: true, enumerable, value });
+    }
+  });
+}
+var CONSTANT_CATCH = "~constantCatch";
+function constantCatch(value) {
+  const fn = () => value;
+  fn[CONSTANT_CATCH] = true;
+  return fn;
+}
+
+// node_modules/zod/v4/core/core.js
+var _a;
+var NEVER = /* @__PURE__ */ Object.freeze({
+  status: "aborted"
+});
+var _zodDesc = { value: void 0, enumerable: false };
+var _E = "captureStackTrace" in Error ? Error : null;
+function newError(Definition) {
+  const E = _E;
+  if (E) {
+    const saved = E.stackTraceLimit;
+    if (typeof saved === "number") {
+      try {
+        E.stackTraceLimit = 0;
+      } catch {
+        _E = null;
+        return new Definition();
+      }
+      try {
+        return new Definition();
+      } finally {
+        E.stackTraceLimit = saved;
+      }
+    }
+  }
+  return new Definition();
+}
+// @__NO_SIDE_EFFECTS__
+function $constructor(name254, initializer3, proto, params) {
+  const zodProto = {};
+  function Internals(def) {
+    this.def = def;
+    this.constr = _;
+    this.traits = /* @__PURE__ */ new Set();
+  }
+  Internals.prototype = zodProto;
+  const protoMembers = proto;
+  const initialized2 = protoMembers && /* @__PURE__ */ new WeakSet();
+  function init(inst, def) {
+    if (!inst._zod) {
+      _zodDesc.value = new Internals(def);
+      try {
+        Object.defineProperty(inst, "_zod", _zodDesc);
+      } finally {
+        _zodDesc.value = void 0;
+      }
+    }
+    if (inst._zod.traits.has(name254)) {
+      return;
+    }
+    inst._zod.traits.add(name254);
+    initializer3(inst, def);
+    if (initialized2) {
+      const own2 = Object.getPrototypeOf(inst);
+      const ctorProto = inst._zod.constr.prototype;
+      let up = own2;
+      while (up && up !== ctorProto)
+        up = Object.getPrototypeOf(up);
+      const target = up ?? own2;
+      if (!initialized2.has(target)) {
+        initialized2.add(target);
+        members(target, protoMembers);
+      }
+    }
+    const proto2 = _.prototype;
+    for (const k in proto2) {
+      if (!Object.prototype.hasOwnProperty.call(proto2, k))
+        continue;
+      if (!(k in inst)) {
+        inst[k] = proto2[k].bind(inst);
+      }
+    }
+  }
+  const Parent = params?.Parent ?? Object;
+  class Definition extends Parent {
+  }
+  Object.defineProperty(Definition, "name", { value: name254 });
+  function _(def) {
+    const inst = params?.Parent ? newError(Definition) : this;
+    init(inst, def);
+    const deferred = inst._zod.deferred;
+    if (deferred) {
+      for (const fn of deferred) {
+        fn();
+      }
+      inst._zod.deferred = void 0;
+    }
+    const pp = globalThis.__zod_globalConfig?.postProcessor;
+    if (pp)
+      pp(inst);
+    return inst;
+  }
+  Object.defineProperty(_, "init", { value: init });
+  Object.defineProperty(_, Symbol.hasInstance, {
+    value: (inst) => {
+      if (params?.Parent && inst instanceof params.Parent)
+        return true;
+      return inst?._zod?.traits?.has(name254);
+    }
+  });
+  Object.defineProperty(_, "name", { value: name254 });
+  return _;
+}
+var $ZodAsyncError = class extends Error {
+  constructor() {
+    super(`Encountered Promise during synchronous parse. Use .parseAsync() instead.`);
+  }
+};
+var $ZodEncodeError = class extends Error {
+  constructor(name254) {
+    super(`Encountered unidirectional transform during encode: ${name254}`);
+    this.name = "ZodEncodeError";
+  }
+};
+(_a = globalThis).__zod_globalConfig ?? (_a.__zod_globalConfig = {});
+var globalConfig = globalThis.__zod_globalConfig;
+function config(newConfig) {
+  if (newConfig)
+    Object.assign(globalConfig, newConfig);
+  return globalConfig;
+}
 
 // node_modules/zod/v4/core/errors.js
+function _getMessage() {
+  const internals = this._zod;
+  internals.message ?? (internals.message = JSON.stringify(internals.def, jsonStringifyReplacer, 2));
+  return internals.message;
+}
+function _setMessage(value) {
+  this._zod.message = value;
+}
+var _messageDesc = {
+  get: _getMessage,
+  set: _setMessage,
+  enumerable: true,
+  configurable: true
+};
+var _zodDesc2 = { value: void 0, enumerable: false };
+var _issuesDesc = { value: void 0, enumerable: false };
+var _installedToString = /* @__PURE__ */ new WeakSet([Object.prototype, Error.prototype]);
 var initializer = (inst, def) => {
   inst.name = "$ZodError";
-  Object.defineProperty(inst, "_zod", {
-    value: inst._zod,
-    enumerable: false
-  });
-  Object.defineProperty(inst, "issues", {
-    value: def,
-    enumerable: false
-  });
-  inst.message = JSON.stringify(def, jsonStringifyReplacer, 2);
-  Object.defineProperty(inst, "toString", {
-    value: () => inst.message,
-    enumerable: false
-  });
+  _zodDesc2.value = inst._zod;
+  Object.defineProperty(inst, "_zod", _zodDesc2);
+  _issuesDesc.value = def;
+  Object.defineProperty(inst, "issues", _issuesDesc);
+  _zodDesc2.value = void 0;
+  _issuesDesc.value = void 0;
+  Object.defineProperty(inst, "message", _messageDesc);
+  const proto = Object.getPrototypeOf(inst);
+  if (!_installedToString.has(proto)) {
+    _installedToString.add(proto);
+    Object.defineProperty(proto, "toString", {
+      configurable: true,
+      enumerable: false,
+      get() {
+        const value = () => this.message;
+        Object.defineProperty(this, "toString", { value, configurable: true, writable: true });
+        return value;
+      },
+      set(value) {
+        Object.defineProperty(this, "toString", { value, configurable: true, writable: true });
+      }
+    });
+  }
 };
 var $ZodError = $constructor("$ZodError", initializer);
-var $ZodRealError = $constructor("$ZodError", initializer, { Parent: Error });
+var $ZodRealError = $constructor("$ZodError", initializer, void 0, {
+  Parent: Error
+});
+function node(obj, key2, make) {
+  if (!Object.prototype.hasOwnProperty.call(obj, key2)) {
+    if (key2 === "__proto__") {
+      Object.defineProperty(obj, key2, { value: make(), writable: true, enumerable: true, configurable: true });
+    } else {
+      obj[key2] = make();
+    }
+  }
+  return obj[key2];
+}
 function flattenError(error2, mapper = (issue2) => issue2.message) {
   const fieldErrors = {};
   const formErrors = [];
   for (const sub4 of error2.issues) {
     if (sub4.path.length > 0) {
-      fieldErrors[sub4.path[0]] = fieldErrors[sub4.path[0]] || [];
-      fieldErrors[sub4.path[0]].push(mapper(sub4));
+      node(fieldErrors, sub4.path[0], () => []).push(mapper(sub4));
     } else {
       formErrors.push(mapper(sub4));
     }
@@ -16769,13 +17078,25 @@ function formatError(error2, mapper = (issue2) => issue2.message) {
           while (i2 < fullpath.length) {
             const el = fullpath[i2];
             const terminal = i2 === fullpath.length - 1;
-            if (!terminal) {
-              curr[el] = curr[el] || { _errors: [] };
-            } else {
-              curr[el] = curr[el] || { _errors: [] };
-              curr[el]._errors.push(mapper(issue2));
+            if (el === "_errors") {
+              if (terminal)
+                curr._errors.push(mapper(issue2));
+              i2++;
+              continue;
             }
-            curr = curr[el];
+            if (!Object.prototype.hasOwnProperty.call(curr, el)) {
+              Object.defineProperty(curr, el, {
+                value: { _errors: [] },
+                enumerable: true,
+                writable: true,
+                configurable: true
+              });
+            }
+            const node2 = curr[el];
+            if (terminal) {
+              node2._errors.push(mapper(issue2));
+            }
+            curr = node2;
             i2++;
           }
         }
@@ -16787,30 +17108,39 @@ function formatError(error2, mapper = (issue2) => issue2.message) {
 }
 
 // node_modules/zod/v4/core/parse.js
-var _parse = (_Err) => (schema, value, _ctx, _params) => {
-  const ctx = _ctx ? { ..._ctx, async: false } : { async: false };
-  const result = schema._zod.run({ value, issues: [] }, ctx);
-  if (result instanceof Promise) {
-    throw new $ZodAsyncError();
-  }
-  if (result.issues.length) {
-    const e2 = new (_params?.Err ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
-    captureStackTrace(e2, _params?.callee);
-    throw e2;
-  }
-  return result.value;
+function finalizeParams(callee, params) {
+  return { callee: params?.callee ?? callee, Err: params?.Err };
+}
+var _parse = (_Err) => {
+  const fn = (schema, value, _ctx, _params) => {
+    const ctx = _ctx ? { ..._ctx, async: false } : { async: false };
+    const result = schema._zod.run({ value, issues: [] }, ctx);
+    if (result instanceof Promise) {
+      throw new $ZodAsyncError();
+    }
+    if (result.issues.length) {
+      const e2 = new (_params?.Err ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
+      captureStackTrace(e2, _params?.callee ?? fn);
+      throw e2;
+    }
+    return result.value;
+  };
+  return fn;
 };
-var _parseAsync = (_Err) => async (schema, value, _ctx, params) => {
-  const ctx = _ctx ? { ..._ctx, async: true } : { async: true };
-  let result = schema._zod.run({ value, issues: [] }, ctx);
-  if (result instanceof Promise)
-    result = await result;
-  if (result.issues.length) {
-    const e2 = new (params?.Err ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
-    captureStackTrace(e2, params?.callee);
-    throw e2;
-  }
-  return result.value;
+var _parseAsync = (_Err) => {
+  const fn = async (schema, value, _ctx, params) => {
+    const ctx = _ctx ? { ..._ctx, async: true } : { async: true };
+    let result = schema._zod.run({ value, issues: [] }, ctx);
+    if (result instanceof Promise)
+      result = await result;
+    if (result.issues.length) {
+      const e2 = new (params?.Err ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
+      captureStackTrace(e2, params?.callee ?? fn);
+      throw e2;
+    }
+    return result.value;
+  };
+  return fn;
 };
 var _safeParse = (_Err) => (schema, value, _ctx) => {
   const ctx = _ctx ? { ..._ctx, async: false } : { async: false };
@@ -16835,19 +17165,35 @@ var _safeParseAsync = (_Err) => async (schema, value, _ctx) => {
   } : { success: true, data: result.value };
 };
 var safeParseAsync = /* @__PURE__ */ _safeParseAsync($ZodRealError);
-var _encode = (_Err) => (schema, value, _ctx) => {
-  const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
-  return _parse(_Err)(schema, value, ctx);
+var _encode = (_Err) => {
+  const parse4 = _parse(_Err);
+  const fn = (schema, value, _ctx, _params) => {
+    const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
+    return parse4(schema, value, ctx, finalizeParams(fn, _params));
+  };
+  return fn;
 };
-var _decode = (_Err) => (schema, value, _ctx) => {
-  return _parse(_Err)(schema, value, _ctx);
+var _decode = (_Err) => {
+  const parse4 = _parse(_Err);
+  const fn = (schema, value, _ctx, _params) => {
+    return parse4(schema, value, _ctx, finalizeParams(fn, _params));
+  };
+  return fn;
 };
-var _encodeAsync = (_Err) => async (schema, value, _ctx) => {
-  const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
-  return _parseAsync(_Err)(schema, value, ctx);
+var _encodeAsync = (_Err) => {
+  const parseAsync3 = _parseAsync(_Err);
+  const fn = async (schema, value, _ctx, _params) => {
+    const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
+    return await parseAsync3(schema, value, ctx, finalizeParams(fn, _params));
+  };
+  return fn;
 };
-var _decodeAsync = (_Err) => async (schema, value, _ctx) => {
-  return _parseAsync(_Err)(schema, value, _ctx);
+var _decodeAsync = (_Err) => {
+  const parseAsync3 = _parseAsync(_Err);
+  const fn = async (schema, value, _ctx, _params) => {
+    return await parseAsync3(schema, value, _ctx, finalizeParams(fn, _params));
+  };
+  return fn;
 };
 var _safeEncode = (_Err) => (schema, value, _ctx) => {
   const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
@@ -16867,10 +17213,13 @@ var _safeDecodeAsync = (_Err) => async (schema, value, _ctx) => {
 // node_modules/zod/v4/core/regexes.js
 var cuid = /^[cC][0-9a-z]{6,}$/;
 var cuid2 = /^[0-9a-z]+$/;
-var ulid = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/;
+var ulid = /^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$/;
 var xid = /^[0-9a-vA-V]{20}$/;
 var ksuid = /^[A-Za-z0-9]{27}$/;
 var nanoid = /^[a-zA-Z0-9_-]{21}$/;
+function nanoidOfLength(length) {
+  return new RegExp(`^[a-zA-Z0-9_-]{${length}}$`);
+}
 var duration = /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/;
 var guid = /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
 var uuid = (version2) => {
@@ -16879,36 +17228,37 @@ var uuid = (version2) => {
   return new RegExp(`^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-${version2}[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$`);
 };
 var email = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/;
-var _emoji = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
+var _emoji = `^[\\p{Extended_Pictographic}\\p{Emoji_Component}]+$`;
 function emoji() {
   return new RegExp(_emoji, "u");
 }
 var ipv4 = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
 var ipv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
 var cidrv4 = /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/;
-var cidrv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
+var cidrv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
 var base64 = /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/;
 var base64url = /^[A-Za-z0-9_-]*$/;
 var httpProtocol = /^https?$/;
 var e164 = /^\+[1-9]\d{6,14}$/;
 var dateSource = `(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))`;
-var date = /* @__PURE__ */ new RegExp(`^${dateSource}$`);
+function anchor(source) {
+  return new RegExp(`^${source}$`);
+}
+var date = /* @__PURE__ */ anchor(dateSource);
 function timeSource(args) {
   const hhmm = `(?:[01]\\d|2[0-3]):[0-5]\\d`;
-  const regex = typeof args.precision === "number" ? args.precision === -1 ? `${hhmm}` : args.precision === 0 ? `${hhmm}:[0-5]\\d` : `${hhmm}:[0-5]\\d\\.\\d{${args.precision}}` : `${hhmm}(?::[0-5]\\d(?:\\.\\d+)?)?`;
+  const regex = typeof args.precision === "number" ? args.precision === -1 ? `${hhmm}` : args.precision === 0 ? `${hhmm}:[0-5]\\d` : `${hhmm}:[0-5]\\d\\.\\d{${args.precision}}` : args.seconds ? `${hhmm}:[0-5]\\d(?:\\.\\d+)?` : `${hhmm}(?::[0-5]\\d(?:\\.\\d+)?)?`;
   return regex;
 }
 function time(args) {
   return new RegExp(`^${timeSource(args)}$`);
 }
 function datetime(args) {
-  const time3 = timeSource({ precision: args.precision });
   const opts = ["Z"];
-  if (args.local)
-    opts.push("");
   if (args.offset)
     opts.push(`([+-](?:[01]\\d|2[0-3]):[0-5]\\d)`);
-  const timeRegex = `${time3}(?:${opts.join("|")})`;
+  const qualified = `${timeSource({ precision: args.precision, seconds: true })}(?:${opts.join("|")})`;
+  const timeRegex = args.local ? `${qualified}|${timeSource({ precision: args.precision })}` : qualified;
   return new RegExp(`^${dateSource}T(?:${timeRegex})$`);
 }
 var string = (params) => {
@@ -16930,6 +17280,10 @@ var $ZodCheck = /* @__PURE__ */ $constructor("$ZodCheck", (inst, def) => {
   inst._zod.def = def;
   (_a3 = inst._zod).onattach ?? (_a3.onattach = []);
 });
+var _whenHasLength = (payload) => {
+  const val = payload.value;
+  return !nullish(val) && val.length !== void 0;
+};
 var numericOriginMap = {
   number: "number",
   bigint: "bigint",
@@ -16953,7 +17307,7 @@ var $ZodCheckLessThan = /* @__PURE__ */ $constructor("$ZodCheckLessThan", (inst,
       return;
     }
     payload.issues.push({
-      origin,
+      origin: numericOriginMap[typeof payload.value] ?? origin,
       code: "too_big",
       maximum: typeof def.value === "object" ? def.value.getTime() : def.value,
       input: payload.value,
@@ -16981,7 +17335,7 @@ var $ZodCheckGreaterThan = /* @__PURE__ */ $constructor("$ZodCheckGreaterThan", 
       return;
     }
     payload.issues.push({
-      origin,
+      origin: numericOriginMap[typeof payload.value] ?? origin,
       code: "too_small",
       minimum: typeof def.value === "object" ? def.value.getTime() : def.value,
       input: payload.value,
@@ -17000,7 +17354,10 @@ var $ZodCheckMultipleOf = /* @__PURE__ */ $constructor("$ZodCheckMultipleOf", (i
   inst._zod.check = (payload) => {
     if (typeof payload.value !== typeof def.value)
       throw new Error("Cannot mix number and bigint in multiple_of check.");
-    const isMultiple = typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder(payload.value, def.value) === 0;
+    const isMultiple = typeof payload.value === "bigint" ? (
+      // `value % 0n` throws, and nothing is a multiple of zero — the number branch already fails this way via NaN
+      def.value !== BigInt(0) && payload.value % def.value === BigInt(0)
+    ) : floatSafeRemainder(payload.value, def.value) === 0;
     if (isMultiple)
       return;
     payload.issues.push({
@@ -17095,10 +17452,7 @@ var $ZodCheckNumberFormat = /* @__PURE__ */ $constructor("$ZodCheckNumberFormat"
 var $ZodCheckMaxLength = /* @__PURE__ */ $constructor("$ZodCheckMaxLength", (inst, def) => {
   var _a3;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
-    const val = payload.value;
-    return !nullish(val) && val.length !== void 0;
-  });
+  (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasLength);
   inst._zod.onattach.push((inst2) => {
     const curr = inst2._zod.bag.maximum ?? Number.POSITIVE_INFINITY;
     if (def.maximum < curr)
@@ -17106,7 +17460,8 @@ var $ZodCheckMaxLength = /* @__PURE__ */ $constructor("$ZodCheckMaxLength", (ins
   });
   inst._zod.check = (payload) => {
     const input = payload.value;
-    const length = input.length;
+    const units = input.length;
+    const length = typeof input === "string" && units > def.maximum ? codePointLength(input) : units;
     if (length <= def.maximum)
       return;
     const origin = getLengthableOrigin(input);
@@ -17124,10 +17479,7 @@ var $ZodCheckMaxLength = /* @__PURE__ */ $constructor("$ZodCheckMaxLength", (ins
 var $ZodCheckMinLength = /* @__PURE__ */ $constructor("$ZodCheckMinLength", (inst, def) => {
   var _a3;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
-    const val = payload.value;
-    return !nullish(val) && val.length !== void 0;
-  });
+  (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasLength);
   inst._zod.onattach.push((inst2) => {
     const curr = inst2._zod.bag.minimum ?? Number.NEGATIVE_INFINITY;
     if (def.minimum > curr)
@@ -17135,7 +17487,8 @@ var $ZodCheckMinLength = /* @__PURE__ */ $constructor("$ZodCheckMinLength", (ins
   });
   inst._zod.check = (payload) => {
     const input = payload.value;
-    const length = input.length;
+    const units = input.length;
+    const length = typeof input === "string" && units >= def.minimum && units < def.minimum * 2 ? codePointLength(input) : units;
     if (length >= def.minimum)
       return;
     const origin = getLengthableOrigin(input);
@@ -17153,10 +17506,7 @@ var $ZodCheckMinLength = /* @__PURE__ */ $constructor("$ZodCheckMinLength", (ins
 var $ZodCheckLengthEquals = /* @__PURE__ */ $constructor("$ZodCheckLengthEquals", (inst, def) => {
   var _a3;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
-    const val = payload.value;
-    return !nullish(val) && val.length !== void 0;
-  });
+  (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasLength);
   inst._zod.onattach.push((inst2) => {
     const bag = inst2._zod.bag;
     bag.minimum = def.length;
@@ -17165,7 +17515,8 @@ var $ZodCheckLengthEquals = /* @__PURE__ */ $constructor("$ZodCheckLengthEquals"
   });
   inst._zod.check = (payload) => {
     const input = payload.value;
-    const length = input.length;
+    const units = input.length;
+    const length = typeof input === "string" && units >= def.length && units <= def.length * 2 ? codePointLength(input) : units;
     if (length === def.length)
       return;
     const origin = getLengthableOrigin(input);
@@ -17239,7 +17590,7 @@ var $ZodCheckUpperCase = /* @__PURE__ */ $constructor("$ZodCheckUpperCase", (ins
 var $ZodCheckIncludes = /* @__PURE__ */ $constructor("$ZodCheckIncludes", (inst, def) => {
   $ZodCheck.init(inst, def);
   const escapedRegex = escapeRegex(def.includes);
-  const pattern = new RegExp(typeof def.position === "number" ? `^.{${def.position}}${escapedRegex}` : escapedRegex);
+  const pattern = new RegExp(typeof def.position === "number" ? `^.{${def.position},}${escapedRegex}` : escapedRegex);
   def.pattern = pattern;
   inst._zod.onattach.push((inst2) => {
     const bag = inst2._zod.bag;
@@ -17315,11 +17666,11 @@ var $ZodCheckOverwrite = /* @__PURE__ */ $constructor("$ZodCheckOverwrite", (ins
 
 // node_modules/zod/v4/core/doc.js
 var Doc = class {
-  constructor(args = []) {
+  constructor(args = [], closed = {}) {
     this.content = [];
     this.indent = 0;
-    if (this)
-      this.args = args;
+    this.args = args;
+    this.closed = closed;
   }
   indented(fn) {
     this.indent += 1;
@@ -17342,18 +17693,19 @@ var Doc = class {
   }
   compile() {
     const F = Function;
-    const args = this?.args;
     const content2 = this?.content ?? [``];
-    const lines = [...content2.map((x) => `  ${x}`)];
-    return new F(...args, lines.join("\n"));
+    const factory4 = new F(...Object.keys(this.closed), `return function (${this.args.join(", ")}) {
+${content2.join("\n")}
+};`);
+    return factory4(...Object.values(this.closed));
   }
 };
 
 // node_modules/zod/v4/core/versions.js
 var version = {
   major: 4,
-  minor: 4,
-  patch: 3
+  minor: 5,
+  patch: 4
 };
 
 // node_modules/zod/v4/core/schemas.js
@@ -17363,10 +17715,8 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
   inst._zod.def = def;
   inst._zod.bag = inst._zod.bag || {};
   inst._zod.version = version;
-  const checks = [...inst._zod.def.checks ?? []];
-  if (inst._zod.traits.has("$ZodCheck")) {
-    checks.unshift(inst);
-  }
+  const defChecks = inst._zod.def.checks;
+  const checks = inst._zod.traits.has("$ZodCheck") ? [inst, ...defChecks ?? []] : defChecks?.length ? [...defChecks] : [];
   for (const ch of checks) {
     for (const fn of ch._zod.onattach) {
       fn(inst);
@@ -17379,6 +17729,8 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
     });
   } else {
     const runChecks = (payload, checks2, ctx) => {
+      if (payload.memo)
+        return payload;
       let isAborted = aborted(payload);
       let asyncResult;
       for (const ch of checks2) {
@@ -17402,6 +17754,7 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
             const nextLen = payload.issues.length;
             if (nextLen === currLen)
               return;
+            attachSchema(payload.issues, currLen, inst);
             if (!isAborted)
               isAborted = aborted(payload, currLen);
           });
@@ -17409,6 +17762,7 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
           const nextLen = payload.issues.length;
           if (nextLen === currLen)
             continue;
+          attachSchema(payload.issues, currLen, inst);
           if (!isAborted)
             isAborted = aborted(payload, currLen);
         }
@@ -17455,19 +17809,29 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
       return runChecks(result, checks, ctx);
     };
   }
-  defineLazy(inst, "~standard", () => ({
+}, {
+  // Wrappers extend this by installing a richer factory over it; reading it eagerly would defeat the laziness.
+  get "~standard"() {
+    return hide(this, "~standard", standardProps(this));
+  },
+  set "~standard"(value) {
+    own(this, "~standard", value);
+  }
+});
+var toStandardResult = (r) => r.success ? { value: r.data } : { issues: r.error?.issues };
+function standardProps(inst) {
+  return {
     validate: (value) => {
       try {
-        const r = safeParse(inst, value);
-        return r.success ? { value: r.data } : { issues: r.error?.issues };
+        return toStandardResult(safeParse(inst, value));
       } catch (_) {
-        return safeParseAsync(inst, value).then((r) => r.success ? { value: r.data } : { issues: r.error?.issues });
+        return safeParseAsync(inst, value).then(toStandardResult);
       }
     },
     vendor: "zod",
     version: 1
-  }));
-});
+  };
+}
 var $ZodString = /* @__PURE__ */ $constructor("$ZodString", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.pattern = [...inst?._zod.bag?.patterns ?? []].pop() ?? string(inst._zod.bag);
@@ -17520,58 +17884,80 @@ var $ZodEmail = /* @__PURE__ */ $constructor("$ZodEmail", (inst, def) => {
   def.pattern ?? (def.pattern = email);
   $ZodStringFormat.init(inst, def);
 });
+var URL_BAD_FORMAT = 1;
+var URL_UNPARSEABLE = 2;
+function parseURLObject(trimmed, def) {
+  if (!def.normalize && def.protocol?.source === httpProtocol.source && !/^https?:\/\//i.test(trimmed)) {
+    return URL_BAD_FORMAT;
+  }
+  try {
+    return new URL(trimmed);
+  } catch {
+    return URL_UNPARSEABLE;
+  }
+}
+var asciiTabOrNewline = /[\t\n\r]/g;
+function stripTabAndNewline(value) {
+  return value.replace(asciiTabOrNewline, "");
+}
+function urlHostnameOk(url2, hostname) {
+  hostname.lastIndex = 0;
+  return hostname.test(url2.hostname);
+}
+function urlProtocolOk(url2, protocol) {
+  protocol.lastIndex = 0;
+  return protocol.test(url2.protocol.endsWith(":") ? url2.protocol.slice(0, -1) : url2.protocol);
+}
 var $ZodURL = /* @__PURE__ */ $constructor("$ZodURL", (inst, def) => {
   $ZodStringFormat.init(inst, def);
   inst._zod.check = (payload) => {
     try {
       const trimmed = payload.value.trim();
-      if (!def.normalize && def.protocol?.source === httpProtocol.source) {
-        if (!/^https?:\/\//i.test(trimmed)) {
-          payload.issues.push({
-            code: "invalid_format",
-            format: "url",
-            note: "Invalid URL format",
-            input: payload.value,
-            inst,
-            continue: !def.abort
-          });
-          return;
-        }
+      const url2 = parseURLObject(trimmed, def);
+      if (url2 === URL_BAD_FORMAT) {
+        payload.issues.push({
+          code: "invalid_format",
+          format: "url",
+          note: "Invalid URL format",
+          input: payload.value,
+          inst,
+          continue: !def.abort
+        });
+        return;
       }
-      const url2 = new URL(trimmed);
-      if (def.hostname) {
-        def.hostname.lastIndex = 0;
-        if (!def.hostname.test(url2.hostname)) {
-          payload.issues.push({
-            code: "invalid_format",
-            format: "url",
-            note: "Invalid hostname",
-            pattern: def.hostname.source,
-            input: payload.value,
-            inst,
-            continue: !def.abort
-          });
-        }
+      if (url2 === URL_UNPARSEABLE) {
+        payload.issues.push({
+          code: "invalid_format",
+          format: "url",
+          input: payload.value,
+          inst,
+          continue: !def.abort
+        });
+        return;
       }
-      if (def.protocol) {
-        def.protocol.lastIndex = 0;
-        if (!def.protocol.test(url2.protocol.endsWith(":") ? url2.protocol.slice(0, -1) : url2.protocol)) {
-          payload.issues.push({
-            code: "invalid_format",
-            format: "url",
-            note: "Invalid protocol",
-            pattern: def.protocol.source,
-            input: payload.value,
-            inst,
-            continue: !def.abort
-          });
-        }
+      if (def.hostname && !urlHostnameOk(url2, def.hostname)) {
+        payload.issues.push({
+          code: "invalid_format",
+          format: "url",
+          note: "Invalid hostname",
+          pattern: def.hostname.source,
+          input: payload.value,
+          inst,
+          continue: !def.abort
+        });
       }
-      if (def.normalize) {
-        payload.value = url2.href;
-      } else {
-        payload.value = trimmed;
+      if (def.protocol && !urlProtocolOk(url2, def.protocol)) {
+        payload.issues.push({
+          code: "invalid_format",
+          format: "url",
+          note: "Invalid protocol",
+          pattern: def.protocol.source,
+          input: payload.value,
+          inst,
+          continue: !def.abort
+        });
       }
+      payload.value = def.normalize ? url2.href : stripTabAndNewline(trimmed);
       return;
     } catch (_) {
       payload.issues.push({
@@ -17589,7 +17975,9 @@ var $ZodEmoji = /* @__PURE__ */ $constructor("$ZodEmoji", (inst, def) => {
   $ZodStringFormat.init(inst, def);
 });
 var $ZodNanoID = /* @__PURE__ */ $constructor("$ZodNanoID", (inst, def) => {
-  def.pattern ?? (def.pattern = nanoid);
+  if (def.length !== void 0 && (!Number.isInteger(def.length) || def.length < 1))
+    throw new Error(`Invalid nanoid length: ${def.length}`);
+  def.pattern ?? (def.pattern = def.length === void 0 ? nanoid : nanoidOfLength(def.length));
   $ZodStringFormat.init(inst, def);
 });
 var $ZodCUID = /* @__PURE__ */ $constructor("$ZodCUID", (inst, def) => {
@@ -17615,6 +18003,12 @@ var $ZodKSUID = /* @__PURE__ */ $constructor("$ZodKSUID", (inst, def) => {
 var $ZodISODateTime = /* @__PURE__ */ $constructor("$ZodISODateTime", (inst, def) => {
   def.pattern ?? (def.pattern = datetime(def));
   $ZodStringFormat.init(inst, def);
+  if (def.local || def.precision === -1) {
+    inst._zod.bag.laxFormat = true;
+    inst._zod.onattach.push((s) => {
+      s._zod.bag.laxFormat = true;
+    });
+  }
 });
 var $ZodISODate = /* @__PURE__ */ $constructor("$ZodISODate", (inst, def) => {
   def.pattern ?? (def.pattern = date);
@@ -17633,14 +18027,23 @@ var $ZodIPv4 = /* @__PURE__ */ $constructor("$ZodIPv4", (inst, def) => {
   $ZodStringFormat.init(inst, def);
   inst._zod.bag.format = `ipv4`;
 });
+var ipv6Alphabet = /^[0-9a-fA-F:.]+$/;
+function isValidIPv6(value) {
+  if (!ipv6Alphabet.test(value))
+    return false;
+  try {
+    new URL(`http://[${value}]`);
+    return true;
+  } catch {
+    return false;
+  }
+}
 var $ZodIPv6 = /* @__PURE__ */ $constructor("$ZodIPv6", (inst, def) => {
   def.pattern ?? (def.pattern = ipv6);
   $ZodStringFormat.init(inst, def);
   inst._zod.bag.format = `ipv6`;
   inst._zod.check = (payload) => {
-    try {
-      new URL(`http://[${payload.value}]`);
-    } catch {
+    if (!isValidIPv6(payload.value)) {
       payload.issues.push({
         code: "invalid_format",
         format: "ipv6",
@@ -17655,24 +18058,25 @@ var $ZodCIDRv4 = /* @__PURE__ */ $constructor("$ZodCIDRv4", (inst, def) => {
   def.pattern ?? (def.pattern = cidrv4);
   $ZodStringFormat.init(inst, def);
 });
+function isValidCIDRv6(value) {
+  const parts = value.split("/");
+  if (parts.length !== 2)
+    return false;
+  const [address, prefix] = parts;
+  if (!prefix)
+    return false;
+  const prefixNum = Number(prefix);
+  if (`${prefixNum}` !== prefix)
+    return false;
+  if (prefixNum < 0 || prefixNum > 128)
+    return false;
+  return isValidIPv6(address);
+}
 var $ZodCIDRv6 = /* @__PURE__ */ $constructor("$ZodCIDRv6", (inst, def) => {
   def.pattern ?? (def.pattern = cidrv6);
   $ZodStringFormat.init(inst, def);
   inst._zod.check = (payload) => {
-    const parts = payload.value.split("/");
-    try {
-      if (parts.length !== 2)
-        throw new Error();
-      const [address, prefix] = parts;
-      if (!prefix)
-        throw new Error();
-      const prefixNum = Number(prefix);
-      if (`${prefixNum}` !== prefix)
-        throw new Error();
-      if (prefixNum < 0 || prefixNum > 128)
-        throw new Error();
-      new URL(`http://[${address}]`);
-    } catch {
+    if (!isValidCIDRv6(payload.value)) {
       payload.issues.push({
         code: "invalid_format",
         format: "cidrv6",
@@ -17787,7 +18191,7 @@ var $ZodNumber = /* @__PURE__ */ $constructor("$ZodNumber", (inst, def) => {
     if (typeof input === "number" && !Number.isNaN(input) && Number.isFinite(input)) {
       return payload;
     }
-    const received = typeof input === "number" ? Number.isNaN(input) ? "NaN" : !Number.isFinite(input) ? "Infinity" : void 0 : void 0;
+    const received = typeof input === "number" ? Number.isNaN(input) ? "NaN" : !Number.isFinite(input) ? String(input) : void 0 : void 0;
     payload.issues.push({
       expected: "number",
       code: "invalid_type",
@@ -17912,6 +18316,8 @@ function handleArrayResult(result, final, index) {
 }
 var $ZodArray = /* @__PURE__ */ $constructor("$ZodArray", (inst, def) => {
   $ZodType.init(inst, def);
+  const memo3 = globalConfig.memoizer;
+  memo3?.attach(inst);
   inst._zod.parse = (payload, ctx) => {
     const input = payload.value;
     if (!Array.isArray(input)) {
@@ -17923,7 +18329,7 @@ var $ZodArray = /* @__PURE__ */ $constructor("$ZodArray", (inst, def) => {
       });
       return payload;
     }
-    payload.value = Array(input.length);
+    payload.value = memo3 ? memo3.alloc(inst, payload, Array(input.length), ctx) : Array(input.length);
     const proms = [];
     for (let i2 = 0; i2 < input.length; i2++) {
       const item = input[i2];
@@ -17943,15 +18349,19 @@ var $ZodArray = /* @__PURE__ */ $constructor("$ZodArray", (inst, def) => {
     return payload;
   };
 });
-function handlePropertyResult(result, final, key2, input, isOptionalIn, isOptionalOut) {
+function handlePropertyResult(result, final, key2, input, optin, optout) {
   const isPresent = key2 in input;
+  const isOptionalOut = optout === "optional";
+  if (!isPresent && isOptionalOut && optin === "optional") {
+    return;
+  }
   if (result.issues.length) {
-    if (isOptionalIn && isOptionalOut && !isPresent) {
+    if (optin !== void 0 && isOptionalOut && !isPresent) {
       return;
     }
     final.issues.push(...prefixIssues(key2, result.issues));
   }
-  if (!isPresent && !isOptionalIn) {
+  if (!isPresent && optin === void 0) {
     if (!result.issues.length) {
       final.issues.push({
         code: "invalid_type",
@@ -17970,17 +18380,23 @@ function handlePropertyResult(result, final, key2, input, isOptionalIn, isOption
     final.value[key2] = result.value;
   }
 }
+var NO_SYMBOL_KEYS = [];
 function normalizeDef(def) {
   const keys = Object.keys(def.shape);
-  for (const k of keys) {
+  const ownSymbols = Object.getOwnPropertySymbols(def.shape);
+  const symbolKeys = ownSymbols.length ? ownSymbols : NO_SYMBOL_KEYS;
+  const allKeys = symbolKeys.length ? [...keys, ...symbolKeys] : keys;
+  for (const k of allKeys) {
     if (!def.shape?.[k]?._zod?.traits?.has("$ZodType")) {
-      throw new Error(`Invalid element at key "${k}": expected a Zod schema`);
+      throw new Error(`Invalid element at key "${String(k)}": expected a Zod schema`);
     }
   }
   const okeys = optionalKeys(def.shape);
   return {
     ...def,
-    keys,
+    allKeys,
+    symbolKeys,
+    // string-only: handleCatchall matches it against `for...in`, which never yields a symbol
     keySet: new Set(keys),
     numKeys: keys.length,
     optionalKeys: new Set(okeys)
@@ -17991,22 +18407,25 @@ function handleCatchall(proms, input, payload, ctx, def, inst) {
   const keySet = def.keySet;
   const _catchall = def.catchall._zod;
   const t = _catchall.def.type;
-  const isOptionalIn = _catchall.optin === "optional";
-  const isOptionalOut = _catchall.optout === "optional";
+  const optin = _catchall.optin;
+  const optout = _catchall.optout;
   for (const key2 in input) {
-    if (key2 === "__proto__")
-      continue;
     if (keySet.has(key2))
       continue;
+    if (key2 === "__proto__") {
+      if (t === "never")
+        unrecognized.push(key2);
+      continue;
+    }
     if (t === "never") {
       unrecognized.push(key2);
       continue;
     }
     const r = _catchall.run({ value: input[key2], issues: [] }, ctx);
     if (r instanceof Promise) {
-      proms.push(r.then((r2) => handlePropertyResult(r2, payload, key2, input, isOptionalIn, isOptionalOut)));
+      proms.push(r.then((r2) => handlePropertyResult(r2, payload, key2, input, optin, optout)));
     } else {
-      handlePropertyResult(r, payload, key2, input, isOptionalIn, isOptionalOut);
+      handlePropertyResult(r, payload, key2, input, optin, optout);
     }
   }
   if (unrecognized.length) {
@@ -18014,7 +18433,9 @@ function handleCatchall(proms, input, payload, ctx, def, inst) {
       code: "unrecognized_keys",
       keys: unrecognized,
       input,
-      inst
+      inst,
+      // Describes the shape of the input, not the validity of the parsed value, so it never aborts. The parse still fails; the schema's own checks just get to run first, and an enclosing intersection can reconcile the key against a sibling operand.
+      continue: true
     });
   }
   if (!proms.length)
@@ -18023,31 +18444,38 @@ function handleCatchall(proms, input, payload, ctx, def, inst) {
     return payload;
   });
 }
+var propShapes = /* @__PURE__ */ new WeakMap();
 var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   $ZodType.init(inst, def);
   const desc = Object.getOwnPropertyDescriptor(def, "shape");
   if (!desc?.get) {
     const sh = def.shape;
+    propShapes.set(def, sh);
     Object.defineProperty(def, "shape", {
       get: () => {
         const newSh = { ...sh };
         Object.defineProperty(def, "shape", {
           value: newSh
         });
+        propShapes.set(def, newSh);
         return newSh;
       }
     });
   }
   const _normalized = cached(() => normalizeDef(def));
-  defineLazy(inst._zod, "propValues", () => {
-    const shape = def.shape;
+  defineLazyInternal(inst, "propValues", (zod) => {
+    const shape = zod.def.shape;
     const propValues = {};
     for (const key2 in shape) {
       const field = shape[key2]._zod;
       if (field.values) {
-        propValues[key2] ?? (propValues[key2] = /* @__PURE__ */ new Set());
+        if (!Object.prototype.hasOwnProperty.call(propValues, key2)) {
+          assignProp(propValues, key2, /* @__PURE__ */ new Set());
+        }
         for (const v of field.values)
           propValues[key2].add(v);
+        if (field.optin !== void 0)
+          propValues[key2].add(void 0);
       }
     }
     return propValues;
@@ -18055,6 +18483,8 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   const isObject4 = isObject;
   const catchall = def.catchall;
   let value;
+  const memo3 = globalConfig.memoizer;
+  memo3?.attach(inst);
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input = payload.value;
@@ -18067,18 +18497,20 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
       });
       return payload;
     }
-    payload.value = {};
+    payload.value = memo3 ? memo3.alloc(inst, payload, {}, ctx) : {};
     const proms = [];
     const shape = value.shape;
-    for (const key2 of value.keys) {
+    for (const key2 of value.allKeys) {
+      if (key2 === "__proto__")
+        continue;
       const el = shape[key2];
-      const isOptionalIn = el._zod.optin === "optional";
-      const isOptionalOut = el._zod.optout === "optional";
+      const optin = el._zod.optin;
+      const optout = el._zod.optout;
       const r = el._zod.run({ value: input[key2], issues: [] }, ctx);
       if (r instanceof Promise) {
-        proms.push(r.then((r2) => handlePropertyResult(r2, payload, key2, input, isOptionalIn, isOptionalOut)));
+        proms.push(r.then((r2) => handlePropertyResult(r2, payload, key2, input, optin, optout)));
       } else {
-        handlePropertyResult(r, payload, key2, input, isOptionalIn, isOptionalOut);
+        handlePropertyResult(r, payload, key2, input, optin, optout);
       }
     }
     if (!catchall) {
@@ -18091,55 +18523,54 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
   $ZodObject.init(inst, def);
   const superParse = inst._zod.parse;
   const _normalized = cached(() => normalizeDef(def));
+  const memo3 = globalConfig.memoizer;
   const generateFastpass = (shape) => {
-    const doc = new Doc(["shape", "payload", "ctx"]);
     const normalized = _normalized.value;
-    const parseStr = (key2) => {
-      const k = esc(key2);
-      return `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
-    };
+    const syms = normalized.symbolKeys;
+    const doc = new Doc(["payload", "ctx"], { shape, inst, memo: memo3, syms });
+    const parseStr = (k) => `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
+    const prefixStr = (id, k) => `
+          for (let i = 0; i < ${id}.issues.length; i++) {
+            const iss = ${id}.issues[i];
+            iss.path = iss.path ? [${k}, ...iss.path] : [${k}];
+            payload.issues.push(iss);
+          }`;
     doc.write(`const input = payload.value;`);
     const ids = /* @__PURE__ */ Object.create(null);
     let counter = 0;
-    for (const key2 of normalized.keys) {
+    for (const key2 of normalized.allKeys) {
       ids[key2] = `key_${counter++}`;
     }
-    doc.write(`const newResult = {};`);
-    for (const key2 of normalized.keys) {
+    doc.write(memo3 ? `const newResult = memo.alloc(inst, payload, {}, ctx);` : `const newResult = {};`);
+    for (const key2 of normalized.allKeys) {
+      if (key2 === "__proto__")
+        continue;
       const id = ids[key2];
-      const k = esc(key2);
+      const k = typeof key2 === "symbol" ? `syms[${syms.indexOf(key2)}]` : esc(key2);
+      const isPresent = `${k} in input`;
       const schema = shape[key2];
-      const isOptionalIn = schema?._zod?.optin === "optional";
+      const optin = schema?._zod?.optin;
+      const isOptionalIn = optin !== void 0;
       const isOptionalOut = schema?._zod?.optout === "optional";
-      doc.write(`const ${id} = ${parseStr(key2)};`);
+      doc.write(`const ${id} = ${parseStr(k)};`);
       if (isOptionalIn && isOptionalOut) {
+        const assign2 = optin === "optional" ? `${id}_present` : `${id}.value !== undefined || ${id}_present`;
         doc.write(`
-        if (${id}.issues.length) {
-          if (${k} in input) {
-            payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
-              ...iss,
-              path: iss.path ? [${k}, ...iss.path] : [${k}]
-            })));
+        const ${id}_present = ${isPresent};
+        if (!${id}.issues.length || ${id}_present) {
+          if (${id}.issues.length) {${prefixStr(id, k)}
+          }
+
+          if (${assign2}) {
+            newResult[${k}] = ${id}.value;
           }
         }
-        
-        if (${id}.value === undefined) {
-          if (${k} in input) {
-            newResult[${k}] = undefined;
-          }
-        } else {
-          newResult[${k}] = ${id}.value;
-        }
-        
+
       `);
       } else if (!isOptionalIn) {
         doc.write(`
-        const ${id}_present = ${k} in input;
-        if (${id}.issues.length) {
-          payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
-            ...iss,
-            path: iss.path ? [${k}, ...iss.path] : [${k}]
-          })));
+        const ${id}_present = ${isPresent};
+        if (${id}.issues.length) {${prefixStr(id, k)}
         }
         if (!${id}_present && !${id}.issues.length) {
           payload.issues.push({
@@ -18151,38 +18582,29 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
         }
 
         if (${id}_present) {
-          if (${id}.value === undefined) {
-            newResult[${k}] = undefined;
-          } else {
-            newResult[${k}] = ${id}.value;
-          }
+          newResult[${k}] = ${id}.value;
         }
 
       `);
       } else {
         doc.write(`
-        if (${id}.issues.length) {
-          payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
-            ...iss,
-            path: iss.path ? [${k}, ...iss.path] : [${k}]
-          })));
+        if (${id}.issues.length) {${prefixStr(id, k)}
         }
         
         if (${id}.value === undefined) {
-          if (${k} in input) {
+          if (${isPresent}) {
             newResult[${k}] = undefined;
           }
         } else {
           newResult[${k}] = ${id}.value;
         }
-        
+
       `);
       }
     }
     doc.write(`payload.value = newResult;`);
     doc.write(`return payload;`);
-    const fn = doc.compile();
-    return (payload, ctx) => fn(shape, payload, ctx);
+    return doc.compile();
   };
   let fastpass;
   const isObject4 = isObject;
@@ -18236,17 +18658,17 @@ function handleUnionResults(results, final, inst, ctx) {
 }
 var $ZodUnion = /* @__PURE__ */ $constructor("$ZodUnion", (inst, def) => {
   $ZodType.init(inst, def);
-  defineLazy(inst._zod, "optin", () => def.options.some((o) => o._zod.optin === "optional") ? "optional" : void 0);
-  defineLazy(inst._zod, "optout", () => def.options.some((o) => o._zod.optout === "optional") ? "optional" : void 0);
-  defineLazy(inst._zod, "values", () => {
-    if (def.options.every((o) => o._zod.values)) {
-      return new Set(def.options.flatMap((option) => Array.from(option._zod.values)));
+  defineLazyInternal(inst, "optin", (zod) => zod.def.options.some((o) => o._zod.optin === "defaulted") ? "defaulted" : zod.def.options.some((o) => o._zod.optin !== void 0) ? "optional" : void 0);
+  defineLazyInternal(inst, "optout", (zod) => zod.def.options.some((o) => o._zod.optout === "optional") ? "optional" : void 0);
+  defineLazyInternal(inst, "values", (zod) => {
+    if (zod.def.options.every((o) => o._zod.values)) {
+      return new Set(zod.def.options.flatMap((option) => Array.from(option._zod.values)));
     }
     return void 0;
   });
-  defineLazy(inst._zod, "pattern", () => {
-    if (def.options.every((o) => o._zod.pattern)) {
-      const patterns = def.options.map((o) => o._zod.pattern);
+  defineLazyInternal(inst, "pattern", (zod) => {
+    if (zod.def.options.every((o) => o._zod.pattern)) {
+      const patterns = zod.def.options.map((o) => o._zod.pattern);
       return new RegExp(`^(${patterns.map((p) => cleanRegex(p.source)).join("|")})$`);
     }
     return void 0;
@@ -18283,21 +18705,28 @@ var $ZodDiscriminatedUnion = /* @__PURE__ */ $constructor("$ZodDiscriminatedUnio
   def.inclusive = false;
   $ZodUnion.init(inst, def);
   const _super = inst._zod.parse;
-  defineLazy(inst._zod, "propValues", () => {
+  defineLazyInternal(inst, "propValues", (zod) => {
     const propValues = {};
-    for (const option of def.options) {
+    for (const option of zod.def.options) {
       const pv = option._zod.propValues;
       if (!pv || Object.keys(pv).length === 0)
-        throw new Error(`Invalid discriminated union option at index "${def.options.indexOf(option)}"`);
+        throw new Error(`Invalid discriminated union option at index "${zod.def.options.indexOf(option)}"`);
       for (const [k, v] of Object.entries(pv)) {
-        if (!propValues[k])
-          propValues[k] = /* @__PURE__ */ new Set();
+        if (!Object.prototype.hasOwnProperty.call(propValues, k)) {
+          assignProp(propValues, k, /* @__PURE__ */ new Set());
+        }
         for (const val of v) {
           propValues[k].add(val);
         }
       }
     }
     return propValues;
+  });
+  def.options.forEach((option, i2) => {
+    const propShape = propShapes.get(option._zod.def);
+    if (propShape && !Object.prototype.hasOwnProperty.call(propShape, def.discriminator)) {
+      throw new Error(`Invalid discriminated union option at index "${i2}"`);
+    }
   });
   const disc = cached(() => {
     const opts = def.options;
@@ -18372,7 +18801,11 @@ function mergeValues(a, b) {
     const bKeys = Object.keys(b);
     const sharedKeys = Object.keys(a).filter((key2) => bKeys.indexOf(key2) !== -1);
     const newObj = { ...a, ...b };
+    if (Object.prototype.hasOwnProperty.call(newObj, "__proto__"))
+      delete newObj.__proto__;
     for (const key2 of sharedKeys) {
+      if (key2 === "__proto__")
+        continue;
       const sharedValue = mergeValues(a[key2], b[key2]);
       if (!sharedValue.valid) {
         return {
@@ -18408,37 +18841,49 @@ function mergeValues(a, b) {
 function handleIntersectionResults(result, left, right) {
   const unrecKeys = /* @__PURE__ */ new Map();
   let unrecIssue;
-  for (const iss of left.issues) {
-    if (iss.code === "unrecognized_keys") {
+  const keyIssues = /* @__PURE__ */ new Map();
+  const collect2 = (iss, side) => {
+    let keys;
+    if (iss.code === "unrecognized_keys" && !iss.path?.length) {
       unrecIssue ?? (unrecIssue = iss);
-      for (const k of iss.keys) {
-        if (!unrecKeys.has(k))
-          unrecKeys.set(k, {});
-        unrecKeys.get(k).l = true;
-      }
+      keys = iss.keys;
+    } else if (iss.code === "invalid_key" && iss.origin === "record" && iss.path?.length === 1) {
+      const k = String(iss.path[0]);
+      if (!keyIssues.has(k))
+        keyIssues.set(k, iss);
+      keys = [k];
     } else {
-      result.issues.push(iss);
+      return false;
     }
+    for (const k of keys) {
+      if (!unrecKeys.has(k))
+        unrecKeys.set(k, {});
+      unrecKeys.get(k)[side] = true;
+    }
+    return true;
+  };
+  for (const iss of left.issues) {
+    if (!collect2(iss, "l"))
+      result.issues.push(iss);
   }
   for (const iss of right.issues) {
-    if (iss.code === "unrecognized_keys") {
-      for (const k of iss.keys) {
-        if (!unrecKeys.has(k))
-          unrecKeys.set(k, {});
-        unrecKeys.get(k).r = true;
-      }
-    } else {
+    if (!collect2(iss, "r"))
       result.issues.push(iss);
-    }
   }
   const bothKeys = [...unrecKeys].filter(([, f]) => f.l && f.r).map(([k]) => k);
-  if (bothKeys.length && unrecIssue) {
-    result.issues.push({ ...unrecIssue, keys: bothKeys });
+  if (bothKeys.length) {
+    const aggregated = unrecIssue ? bothKeys.filter((k) => unrecIssue.keys.includes(k)) : [];
+    if (aggregated.length)
+      result.issues.push({ ...unrecIssue, keys: aggregated });
+    for (const k of bothKeys) {
+      if (!aggregated.includes(k) && keyIssues.has(k))
+        result.issues.push(keyIssues.get(k));
+    }
   }
-  if (aborted(result))
-    return result;
   const merged = mergeValues(left.value, right.value);
   if (!merged.valid) {
+    if (aborted(result))
+      return result;
     throw new Error(`Unmergable intersection. Error path: ${JSON.stringify(merged.mergeErrorPath)}`);
   }
   result.value = merged.data;
@@ -18446,6 +18891,8 @@ function handleIntersectionResults(result, left, right) {
 }
 var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
   $ZodType.init(inst, def);
+  const memo3 = globalConfig.memoizer;
+  memo3?.attach(inst);
   inst._zod.parse = (payload, ctx) => {
     const input = payload.value;
     if (!isPlainObject(input)) {
@@ -18459,12 +18906,14 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
     }
     const proms = [];
     const values = def.keyType._zod.values;
-    if (values) {
-      payload.value = {};
+    if (values && !def.partial) {
+      payload.value = memo3 ? memo3.alloc(inst, payload, {}, ctx) : {};
       const recordKeys = /* @__PURE__ */ new Set();
       for (const key2 of values) {
         if (typeof key2 === "string" || typeof key2 === "number" || typeof key2 === "symbol") {
           recordKeys.add(typeof key2 === "number" ? key2.toString() : key2);
+          if (key2 === "__proto__")
+            continue;
           const keyResult = def.keyType._zod.run({ value: key2, issues: [] }, ctx);
           if (keyResult instanceof Promise) {
             throw new Error("Async schemas not supported in object keys currently");
@@ -18481,6 +18930,8 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
             continue;
           }
           const outKey = keyResult.value;
+          if (outKey === "__proto__")
+            continue;
           const result = def.valueType._zod.run({ value: input[key2], issues: [] }, ctx);
           if (result instanceof Promise) {
             proms.push(result.then((result2) => {
@@ -18500,8 +18951,14 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
       let unrecognized;
       for (const key2 in input) {
         if (!recordKeys.has(key2)) {
-          unrecognized = unrecognized ?? [];
-          unrecognized.push(key2);
+          if (def.mode === "loose") {
+            if (key2 === "__proto__")
+              continue;
+            payload.value[key2] = input[key2];
+          } else {
+            unrecognized = unrecognized ?? [];
+            unrecognized.push(key2);
+          }
         }
       }
       if (unrecognized && unrecognized.length > 0) {
@@ -18509,11 +18966,13 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
           code: "unrecognized_keys",
           input,
           inst,
-          keys: unrecognized
+          keys: unrecognized,
+          continue: true
         });
       }
     } else {
-      payload.value = {};
+      payload.value = memo3 ? memo3.alloc(inst, payload, {}, ctx) : {};
+      let unrecognized;
       for (const key2 of Reflect.ownKeys(input)) {
         if (key2 === "__proto__")
           continue;
@@ -18536,6 +18995,9 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
         if (keyResult.issues.length) {
           if (def.mode === "loose") {
             payload.value[key2] = input[key2];
+          } else if (values) {
+            unrecognized = unrecognized ?? [];
+            unrecognized.push(key2);
           } else {
             payload.issues.push({
               code: "invalid_key",
@@ -18548,20 +19010,32 @@ var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
           }
           continue;
         }
+        const outKey = keyResult.value;
+        if (outKey === "__proto__")
+          continue;
         const result = def.valueType._zod.run({ value: input[key2], issues: [] }, ctx);
         if (result instanceof Promise) {
           proms.push(result.then((result2) => {
             if (result2.issues.length) {
               payload.issues.push(...prefixIssues(key2, result2.issues));
             }
-            payload.value[keyResult.value] = result2.value;
+            payload.value[outKey] = result2.value;
           }));
         } else {
           if (result.issues.length) {
             payload.issues.push(...prefixIssues(key2, result.issues));
           }
-          payload.value[keyResult.value] = result.value;
+          payload.value[outKey] = result.value;
         }
+      }
+      if (unrecognized && unrecognized.length > 0) {
+        payload.issues.push({
+          code: "unrecognized_keys",
+          input,
+          inst,
+          keys: unrecognized,
+          continue: true
+        });
       }
     }
     if (proms.length) {
@@ -18575,7 +19049,8 @@ var $ZodEnum = /* @__PURE__ */ $constructor("$ZodEnum", (inst, def) => {
   const values = getEnumValues(def.entries);
   const valuesSet = new Set(values);
   inst._zod.values = valuesSet;
-  inst._zod.pattern = new RegExp(`^(${values.filter((k) => propertyKeyTypes.has(typeof k)).map((o) => typeof o === "string" ? escapeRegex(o) : o.toString()).join("|")})$`);
+  const patternValues = values.filter((k) => propertyKeyTypes.has(typeof k));
+  inst._zod.pattern = new RegExp(patternValues.length ? `^(${patternValues.map((o) => escapeRegex(o.toString())).join("|")})$` : "^[^\\s\\S]$");
   inst._zod.parse = (payload, _ctx) => {
     const input = payload.value;
     if (valuesSet.has(input)) {
@@ -18592,12 +19067,9 @@ var $ZodEnum = /* @__PURE__ */ $constructor("$ZodEnum", (inst, def) => {
 });
 var $ZodLiteral = /* @__PURE__ */ $constructor("$ZodLiteral", (inst, def) => {
   $ZodType.init(inst, def);
-  if (def.values.length === 0) {
-    throw new Error("Cannot create literal schema with no valid values");
-  }
   const values = new Set(def.values);
   inst._zod.values = values;
-  inst._zod.pattern = new RegExp(`^(${def.values.map((o) => typeof o === "string" ? escapeRegex(o) : o ? escapeRegex(o.toString()) : String(o)).join("|")})$`);
+  inst._zod.pattern = new RegExp(def.values.length ? `^(${def.values.map((o) => typeof o === "string" ? escapeRegex(o) : o ? escapeRegex(o.toString()) : String(o)).join("|")})$` : "^[^\\s\\S]$");
   inst._zod.parse = (payload, _ctx) => {
     const input = payload.value;
     if (values.has(input)) {
@@ -18615,6 +19087,7 @@ var $ZodLiteral = /* @__PURE__ */ $constructor("$ZodLiteral", (inst, def) => {
 var $ZodTransform = /* @__PURE__ */ $constructor("$ZodTransform", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.optin = "optional";
+  globalConfig.memoizer?.guard(inst);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       throw new $ZodEncodeError(inst.constructor.name);
@@ -18624,7 +19097,6 @@ var $ZodTransform = /* @__PURE__ */ $constructor("$ZodTransform", (inst, def) =>
       const output = _out instanceof Promise ? _out : Promise.resolve(_out);
       return output.then((output2) => {
         payload.value = output2;
-        payload.fallback = true;
         return payload;
       });
     }
@@ -18632,59 +19104,55 @@ var $ZodTransform = /* @__PURE__ */ $constructor("$ZodTransform", (inst, def) =>
       throw new $ZodAsyncError();
     }
     payload.value = _out;
-    payload.fallback = true;
     return payload;
   };
 });
-function handleOptionalResult(result, input) {
-  if (input === void 0 && (result.issues.length || result.fallback)) {
-    return { issues: [], value: void 0 };
-  }
-  return result;
+function handleOptionalResult(payload, result) {
+  payload.value = result.issues.length ? void 0 : result.value;
+  return payload;
 }
 var $ZodOptional = /* @__PURE__ */ $constructor("$ZodOptional", (inst, def) => {
   $ZodType.init(inst, def);
-  inst._zod.optin = "optional";
+  defineLazyInternal(inst, "optin", (zod) => zod.def.innerType._zod.optin === "defaulted" ? "defaulted" : "optional");
   inst._zod.optout = "optional";
-  defineLazy(inst._zod, "values", () => {
-    return def.innerType._zod.values ? /* @__PURE__ */ new Set([...def.innerType._zod.values, void 0]) : void 0;
+  defineLazyInternal(inst, "values", (zod) => {
+    const values = zod.def.innerType._zod.values;
+    return values ? /* @__PURE__ */ new Set([...values, void 0]) : void 0;
   });
-  defineLazy(inst._zod, "pattern", () => {
-    const pattern = def.innerType._zod.pattern;
+  defineLazyInternal(inst, "pattern", (zod) => {
+    const pattern = zod.def.innerType._zod.pattern;
     return pattern ? new RegExp(`^(${cleanRegex(pattern.source)})?$`) : void 0;
   });
   inst._zod.parse = (payload, ctx) => {
-    if (def.innerType._zod.optin === "optional") {
-      const input = payload.value;
-      const result = def.innerType._zod.run(payload, ctx);
-      if (result instanceof Promise)
-        return result.then((r) => handleOptionalResult(r, input));
-      return handleOptionalResult(result, input);
-    }
     if (payload.value === void 0) {
-      return payload;
+      if (def.innerType._zod.optin !== "defaulted")
+        return payload;
+      const result = def.innerType._zod.run({ value: payload.value, issues: [] }, ctx);
+      if (result instanceof Promise)
+        return result.then((result2) => handleOptionalResult(payload, result2));
+      return handleOptionalResult(payload, result);
     }
     return def.innerType._zod.run(payload, ctx);
   };
 });
 var $ZodExactOptional = /* @__PURE__ */ $constructor("$ZodExactOptional", (inst, def) => {
   $ZodOptional.init(inst, def);
-  defineLazy(inst._zod, "values", () => def.innerType._zod.values);
-  defineLazy(inst._zod, "pattern", () => def.innerType._zod.pattern);
+  defineLazyInternal(inst, "values", (zod) => zod.def.innerType._zod.values);
+  defineLazyInternal(inst, "pattern", (zod) => zod.def.innerType._zod.pattern);
   inst._zod.parse = (payload, ctx) => {
     return def.innerType._zod.run(payload, ctx);
   };
 });
 var $ZodNullable = /* @__PURE__ */ $constructor("$ZodNullable", (inst, def) => {
   $ZodType.init(inst, def);
-  defineLazy(inst._zod, "optin", () => def.innerType._zod.optin);
-  defineLazy(inst._zod, "optout", () => def.innerType._zod.optout);
-  defineLazy(inst._zod, "pattern", () => {
-    const pattern = def.innerType._zod.pattern;
+  defineLazyInternal(inst, "optin", (zod) => zod.def.innerType._zod.optin);
+  defineLazyInternal(inst, "optout", (zod) => zod.def.innerType._zod.optout);
+  defineLazyInternal(inst, "pattern", (zod) => {
+    const pattern = zod.def.innerType._zod.pattern;
     return pattern ? new RegExp(`^(${cleanRegex(pattern.source)}|null)$`) : void 0;
   });
-  defineLazy(inst._zod, "values", () => {
-    return def.innerType._zod.values ? /* @__PURE__ */ new Set([...def.innerType._zod.values, null]) : void 0;
+  defineLazyInternal(inst, "values", (zod) => {
+    return zod.def.innerType._zod.values ? /* @__PURE__ */ new Set([...zod.def.innerType._zod.values, null]) : void 0;
   });
   inst._zod.parse = (payload, ctx) => {
     if (payload.value === null)
@@ -18694,8 +19162,8 @@ var $ZodNullable = /* @__PURE__ */ $constructor("$ZodNullable", (inst, def) => {
 });
 var $ZodDefault = /* @__PURE__ */ $constructor("$ZodDefault", (inst, def) => {
   $ZodType.init(inst, def);
-  inst._zod.optin = "optional";
-  defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+  inst._zod.optin = "defaulted";
+  defineLazyInternal(inst, "values", (zod) => zod.def.innerType._zod.values);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       return def.innerType._zod.run(payload, ctx);
@@ -18719,8 +19187,8 @@ function handleDefaultResult(payload, def) {
 }
 var $ZodPrefault = /* @__PURE__ */ $constructor("$ZodPrefault", (inst, def) => {
   $ZodType.init(inst, def);
-  inst._zod.optin = "optional";
-  defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+  inst._zod.optin = "defaulted";
+  defineLazyInternal(inst, "values", (zod) => zod.def.innerType._zod.values);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       return def.innerType._zod.run(payload, ctx);
@@ -18733,8 +19201,8 @@ var $ZodPrefault = /* @__PURE__ */ $constructor("$ZodPrefault", (inst, def) => {
 });
 var $ZodNonOptional = /* @__PURE__ */ $constructor("$ZodNonOptional", (inst, def) => {
   $ZodType.init(inst, def);
-  defineLazy(inst._zod, "values", () => {
-    const v = def.innerType._zod.values;
+  defineLazyInternal(inst, "values", (zod) => {
+    const v = zod.def.innerType._zod.values;
     return v ? new Set([...v].filter((x) => x !== void 0)) : void 0;
   });
   inst._zod.parse = (payload, ctx) => {
@@ -18756,54 +19224,45 @@ function handleNonOptionalResult(payload, inst) {
   }
   return payload;
 }
+function handleCatchResult(payload, result, def, ctx) {
+  if (!result.issues.length) {
+    payload.value = result.value;
+    if (result.memo)
+      payload.memo = true;
+    return payload;
+  }
+  payload.value = def.catchValue({
+    ...result,
+    value: payload.value,
+    error: {
+      issues: result.issues.map((iss) => finalizeIssue(iss, ctx, config()))
+    },
+    input: payload.value
+  });
+  return payload;
+}
 var $ZodCatch = /* @__PURE__ */ $constructor("$ZodCatch", (inst, def) => {
   $ZodType.init(inst, def);
-  inst._zod.optin = "optional";
-  defineLazy(inst._zod, "optout", () => def.innerType._zod.optout);
-  defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+  defineLazyInternal(inst, "optin", (zod) => zod.def.innerType._zod.optin === "defaulted" ? "defaulted" : "optional");
+  defineLazyInternal(inst, "optout", (zod) => zod.def.innerType._zod.optout);
+  defineLazyInternal(inst, "values", (zod) => zod.def.innerType._zod.values);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       return def.innerType._zod.run(payload, ctx);
     }
-    const result = def.innerType._zod.run(payload, ctx);
+    const result = def.innerType._zod.run({ value: payload.value, issues: [] }, ctx);
     if (result instanceof Promise) {
-      return result.then((result2) => {
-        payload.value = result2.value;
-        if (result2.issues.length) {
-          payload.value = def.catchValue({
-            ...payload,
-            error: {
-              issues: result2.issues.map((iss) => finalizeIssue(iss, ctx, config()))
-            },
-            input: payload.value
-          });
-          payload.issues = [];
-          payload.fallback = true;
-        }
-        return payload;
-      });
+      return result.then((result2) => handleCatchResult(payload, result2, def, ctx));
     }
-    payload.value = result.value;
-    if (result.issues.length) {
-      payload.value = def.catchValue({
-        ...payload,
-        error: {
-          issues: result.issues.map((iss) => finalizeIssue(iss, ctx, config()))
-        },
-        input: payload.value
-      });
-      payload.issues = [];
-      payload.fallback = true;
-    }
-    return payload;
+    return handleCatchResult(payload, result, def, ctx);
   };
 });
 var $ZodPipe = /* @__PURE__ */ $constructor("$ZodPipe", (inst, def) => {
   $ZodType.init(inst, def);
-  defineLazy(inst._zod, "values", () => def.in._zod.values);
-  defineLazy(inst._zod, "optin", () => def.in._zod.optin);
-  defineLazy(inst._zod, "optout", () => def.out._zod.optout);
-  defineLazy(inst._zod, "propValues", () => def.in._zod.propValues);
+  defineLazyInternal(inst, "values", (zod) => zod.def.in._zod.values);
+  defineLazyInternal(inst, "optin", (zod) => zod.def.in._zod.optin);
+  defineLazyInternal(inst, "optout", (zod) => zod.def.out._zod.optout);
+  defineLazyInternal(inst, "propValues", (zod) => zod.def.in._zod.propValues);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       const right = def.out._zod.run(payload, ctx);
@@ -18820,21 +19279,21 @@ var $ZodPipe = /* @__PURE__ */ $constructor("$ZodPipe", (inst, def) => {
   };
 });
 function handlePipeResult(left, next, ctx) {
-  if (left.issues.length) {
+  if (left.issues.some((iss) => iss.code !== "unrecognized_keys")) {
     left.aborted = true;
     return left;
   }
-  return next._zod.run({ value: left.value, issues: left.issues, fallback: left.fallback }, ctx);
+  return next._zod.run({ value: left.value, issues: left.issues }, ctx);
 }
 var $ZodPreprocess = /* @__PURE__ */ $constructor("$ZodPreprocess", (inst, def) => {
   $ZodPipe.init(inst, def);
 });
 var $ZodReadonly = /* @__PURE__ */ $constructor("$ZodReadonly", (inst, def) => {
   $ZodType.init(inst, def);
-  defineLazy(inst._zod, "propValues", () => def.innerType._zod.propValues);
-  defineLazy(inst._zod, "values", () => def.innerType._zod.values);
-  defineLazy(inst._zod, "optin", () => def.innerType?._zod?.optin);
-  defineLazy(inst._zod, "optout", () => def.innerType?._zod?.optout);
+  defineLazyInternal(inst, "propValues", (zod) => zod.def.innerType._zod.propValues);
+  defineLazyInternal(inst, "values", (zod) => zod.def.innerType._zod.values);
+  defineLazyInternal(inst, "optin", (zod) => zod.def.innerType?._zod?.optin);
+  defineLazyInternal(inst, "optout", (zod) => zod.def.innerType?._zod?.optout);
   inst._zod.parse = (payload, ctx) => {
     if (ctx.direction === "backward") {
       return def.innerType._zod.run(payload, ctx);
@@ -18847,7 +19306,8 @@ var $ZodReadonly = /* @__PURE__ */ $constructor("$ZodReadonly", (inst, def) => {
   };
 });
 function handleReadonlyResult(payload) {
-  payload.value = Object.freeze(payload.value);
+  if (!payload.memo)
+    payload.value = Object.freeze(payload.value);
   return payload;
 }
 var $ZodLazy = /* @__PURE__ */ $constructor("$ZodLazy", (inst, def) => {
@@ -18858,10 +19318,10 @@ var $ZodLazy = /* @__PURE__ */ $constructor("$ZodLazy", (inst, def) => {
       d._cachedInner = def.getter();
     return d._cachedInner;
   });
-  defineLazy(inst._zod, "pattern", () => inst._zod.innerType?._zod?.pattern);
-  defineLazy(inst._zod, "propValues", () => inst._zod.innerType?._zod?.propValues);
-  defineLazy(inst._zod, "optin", () => inst._zod.innerType?._zod?.optin ?? void 0);
-  defineLazy(inst._zod, "optout", () => inst._zod.innerType?._zod?.optout ?? void 0);
+  defineLazyInternal(inst, "pattern", (zod) => zod.innerType?._zod?.pattern);
+  defineLazyInternal(inst, "propValues", (zod) => zod.innerType?._zod?.propValues);
+  defineLazyInternal(inst, "optin", (zod) => zod.innerType?._zod?.optin ?? void 0);
+  defineLazyInternal(inst, "optout", (zod) => zod.innerType?._zod?.optout ?? void 0);
   inst._zod.parse = (payload, ctx) => {
     const inner = inst._zod.innerType;
     return inner._zod.run(payload, ctx);
@@ -18899,6 +19359,244 @@ function handleRefineResult(result, payload, input, inst) {
       _iss.params = inst._zod.def.params;
     payload.issues.push(issue(_iss));
   }
+}
+
+// node_modules/zod/v4/core/memoizer.js
+var $ZodCyclicError = class extends Error {
+  constructor() {
+    super(`Cannot parse a reference cycle that closes through a transform`);
+    this.name = "ZodCyclicError";
+  }
+};
+var STATE = "~memo";
+var NO_ISSUES = [];
+function cloneIssues(issues) {
+  return issues.map((iss) => iss.path ? { ...iss, path: iss.path.slice() } : { ...iss });
+}
+var recursive = /* @__PURE__ */ new WeakMap();
+function isRecursive(inst, stack) {
+  const cached2 = recursive.get(inst);
+  if (cached2 !== void 0)
+    return cached2;
+  if (stack.has(inst))
+    return true;
+  stack.add(inst);
+  let result = false;
+  const check = (child) => {
+    if (!result && child?._zod && isRecursive(child, stack))
+      result = true;
+  };
+  const def = inst._zod.def;
+  const kind = def.type;
+  switch (kind) {
+    case "object": {
+      for (const key2 of Reflect.ownKeys(def.shape))
+        check(def.shape[key2]);
+      check(def.catchall);
+      break;
+    }
+    case "array":
+      check(def.element);
+      break;
+    case "tuple":
+      for (const el of def.items)
+        check(el);
+      check(def.rest);
+      break;
+    case "record":
+    case "map":
+      check(def.keyType);
+      check(def.valueType);
+      break;
+    case "set":
+      check(def.valueType);
+      break;
+    case "union":
+      for (const el of def.options)
+        check(el);
+      break;
+    case "intersection":
+      check(def.left);
+      check(def.right);
+      break;
+    case "optional":
+    case "nullable":
+    case "default":
+    case "prefault":
+    case "catch":
+    case "readonly":
+    case "nonoptional":
+    case "promise":
+    case "success":
+      check(def.innerType);
+      break;
+    case "pipe":
+      check(def.in);
+      check(def.out);
+      break;
+    case "function":
+      check(def.input);
+      check(def.output);
+      break;
+    // reading `_zod.innerType` resolves the getter once and caches it
+    case "lazy":
+      check(inst._zod.innerType);
+      break;
+    // a leaf by choice: `parts` are regex fragments, not data positions
+    case "template_literal":
+    // leaves
+    case "string":
+    case "number":
+    case "int":
+    case "boolean":
+    case "bigint":
+    case "symbol":
+    case "undefined":
+    case "null":
+    case "void":
+    case "never":
+    case "any":
+    case "unknown":
+    case "date":
+    case "nan":
+    case "enum":
+    case "literal":
+    case "file":
+    case "transform":
+    case "custom":
+      break;
+    default: {
+      kind;
+      for (const key2 in def) {
+        const desc = Object.getOwnPropertyDescriptor(def, key2);
+        if (!desc || desc.get)
+          continue;
+        const value = desc.value;
+        if (!value || typeof value !== "object")
+          continue;
+        if (value._zod)
+          check(value);
+        else if (Array.isArray(value))
+          for (const el of value)
+            check(el);
+      }
+    }
+  }
+  stack.delete(inst);
+  recursive.set(inst, result);
+  return result;
+}
+function bucketFor(state, inst) {
+  let bucket = state.buckets.get(inst);
+  if (!bucket) {
+    bucket = /* @__PURE__ */ new Map();
+    state.buckets.set(inst, bucket);
+  }
+  return bucket;
+}
+var handoff;
+var open = [];
+var memo = {
+  alloc(_inst, payload, empty) {
+    const bucket = handoff;
+    if (!bucket)
+      return empty;
+    handoff = void 0;
+    const entry = { value: empty, issues: null };
+    bucket.set(payload.value, entry);
+    open.push(entry);
+    return empty;
+  },
+  guard(inst) {
+    var _a3;
+    (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
+    inst._zod.deferred.push(() => {
+      const base = inst._zod.parse;
+      const wrapped = (payload, ctx) => {
+        if (ctx.direction !== "backward" && isBackEdge(ctx, payload.value))
+          throw new $ZodCyclicError();
+        return base(payload, ctx);
+      };
+      inst._zod.parse = wrapped;
+      if (inst._zod.run === base)
+        inst._zod.run = wrapped;
+    });
+  },
+  attach(inst) {
+    var _a3;
+    let isRecursiveInst;
+    let lastCtx;
+    let lastBucket;
+    (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
+    inst._zod.deferred.push(() => {
+      const base = inst._zod.parse;
+      const wrapped = (payload, ctx) => {
+        if (isRecursiveInst === void 0) {
+          isRecursiveInst = isRecursive(inst, /* @__PURE__ */ new Set());
+          if (!isRecursiveInst) {
+            inst._zod.parse = base;
+            if (inst._zod.run === wrapped)
+              inst._zod.run = base;
+            return base(payload, ctx);
+          }
+        }
+        const input = payload.value;
+        if (input === null || typeof input !== "object")
+          return base(payload, ctx);
+        let state = ctx[STATE];
+        if (!state) {
+          state = { buckets: /* @__PURE__ */ new Map(), backEdges: void 0 };
+          ctx[STATE] = state;
+        }
+        let bucket;
+        if (lastCtx === ctx) {
+          bucket = lastBucket;
+        } else {
+          bucket = bucketFor(state, inst);
+          lastCtx = ctx;
+          lastBucket = bucket;
+        }
+        const hit = bucket.get(input);
+        if (hit) {
+          payload.value = hit.value;
+          if (hit.issues) {
+            if (hit.issues.length)
+              payload.issues.push(...cloneIssues(hit.issues));
+          } else {
+            payload.memo = true;
+            state.backEdges ?? (state.backEdges = /* @__PURE__ */ new Set());
+            state.backEdges.add(hit.value);
+          }
+          return payload;
+        }
+        handoff = bucket;
+        const depth = open.length;
+        const result = base(payload, ctx);
+        handoff = void 0;
+        const entry = open.length > depth ? open.pop() : void 0;
+        if (result instanceof Promise) {
+          return result.then((r) => {
+            if (entry)
+              entry.issues = r.issues.length ? cloneIssues(r.issues) : NO_ISSUES;
+            return r;
+          });
+        }
+        if (entry)
+          entry.issues = result.issues.length ? cloneIssues(result.issues) : NO_ISSUES;
+        return result;
+      };
+      inst._zod.parse = wrapped;
+      if (inst._zod.run === base)
+        inst._zod.run = wrapped;
+    });
+  }
+};
+function memoizer() {
+  return memo;
+}
+function isBackEdge(ctx, value) {
+  const backEdges = ctx[STATE]?.backEdges;
+  return backEdges !== void 0 && value !== null && typeof value === "object" && backEdges.has(value);
 }
 
 // node_modules/zod/v4/locales/en.js
@@ -18941,6 +19639,7 @@ var error = () => {
     base64url: "base64url-encoded string",
     json_string: "JSON string",
     e164: "E.164 number",
+    credit_card: "credit card number",
     jwt: "JWT",
     template_literal: "input"
   };
@@ -18949,12 +19648,18 @@ var error = () => {
     nan: "NaN"
     // All other type names omitted - they fall back to raw values via ?? operator
   };
+  function getTypeName(type, input) {
+    if (type === "number" && typeof input === "number" && !Number.isFinite(input)) {
+      return String(input);
+    }
+    return TypeDictionary[type] ?? type;
+  }
   return (issue2) => {
     switch (issue2.code) {
       case "invalid_type": {
-        const expected = TypeDictionary[issue2.expected] ?? issue2.expected;
+        const expected = getTypeName(issue2.expected);
         const receivedType = parsedType(issue2.input);
-        const received = TypeDictionary[receivedType] ?? receivedType;
+        const received = getTypeName(receivedType, issue2.input);
         return `Invalid input: expected ${expected}, received ${received}`;
       }
       case "invalid_value":
@@ -18962,14 +19667,14 @@ var error = () => {
           return `Invalid input: expected ${stringifyPrimitive(issue2.values[0])}`;
         return `Invalid option: expected one of ${joinValues(issue2.values, "|")}`;
       case "too_big": {
-        const adj = issue2.inclusive ? "<=" : "<";
+        const adj = issue2.exact ? "exactly " : issue2.inclusive ? "<=" : "<";
         const sizing = getSizing(issue2.origin);
         if (sizing)
           return `Too big: expected ${issue2.origin ?? "value"} to have ${adj}${issue2.maximum.toString()} ${sizing.unit ?? "elements"}`;
         return `Too big: expected ${issue2.origin ?? "value"} to be ${adj}${issue2.maximum.toString()}`;
       }
       case "too_small": {
-        const adj = issue2.inclusive ? ">=" : ">";
+        const adj = issue2.exact ? "exactly " : issue2.inclusive ? ">=" : ">";
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           return `Too small: expected ${issue2.origin} to have ${adj}${issue2.minimum.toString()} ${sizing.unit}`;
@@ -18999,6 +19704,9 @@ var error = () => {
         if (issue2.options && Array.isArray(issue2.options) && issue2.options.length > 0) {
           const opts = issue2.options.map((o) => `'${o}'`).join(" | ");
           return `Invalid discriminator value. Expected ${opts}`;
+        }
+        if (issue2.inclusive === false) {
+          return "Invalid input: more than one option matched";
         }
         return "Invalid input";
       case "invalid_element":
@@ -19605,7 +20313,8 @@ function _superRefine(fn, params) {
         if (_issue.fatal)
           _issue.continue = false;
         _issue.code ?? (_issue.code = "custom");
-        _issue.input ?? (_issue.input = payload.value);
+        if (!("input" in _issue))
+          _issue.input = payload.value;
         _issue.inst ?? (_issue.inst = ch);
         _issue.continue ?? (_issue.continue = !ch._zod.def.abort);
         payload.issues.push(issue(_issue));
@@ -19626,6 +20335,16 @@ function _check(fn, params) {
 }
 
 // node_modules/zod/v4/core/to-json-schema.js
+function assignProps(target, ...sources) {
+  for (const source of sources) {
+    for (const key2 of Reflect.ownKeys(source)) {
+      if (Object.prototype.propertyIsEnumerable.call(source, key2)) {
+        assignProp(target, key2, source[key2]);
+      }
+    }
+  }
+  return target;
+}
 function initializeContext(params) {
   let target = params?.target ?? "draft-2020-12";
   if (target === "draft-4")
@@ -19642,10 +20361,23 @@ function initializeContext(params) {
     io: params?.io ?? "output",
     counter: 0,
     seen: /* @__PURE__ */ new Map(),
+    sharedDefsExtractedFor: void 0,
+    sharedEmitDoneFor: void 0,
     cycles: params?.cycles ?? "ref",
     reused: params?.reused ?? "inline",
+    intersections: [],
+    deferred: [],
     external: params?.external ?? void 0
   };
+}
+function handleUnrepresentable(schema, ctx, json, params, message) {
+  const result = typeof ctx.unrepresentable === "function" ? ctx.unrepresentable({ zodSchema: schema, path: params.path, message }) : ctx.unrepresentable;
+  if (result === "any")
+    return false;
+  if (result === void 0 || result === "throw")
+    throw new Error(message);
+  Object.assign(json, result);
+  return true;
 }
 function process2(schema, ctx, _params = { path: [], schemaPath: [] }) {
   var _a3;
@@ -19661,6 +20393,8 @@ function process2(schema, ctx, _params = { path: [], schemaPath: [] }) {
   }
   const result = { schema: {}, count: 1, cycle: void 0, path: _params.path };
   ctx.seen.set(schema, result);
+  ctx.sharedDefsExtractedFor = void 0;
+  ctx.sharedEmitDoneFor = void 0;
   const overrideSchema = schema._zod.toJSONSchema?.();
   if (overrideSchema) {
     result.schema = overrideSchema;
@@ -19690,7 +20424,7 @@ function process2(schema, ctx, _params = { path: [], schemaPath: [] }) {
   }
   const meta2 = ctx.metadataRegistry.get(schema);
   if (meta2)
-    Object.assign(result.schema, meta2);
+    assignProps(result.schema, meta2);
   if (ctx.io === "input" && isTransforming(schema)) {
     delete result.schema.examples;
     delete result.schema.default;
@@ -19701,10 +20435,15 @@ function process2(schema, ctx, _params = { path: [], schemaPath: [] }) {
   const _result = ctx.seen.get(schema);
   return _result.schema;
 }
+function encodeJSONPointerSegment(segment) {
+  return segment.replace(/~/g, "~0").replace(/\//g, "~1");
+}
 function extractDefs(ctx, schema) {
   const root2 = ctx.seen.get(schema);
   if (!root2)
     throw new Error("Unprocessed schema. This is a bug in Zod.");
+  if (ctx.external && ctx.sharedDefsExtractedFor === ctx.external)
+    return;
   const idToSchema = /* @__PURE__ */ new Map();
   for (const entry of ctx.seen.entries()) {
     const id = ctx.metadataRegistry.get(entry[0])?.id;
@@ -19726,15 +20465,15 @@ function extractDefs(ctx, schema) {
       }
       const id = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
       entry[1].defId = id;
-      return { defId: id, ref: `${uriGenerator("__shared")}#/${defsSegment}/${id}` };
-    }
-    if (entry[1] === root2) {
-      return { ref: "#" };
+      return { defId: id, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id)}` };
     }
     const uriPrefix = `#`;
     const defUriPrefix = `${uriPrefix}/${defsSegment}/`;
+    if (entry[1] === root2 && !entry[1].schema.id) {
+      return { ref: uriPrefix };
+    }
     const defId = entry[1].schema.id ?? `__schema${ctx.counter++}`;
-    return { defId, ref: defUriPrefix + defId };
+    return { defId, ref: defUriPrefix + encodeJSONPointerSegment(defId) };
   };
   const extractToDef = (entry) => {
     if (entry[1].schema.$ref) {
@@ -19790,6 +20529,116 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
       }
     }
   }
+  if (ctx.external)
+    ctx.sharedDefsExtractedFor = ctx.external;
+}
+function compactTypeUnion(schema) {
+  const options = schema.anyOf;
+  if (!Array.isArray(options) || options.length === 0 || schema.type !== void 0)
+    return;
+  const types = [];
+  for (const option of options) {
+    if (!option || typeof option !== "object")
+      return;
+    compactTypeUnion(option);
+    const keys = Object.keys(option);
+    if (keys.length !== 1 || keys[0] !== "type")
+      return;
+    const type = option.type;
+    for (const member of Array.isArray(type) ? type : [type]) {
+      if (typeof member !== "string")
+        return;
+      if (!types.includes(member))
+        types.push(member);
+    }
+  }
+  delete schema.anyOf;
+  schema.type = types.length === 1 ? types[0] : types;
+}
+var FOLDABLE_KEYS = /* @__PURE__ */ new Set(["type", "properties", "required", "additionalProperties"]);
+var UNION_KEYS = ["oneOf", "anyOf"];
+function undeclaredConstraint(member) {
+  const extra = member.additionalProperties;
+  if (extra === void 0 || extra === false || typeof extra !== "object" || extra === null)
+    return null;
+  return Object.keys(extra).length ? extra : null;
+}
+function foldObjects(members2) {
+  const objects = [];
+  for (const member of members2) {
+    if (typeof member !== "object" || member.type !== "object")
+      return null;
+    for (const key2 in member) {
+      if (!FOLDABLE_KEYS.has(key2))
+        return null;
+    }
+    objects.push(member);
+  }
+  const properties3 = {};
+  const required2 = /* @__PURE__ */ new Set();
+  for (const object2 of objects) {
+    for (const key2 in object2.properties) {
+      if (Object.prototype.hasOwnProperty.call(properties3, key2))
+        continue;
+      const parts = [];
+      for (const other of objects) {
+        const part = other.properties?.[key2] ?? undeclaredConstraint(other);
+        if (part === null || part === void 0)
+          continue;
+        if (!parts.some((seen) => JSON.stringify(seen) === JSON.stringify(part)))
+          parts.push(part);
+      }
+      const merged = parts.length === 1 ? parts[0] : foldObjects(parts) ?? { allOf: parts };
+      assignProp(properties3, key2, merged);
+    }
+    for (const key2 of object2.required ?? [])
+      required2.add(key2);
+  }
+  const folded = { type: "object", properties: properties3 };
+  if (required2.size)
+    folded.required = [...required2];
+  if (objects.every((object2) => object2.additionalProperties === false)) {
+    folded.additionalProperties = false;
+  } else {
+    const constraints = [];
+    for (const object2 of objects) {
+      const constraint = undeclaredConstraint(object2);
+      if (constraint && !constraints.some((seen) => JSON.stringify(seen) === JSON.stringify(constraint)))
+        constraints.push(constraint);
+    }
+    if (constraints.length === 1)
+      folded.additionalProperties = constraints[0];
+    else if (constraints.length > 1)
+      folded.additionalProperties = { allOf: constraints };
+  }
+  return folded;
+}
+function foldIntersection(json) {
+  const allOf = json.allOf;
+  if (!Array.isArray(allOf) || allOf.length < 2)
+    return;
+  for (const key2 of FOLDABLE_KEYS)
+    if (key2 in json)
+      return;
+  const unions = allOf.filter((m) => UNION_KEYS.some((k) => Array.isArray(m[k])));
+  let folded = null;
+  if (!unions.length) {
+    folded = foldObjects(allOf);
+  } else {
+    const union2 = unions[0];
+    const keyword = UNION_KEYS.find((k) => Array.isArray(union2[k]));
+    if (Object.keys(union2).length !== 1)
+      return;
+    const rest = allOf.filter((m) => m !== union2);
+    const branches = union2[keyword].map((branch) => foldObjects([...rest, branch]));
+    if (branches.some((b) => !b))
+      return;
+    folded = { [keyword]: branches };
+  }
+  if (!folded)
+    return;
+  delete json.allOf;
+  assignProps(json, folded);
 }
 function finalize(ctx, schema) {
   const root2 = ctx.seen.get(schema);
@@ -19811,9 +20660,9 @@ function finalize(ctx, schema) {
         schema2.allOf = schema2.allOf ?? [];
         schema2.allOf.push(refSchema);
       } else {
-        Object.assign(schema2, refSchema);
+        assignProps(schema2, refSchema);
       }
-      Object.assign(schema2, _cached);
+      assignProps(schema2, _cached);
       const isParentRef = zodSchema._zod.parent === ref;
       if (isParentRef) {
         for (const key2 in schema2) {
@@ -19857,8 +20706,36 @@ function finalize(ctx, schema) {
       path: seen.path ?? []
     });
   };
-  for (const entry of [...ctx.seen.entries()].reverse()) {
-    flattenRef(entry[0]);
+  if (!ctx.external || ctx.sharedEmitDoneFor !== ctx.external) {
+    for (const entry of [...ctx.seen.entries()].reverse()) {
+      flattenRef(entry[0]);
+    }
+    if (ctx.target !== "openapi-3.0") {
+      for (const entry of ctx.seen.entries()) {
+        compactTypeUnion(entry[1].def ?? entry[1].schema);
+      }
+    }
+    for (const rewrite of ctx.deferred)
+      rewrite();
+    if (ctx.intersections.length) {
+      const carriers = /* @__PURE__ */ new Map();
+      for (const seen of ctx.seen.values()) {
+        for (const json of [seen.schema, seen.def]) {
+          const allOf = json?.allOf;
+          if (!Array.isArray(allOf))
+            continue;
+          const existing = carriers.get(allOf);
+          if (existing)
+            existing.push(json);
+          else
+            carriers.set(allOf, [json]);
+        }
+      }
+      for (const allOf of ctx.intersections) {
+        for (const json of carriers.get(allOf) ?? [])
+          foldIntersection(json);
+      }
+    }
   }
   const result = {};
   if (ctx.target === "draft-2020-12") {
@@ -19876,19 +20753,23 @@ function finalize(ctx, schema) {
       throw new Error("Schema is missing an `id` property");
     result.$id = ctx.external.uri(id);
   }
-  Object.assign(result, root2.def ?? root2.schema);
+  assignProps(result, root2.defId ? root2.schema : root2.def ?? root2.schema);
   const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
   if (rootMetaId !== void 0 && result.id === rootMetaId)
     delete result.id;
   const defs = ctx.external?.defs ?? {};
-  for (const entry of ctx.seen.entries()) {
-    const seen = entry[1];
-    if (seen.def && seen.defId) {
-      if (seen.def.id === seen.defId)
-        delete seen.def.id;
-      defs[seen.defId] = seen.def;
+  if (!ctx.external || ctx.sharedEmitDoneFor !== ctx.external) {
+    for (const entry of ctx.seen.entries()) {
+      const seen = entry[1];
+      if (seen.def && seen.defId) {
+        if (seen.def.id === seen.defId)
+          delete seen.def.id;
+        assignProp(defs, seen.defId, seen.def);
+      }
     }
   }
+  if (ctx.external)
+    ctx.sharedEmitDoneFor = ctx.external;
   if (ctx.external) {
   } else {
     if (Object.keys(defs).length > 0) {
@@ -19931,7 +20812,7 @@ function isTransforming(_schema, _ctx) {
     return isTransforming(def.valueType, ctx);
   if (def.type === "lazy")
     return isTransforming(def.getter(), ctx);
-  if (def.type === "promise" || def.type === "optional" || def.type === "nonoptional" || def.type === "nullable" || def.type === "readonly" || def.type === "default" || def.type === "prefault") {
+  if (def.type === "promise" || def.type === "optional" || def.type === "nonoptional" || def.type === "nullable" || def.type === "readonly" || def.type === "default" || def.type === "prefault" || def.type === "catch") {
     return isTransforming(def.innerType, ctx);
   }
   if (def.type === "intersection") {
@@ -19996,7 +20877,7 @@ var formatMap = {
 var stringProcessor = (schema, ctx, _json, _params) => {
   const json = _json;
   json.type = "string";
-  const { minimum, maximum, format: format4, patterns, contentEncoding } = schema._zod.bag;
+  const { minimum, maximum, format: format4, patterns, contentEncoding, laxFormat } = schema._zod.bag;
   if (typeof minimum === "number")
     json.minLength = minimum;
   if (typeof maximum === "number")
@@ -20005,19 +20886,19 @@ var stringProcessor = (schema, ctx, _json, _params) => {
     json.format = formatMap[format4] ?? format4;
     if (json.format === "")
       delete json.format;
-    if (format4 === "time") {
+    if (format4 === "time" || laxFormat) {
       delete json.format;
     }
   }
   if (contentEncoding)
     json.contentEncoding = contentEncoding;
   if (patterns && patterns.size > 0) {
-    const regexes = [...patterns];
-    if (regexes.length === 1)
-      json.pattern = regexes[0].source;
-    else if (regexes.length > 1) {
+    const patternList = [...patterns];
+    if (patternList.length === 1)
+      json.pattern = patternList[0].source;
+    else if (patternList.length > 1) {
       json.allOf = [
-        ...regexes.map((regex) => ({
+        ...patternList.map((regex) => ({
           ...ctx.target === "draft-07" || ctx.target === "draft-04" || ctx.target === "openapi-3.0" ? { type: "string" } : {},
           pattern: regex.source
         }))
@@ -20025,7 +20906,7 @@ var stringProcessor = (schema, ctx, _json, _params) => {
     }
   }
 };
-var numberProcessor = (schema, ctx, _json, _params) => {
+var numberProcessor = (schema, ctx, _json, params) => {
   const json = _json;
   const { minimum, maximum, format: format4, multipleOf, exclusiveMaximum, exclusiveMinimum } = schema._zod.bag;
   if (typeof format4 === "string" && format4.includes("int"))
@@ -20055,21 +20936,21 @@ var numberProcessor = (schema, ctx, _json, _params) => {
   } else if (typeof maximum === "number") {
     json.maximum = maximum;
   }
-  if (typeof multipleOf === "number")
-    json.multipleOf = multipleOf;
+  if (typeof multipleOf === "number") {
+    if (Number.isFinite(multipleOf) && multipleOf !== 0)
+      json.multipleOf = Math.abs(multipleOf);
+    else
+      handleUnrepresentable(schema, ctx, json, params, `A multipleOf divisor of ${multipleOf} cannot be represented in JSON Schema`);
+  }
 };
 var booleanProcessor = (_schema, _ctx, json, _params) => {
   json.type = "boolean";
 };
-var bigintProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("BigInt cannot be represented in JSON Schema");
-  }
+var bigintProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "BigInt cannot be represented in JSON Schema");
 };
-var symbolProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Symbols cannot be represented in JSON Schema");
-  }
+var symbolProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Symbols cannot be represented in JSON Schema");
 };
 var nullProcessor = (_schema, ctx, json, _params) => {
   if (ctx.target === "openapi-3.0") {
@@ -20080,15 +20961,11 @@ var nullProcessor = (_schema, ctx, json, _params) => {
     json.type = "null";
   }
 };
-var undefinedProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Undefined cannot be represented in JSON Schema");
-  }
+var undefinedProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Undefined cannot be represented in JSON Schema");
 };
-var voidProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Void cannot be represented in JSON Schema");
-  }
+var voidProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Void cannot be represented in JSON Schema");
 };
 var neverProcessor = (_schema, _ctx, json, _params) => {
   json.not = {};
@@ -20097,35 +20974,37 @@ var anyProcessor = (_schema, _ctx, _json, _params) => {
 };
 var unknownProcessor = (_schema, _ctx, _json, _params) => {
 };
-var dateProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Date cannot be represented in JSON Schema");
-  }
+var dateProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Date cannot be represented in JSON Schema");
 };
 var enumProcessor = (schema, _ctx, json, _params) => {
   const def = schema._zod.def;
   const values = getEnumValues(def.entries);
+  if (values.length === 0) {
+    json.not = {};
+    return;
+  }
   if (values.every((v) => typeof v === "number"))
     json.type = "number";
   if (values.every((v) => typeof v === "string"))
     json.type = "string";
   json.enum = values;
 };
-var literalProcessor = (schema, ctx, json, _params) => {
+var literalProcessor = (schema, ctx, json, params) => {
   const def = schema._zod.def;
+  if (def.values.length === 0) {
+    json.not = {};
+    return;
+  }
   const vals = [];
   for (const val of def.values) {
     if (val === void 0) {
-      if (ctx.unrepresentable === "throw") {
-        throw new Error("Literal `undefined` cannot be represented in JSON Schema");
-      } else {
-      }
+      if (handleUnrepresentable(schema, ctx, json, params, "Literal `undefined` cannot be represented in JSON Schema"))
+        return;
     } else if (typeof val === "bigint") {
-      if (ctx.unrepresentable === "throw") {
-        throw new Error("BigInt literals cannot be represented in JSON Schema");
-      } else {
-        vals.push(Number(val));
-      }
+      if (handleUnrepresentable(schema, ctx, json, params, "BigInt literals cannot be represented in JSON Schema"))
+        return;
+      vals.push(Number(val));
     } else {
       vals.push(val);
     }
@@ -20151,10 +21030,8 @@ var literalProcessor = (schema, ctx, json, _params) => {
     json.enum = vals;
   }
 };
-var nanProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("NaN cannot be represented in JSON Schema");
-  }
+var nanProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "NaN cannot be represented in JSON Schema");
 };
 var templateLiteralProcessor = (schema, _ctx, json, _params) => {
   const _json = json;
@@ -20191,30 +21068,20 @@ var fileProcessor = (schema, _ctx, json, _params) => {
 var successProcessor = (_schema, _ctx, json, _params) => {
   json.type = "boolean";
 };
-var customProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Custom types cannot be represented in JSON Schema");
-  }
+var customProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Custom types cannot be represented in JSON Schema");
 };
-var functionProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Function types cannot be represented in JSON Schema");
-  }
+var functionProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Function types cannot be represented in JSON Schema");
 };
-var transformProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Transforms cannot be represented in JSON Schema");
-  }
+var transformProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Transforms cannot be represented in JSON Schema");
 };
-var mapProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Map cannot be represented in JSON Schema");
-  }
+var mapProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Map cannot be represented in JSON Schema");
 };
-var setProcessor = (_schema, ctx, _json, _params) => {
-  if (ctx.unrepresentable === "throw") {
-    throw new Error("Set cannot be represented in JSON Schema");
-  }
+var setProcessor = (schema, ctx, json, params) => {
+  handleUnrepresentable(schema, ctx, json, params, "Set cannot be represented in JSON Schema");
 };
 var arrayProcessor = (schema, ctx, _json, params) => {
   const json = _json;
@@ -20230,25 +21097,39 @@ var arrayProcessor = (schema, ctx, _json, params) => {
     path: [...params.path, "items"]
   });
 };
+function inputOptin(schema) {
+  const def = schema._zod.def;
+  if (def.type === "pipe" && def.in._zod.traits.has("$ZodTransform")) {
+    return inputOptin(def.out);
+  }
+  if (def.type === "catch") {
+    return inputOptin(def.innerType);
+  }
+  return schema._zod.optin;
+}
 var objectProcessor = (schema, ctx, _json, params) => {
   const json = _json;
   const def = schema._zod.def;
+  const shape = def.shape;
+  const symbolKeys = Object.getOwnPropertySymbols(shape);
+  if (symbolKeys.length && handleUnrepresentable(schema, ctx, json, params, "Symbol keys cannot be represented in JSON Schema")) {
+    return;
+  }
   json.type = "object";
   json.properties = {};
-  const shape = def.shape;
   for (const key2 in shape) {
-    json.properties[key2] = process2(shape[key2], ctx, {
+    assignProp(json.properties, key2, process2(shape[key2], ctx, {
       ...params,
       path: [...params.path, "properties", key2]
-    });
+    }));
   }
   const allKeys = new Set(Object.keys(shape));
   const requiredKeys = new Set([...allKeys].filter((key2) => {
-    const v = def.shape[key2]._zod;
+    const field = def.shape[key2];
     if (ctx.io === "input") {
-      return v.optin === void 0;
+      return inputOptin(field) === void 0;
     } else {
-      return v.optout === void 0;
+      return field._zod.optout === void 0;
     }
   }));
   if (requiredKeys.size > 0) {
@@ -20295,6 +21176,7 @@ var intersectionProcessor = (schema, ctx, json, params) => {
     ...isSimpleIntersection(b) ? b.allOf : [b]
   ];
   json.allOf = allOf;
+  ctx.intersections.push(allOf);
 };
 var tupleProcessor = (schema, ctx, _json, params) => {
   const json = _json;
@@ -20310,11 +21192,27 @@ var tupleProcessor = (schema, ctx, _json, params) => {
     ...params,
     path: [...params.path, restPath, ...ctx.target === "openapi-3.0" ? [def.items.length] : []]
   }) : null;
+  let minItems = def.items.length;
+  while (minItems > 0) {
+    const item = def.items[minItems - 1];
+    const optional2 = ctx.io === "input" ? inputOptin(item) !== void 0 : item._zod.optout === "optional";
+    if (!optional2)
+      break;
+    minItems--;
+  }
+  const maxItems = def.items.length;
+  const isClosed = !def.rest;
   if (ctx.target === "draft-2020-12") {
     json.prefixItems = prefixItems;
-    if (rest) {
+    if (isClosed) {
+      json.items = false;
+    } else if (rest) {
       json.items = rest;
     }
+    if (minItems > 0)
+      json.minItems = minItems;
+    if (isClosed)
+      json.maxItems = maxItems;
   } else if (ctx.target === "openapi-3.0") {
     json.items = {
       anyOf: prefixItems
@@ -20322,15 +21220,21 @@ var tupleProcessor = (schema, ctx, _json, params) => {
     if (rest) {
       json.items.anyOf.push(rest);
     }
-    json.minItems = prefixItems.length;
-    if (!rest) {
-      json.maxItems = prefixItems.length;
-    }
+    if (minItems > 0)
+      json.minItems = minItems;
+    if (isClosed)
+      json.maxItems = maxItems;
   } else {
     json.items = prefixItems;
-    if (rest) {
+    if (isClosed) {
+      json.additionalItems = false;
+    } else if (rest) {
       json.additionalItems = rest;
     }
+    if (minItems > 0)
+      json.minItems = minItems;
+    if (isClosed)
+      json.maxItems = maxItems;
   }
   const { minimum, maximum } = schema._zod.bag;
   if (typeof minimum === "number")
@@ -20338,6 +21242,69 @@ var tupleProcessor = (schema, ctx, _json, params) => {
   if (typeof maximum === "number")
     json.maxItems = maximum;
 };
+function stringifyKeyNames(bySchema, json, visited) {
+  if (json.$ref) {
+    if (visited.has(json))
+      return json;
+    visited.add(json);
+    const def = bySchema.get(json)?.def;
+    if (!def)
+      return json;
+    const inlined = stringifyKeyNames(bySchema, def, visited);
+    return inlined === def ? json : inlined;
+  }
+  for (const keyword of ["anyOf", "oneOf"]) {
+    const branches = json[keyword];
+    if (!Array.isArray(branches))
+      continue;
+    const mapped = branches.map((branch) => stringifyKeyNames(bySchema, branch, visited));
+    if (mapped.some((branch, i2) => branch !== branches[i2]))
+      json = { ...json, [keyword]: mapped };
+  }
+  const types = Array.isArray(json.type) ? json.type : [json.type];
+  const numericType = !types.includes("string") && types.some((t) => t === "number" || t === "integer");
+  const values = json.enum ?? (json.const !== void 0 ? [json.const] : void 0);
+  if (!numericType && !values?.some((v) => typeof v === "number"))
+    return json;
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format: format4, id, ...rest } = json;
+  if (rest.enum)
+    rest.enum = rest.enum.map((v) => typeof v === "number" ? String(v) : v);
+  else if (typeof rest.const === "number")
+    rest.const = String(rest.const);
+  if (!numericType)
+    return rest;
+  rest.type = "string";
+  if (!values)
+    rest.pattern = (types.includes("number") ? number : integer).source;
+  return rest;
+}
+var pendingRecords = /* @__PURE__ */ new WeakMap();
+function rewriteKeyNames(ctx) {
+  const bySchema = /* @__PURE__ */ new Map();
+  for (const entry of ctx.seen.values()) {
+    if (entry.def && !bySchema.has(entry.schema))
+      bySchema.set(entry.schema, entry);
+  }
+  const rewrites = /* @__PURE__ */ new Map();
+  for (const record2 of pendingRecords.get(ctx) ?? []) {
+    const seen = ctx.seen.get(record2);
+    const names = (seen?.def ?? seen?.schema)?.propertyNames;
+    if (!names || names === true || rewrites.has(names))
+      continue;
+    const rewritten = stringifyKeyNames(bySchema, names, /* @__PURE__ */ new Set());
+    if (rewritten !== names)
+      rewrites.set(names, rewritten);
+  }
+  if (!rewrites.size)
+    return;
+  for (const entry of ctx.seen.values()) {
+    for (const carrier of [entry.schema, entry.def]) {
+      const rewritten = carrier && rewrites.get(carrier.propertyNames);
+      if (rewritten)
+        carrier.propertyNames = rewritten;
+    }
+  }
+}
 var recordProcessor = (schema, ctx, _json, params) => {
   const json = _json;
   const def = schema._zod.def;
@@ -20352,7 +21319,7 @@ var recordProcessor = (schema, ctx, _json, params) => {
     });
     json.patternProperties = {};
     for (const pattern of patterns) {
-      json.patternProperties[pattern.source] = valueSchema;
+      assignProp(json.patternProperties, pattern.source, valueSchema);
     }
   } else {
     if (ctx.target === "draft-07" || ctx.target === "draft-2020-12") {
@@ -20360,6 +21327,13 @@ var recordProcessor = (schema, ctx, _json, params) => {
         ...params,
         path: [...params.path, "propertyNames"]
       });
+      let pending = pendingRecords.get(ctx);
+      if (!pending) {
+        pending = [];
+        pendingRecords.set(ctx, pending);
+        ctx.deferred.push(() => rewriteKeyNames(ctx));
+      }
+      pending.push(schema);
     }
     json.additionalProperties = process2(def.valueType, ctx, {
       ...params,
@@ -20367,10 +21341,11 @@ var recordProcessor = (schema, ctx, _json, params) => {
     });
   }
   const keyValues = keyType._zod.values;
-  if (keyValues) {
+  const omittableOnInput = ctx.io === "input" && inputOptin(def.valueType) !== void 0;
+  if (keyValues && !def.partial && !omittableOnInput) {
     const validKeyValues = [...keyValues].filter((v) => typeof v === "string" || typeof v === "number");
     if (validKeyValues.length > 0) {
-      json.required = validKeyValues;
+      json.required = validKeyValues.map(String);
     }
   }
 };
@@ -20391,20 +21366,39 @@ var nonoptionalProcessor = (schema, ctx, _json, params) => {
   const seen = ctx.seen.get(schema);
   seen.ref = def.innerType;
 };
+var UNREPRESENTABLE_DEFAULT = /* @__PURE__ */ Symbol();
+function serializeDefaultValue(value, schema, ctx, json, params) {
+  let unrepresentable = false;
+  const serialized = JSON.stringify(value, (_, val) => {
+    if (typeof val !== "bigint")
+      return val;
+    unrepresentable = true;
+    return null;
+  });
+  if (!unrepresentable)
+    return JSON.parse(serialized);
+  handleUnrepresentable(schema, ctx, json, params, "BigInt defaults cannot be represented in JSON Schema");
+  return UNREPRESENTABLE_DEFAULT;
+}
 var defaultProcessor = (schema, ctx, json, params) => {
   const def = schema._zod.def;
   process2(def.innerType, ctx, params);
   const seen = ctx.seen.get(schema);
   seen.ref = def.innerType;
-  json.default = JSON.parse(JSON.stringify(def.defaultValue));
+  const value = serializeDefaultValue(def.defaultValue, schema, ctx, json, params);
+  if (value !== UNREPRESENTABLE_DEFAULT)
+    json.default = value;
 };
 var prefaultProcessor = (schema, ctx, json, params) => {
   const def = schema._zod.def;
   process2(def.innerType, ctx, params);
   const seen = ctx.seen.get(schema);
   seen.ref = def.innerType;
-  if (ctx.io === "input")
-    json._prefault = JSON.parse(JSON.stringify(def.defaultValue));
+  if (ctx.io !== "input")
+    return;
+  const value = serializeDefaultValue(def.defaultValue, schema, ctx, json, params);
+  if (value !== UNREPRESENTABLE_DEFAULT)
+    json._prefault = value;
 };
 var catchProcessor = (schema, ctx, json, params) => {
   const def = schema._zod.def;
@@ -20415,7 +21409,8 @@ var catchProcessor = (schema, ctx, json, params) => {
   try {
     catchValue = def.catchValue(void 0);
   } catch {
-    throw new Error("Dynamic catch values are not supported in JSON Schema");
+    handleUnrepresentable(schema, ctx, json, params, "Dynamic catch values are not supported in JSON Schema");
+    return;
   }
   json.default = catchValue;
 };
@@ -20512,7 +21507,7 @@ function toJSONSchema(input, params) {
     for (const entry of registry3._idmap.entries()) {
       const [key2, schema] = entry;
       extractDefs(ctx2, schema);
-      schemas[key2] = finalize(ctx2, schema);
+      assignProp(schemas, key2, finalize(ctx2, schema));
     }
     if (Object.keys(defs).length > 0) {
       const defsSegment = ctx2.target === "draft-2020-12" ? "$defs" : "definitions";
@@ -20528,83 +21523,48 @@ function toJSONSchema(input, params) {
   return finalize(ctx, input);
 }
 
-// node_modules/zod/v4/classic/iso.js
-var iso_exports = {};
-__export(iso_exports, {
-  ZodISODate: () => ZodISODate,
-  ZodISODateTime: () => ZodISODateTime,
-  ZodISODuration: () => ZodISODuration,
-  ZodISOTime: () => ZodISOTime,
-  date: () => date2,
-  datetime: () => datetime2,
-  duration: () => duration2,
-  time: () => time2
-});
-var ZodISODateTime = /* @__PURE__ */ $constructor("ZodISODateTime", (inst, def) => {
-  $ZodISODateTime.init(inst, def);
-  ZodStringFormat.init(inst, def);
-});
-function datetime2(params) {
-  return _isoDateTime(ZodISODateTime, params);
-}
-var ZodISODate = /* @__PURE__ */ $constructor("ZodISODate", (inst, def) => {
-  $ZodISODate.init(inst, def);
-  ZodStringFormat.init(inst, def);
-});
-function date2(params) {
-  return _isoDate(ZodISODate, params);
-}
-var ZodISOTime = /* @__PURE__ */ $constructor("ZodISOTime", (inst, def) => {
-  $ZodISOTime.init(inst, def);
-  ZodStringFormat.init(inst, def);
-});
-function time2(params) {
-  return _isoTime(ZodISOTime, params);
-}
-var ZodISODuration = /* @__PURE__ */ $constructor("ZodISODuration", (inst, def) => {
-  $ZodISODuration.init(inst, def);
-  ZodStringFormat.init(inst, def);
-});
-function duration2(params) {
-  return _isoDuration(ZodISODuration, params);
-}
-
 // node_modules/zod/v4/classic/errors.js
+var _installedErrorProtos = /* @__PURE__ */ new WeakSet([Object.prototype, Error.prototype]);
+function _lazyMethod(proto, key2, make) {
+  Object.defineProperty(proto, key2, {
+    configurable: true,
+    enumerable: false,
+    get() {
+      const value = make(this);
+      Object.defineProperty(this, key2, { value, configurable: true, writable: true });
+      return value;
+    },
+    set(value) {
+      Object.defineProperty(this, key2, { value, configurable: true, writable: true });
+    }
+  });
+}
 var initializer2 = (inst, issues) => {
   $ZodError.init(inst, issues);
   inst.name = "ZodError";
-  Object.defineProperties(inst, {
-    format: {
-      value: (mapper) => formatError(inst, mapper)
-      // enumerable: false,
-    },
-    flatten: {
-      value: (mapper) => flattenError(inst, mapper)
-      // enumerable: false,
-    },
-    addIssue: {
-      value: (issue2) => {
-        inst.issues.push(issue2);
-        inst.message = JSON.stringify(inst.issues, jsonStringifyReplacer, 2);
-      }
-      // enumerable: false,
-    },
-    addIssues: {
-      value: (issues2) => {
-        inst.issues.push(...issues2);
-        inst.message = JSON.stringify(inst.issues, jsonStringifyReplacer, 2);
-      }
-      // enumerable: false,
-    },
-    isEmpty: {
-      get() {
-        return inst.issues.length === 0;
-      }
-      // enumerable: false,
+  const proto = Object.getPrototypeOf(inst);
+  if (_installedErrorProtos.has(proto))
+    return;
+  _installedErrorProtos.add(proto);
+  _lazyMethod(proto, "format", (self2) => (mapper) => formatError(self2, mapper));
+  _lazyMethod(proto, "flatten", (self2) => (mapper) => flattenError(self2, mapper));
+  _lazyMethod(proto, "addIssue", (self2) => (issue2) => {
+    self2.issues.push(issue2);
+    self2.message = JSON.stringify(self2.issues, jsonStringifyReplacer, 2);
+  });
+  _lazyMethod(proto, "addIssues", (self2) => (issues2) => {
+    self2.issues.push(...issues2);
+    self2.message = JSON.stringify(self2.issues, jsonStringifyReplacer, 2);
+  });
+  Object.defineProperty(proto, "isEmpty", {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return this.issues.length === 0;
     }
   });
 };
-var ZodRealError = /* @__PURE__ */ $constructor("ZodError", initializer2, {
+var ZodRealError = /* @__PURE__ */ $constructor("ZodError", initializer2, void 0, {
   Parent: Error
 });
 
@@ -20623,171 +21583,182 @@ var safeEncodeAsync = /* @__PURE__ */ _safeEncodeAsync(ZodRealError);
 var safeDecodeAsync = /* @__PURE__ */ _safeDecodeAsync(ZodRealError);
 
 // node_modules/zod/v4/classic/schemas.js
-var _installedGroups = /* @__PURE__ */ new WeakMap();
-function _installLazyMethods(inst, group, methods) {
-  const proto = Object.getPrototypeOf(inst);
-  let installed = _installedGroups.get(proto);
-  if (!installed) {
-    installed = /* @__PURE__ */ new Set();
-    _installedGroups.set(proto, installed);
-  }
-  if (installed.has(group))
-    return;
-  installed.add(group);
-  for (const key2 in methods) {
-    const fn = methods[key2];
-    Object.defineProperty(proto, key2, {
-      configurable: true,
-      enumerable: false,
-      get() {
-        const bound = fn.bind(this);
-        Object.defineProperty(this, key2, {
-          configurable: true,
-          writable: true,
-          enumerable: true,
-          value: bound
-        });
-        return bound;
-      },
-      set(v) {
-        Object.defineProperty(this, key2, {
-          configurable: true,
-          writable: true,
-          enumerable: true,
-          value: v
-        });
-      }
-    });
-  }
+function _ensureDefaultLocale() {
+  if (!globalConfig.localeError)
+    config(en_default());
+}
+function _ensureDefaultMemoizer() {
+  if (!globalConfig.memoizer)
+    config({ memoizer: memoizer() });
 }
 var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
+  _ensureDefaultLocale();
   $ZodType.init(inst, def);
-  Object.assign(inst["~standard"], {
-    jsonSchema: {
-      input: createStandardJSONSchemaMethod(inst, "input"),
-      output: createStandardJSONSchemaMethod(inst, "output")
-    }
-  });
-  inst.toJSONSchema = createToJSONSchemaMethod(inst, {});
   inst.def = def;
   inst.type = def.type;
-  Object.defineProperty(inst, "_def", { value: def });
-  inst.parse = (data, params) => parse2(inst, data, params, { callee: inst.parse });
-  inst.safeParse = (data, params) => safeParse2(inst, data, params);
-  inst.parseAsync = async (data, params) => parseAsync2(inst, data, params, { callee: inst.parseAsync });
-  inst.safeParseAsync = async (data, params) => safeParseAsync2(inst, data, params);
-  inst.spa = inst.safeParseAsync;
-  inst.encode = (data, params) => encode(inst, data, params);
-  inst.decode = (data, params) => decode(inst, data, params);
-  inst.encodeAsync = async (data, params) => encodeAsync(inst, data, params);
-  inst.decodeAsync = async (data, params) => decodeAsync(inst, data, params);
-  inst.safeEncode = (data, params) => safeEncode(inst, data, params);
-  inst.safeDecode = (data, params) => safeDecode(inst, data, params);
-  inst.safeEncodeAsync = async (data, params) => safeEncodeAsync(inst, data, params);
-  inst.safeDecodeAsync = async (data, params) => safeDecodeAsync(inst, data, params);
-  _installLazyMethods(inst, "ZodType", {
-    check(...chks) {
-      const def2 = this.def;
-      return this.clone(util_exports.mergeDefs(def2, {
-        checks: [
-          ...def2.checks ?? [],
-          ...chks.map((ch) => typeof ch === "function" ? { _zod: { check: ch, def: { check: "custom" }, onattach: [] } } : ch)
-        ]
-      }), { parent: true });
-    },
-    with(...chks) {
-      return this.check(...chks);
-    },
-    clone(def2, params) {
-      return clone(this, def2, params);
-    },
-    brand() {
-      return this;
-    },
-    register(reg, meta2) {
-      reg.add(this, meta2);
-      return this;
-    },
-    refine(check, params) {
-      return this.check(refine(check, params));
-    },
-    superRefine(refinement, params) {
-      return this.check(superRefine(refinement, params));
-    },
-    overwrite(fn) {
-      return this.check(_overwrite(fn));
-    },
-    optional() {
-      return optional(this);
-    },
-    exactOptional() {
-      return exactOptional(this);
-    },
-    nullable() {
-      return nullable(this);
-    },
-    nullish() {
-      return optional(nullable(this));
-    },
-    nonoptional(params) {
-      return nonoptional(this, params);
-    },
-    array() {
-      return array(this);
-    },
-    or(arg4) {
-      return union([this, arg4]);
-    },
-    and(arg4) {
-      return intersection(this, arg4);
-    },
-    transform(tx) {
-      return pipe(this, transform(tx));
-    },
-    default(d) {
-      return _default(this, d);
-    },
-    prefault(d) {
-      return prefault(this, d);
-    },
-    catch(params) {
-      return _catch(this, params);
-    },
-    pipe(target) {
-      return pipe(this, target);
-    },
-    readonly() {
-      return readonly(this);
-    },
-    describe(description) {
-      const cl = this.clone();
-      globalRegistry.add(cl, { description });
-      return cl;
-    },
-    meta(...args) {
-      if (args.length === 0)
-        return globalRegistry.get(this);
-      const cl = this.clone();
-      globalRegistry.add(cl, args[0]);
-      return cl;
-    },
-    isOptional() {
-      return this.safeParse(void 0).success;
-    },
-    isNullable() {
-      return this.safeParse(null).success;
-    },
-    apply(fn) {
-      return fn(this);
-    }
-  });
-  Object.defineProperty(inst, "description", {
-    get() {
-      return globalRegistry.get(inst)?.description;
-    },
-    configurable: true
-  });
   return inst;
+}, {
+  check(...chks) {
+    const def = this.def;
+    return this.clone(util_exports.mergeDefs(def, {
+      checks: [
+        ...def.checks ?? [],
+        ...chks.map((ch) => typeof ch === "function" ? { _zod: { check: ch, def: { check: "custom" }, onattach: [] } } : ch)
+      ]
+    }), { parent: true });
+  },
+  with(...chks) {
+    return this.check(...chks);
+  },
+  clone(def, params) {
+    return clone(this, def, params);
+  },
+  brand() {
+    return this;
+  },
+  register(reg, meta2) {
+    reg.add(this, meta2);
+    return this;
+  },
+  refine(check, params) {
+    return this.check(refine(check, params));
+  },
+  superRefine(refinement, params) {
+    return this.check(superRefine(refinement, params));
+  },
+  overwrite(fn) {
+    return this.check(_overwrite(fn));
+  },
+  optional() {
+    return optional(this);
+  },
+  exactOptional() {
+    return exactOptional(this);
+  },
+  nullable() {
+    return nullable(this);
+  },
+  nullish() {
+    return optional(nullable(this));
+  },
+  nonoptional(params) {
+    return nonoptional(this, params);
+  },
+  array() {
+    return array(this);
+  },
+  or(arg4) {
+    return union([this, arg4]);
+  },
+  and(arg4) {
+    return intersection(this, arg4);
+  },
+  transform(tx) {
+    return pipe(this, transform(tx));
+  },
+  default(d) {
+    return _default(this, d);
+  },
+  prefault(d) {
+    return prefault(this, d);
+  },
+  catch(params) {
+    return _catch(this, params);
+  },
+  pipe(target) {
+    return pipe(this, target);
+  },
+  readonly() {
+    return readonly(this);
+  },
+  describe(description) {
+    const cl = this.clone();
+    globalRegistry.add(cl, { description });
+    return cl;
+  },
+  meta(...args) {
+    if (args.length === 0)
+      return globalRegistry.get(this);
+    const cl = this.clone();
+    globalRegistry.add(cl, args[0]);
+    return cl;
+  },
+  isOptional() {
+    return this.safeParse(void 0).success;
+  },
+  isNullable() {
+    return this.safeParse(null).success;
+  },
+  apply(fn, ...args) {
+    return args.length === 0 ? fn(this) : fn(this, ...args);
+  },
+  // Overrides core's `~standard` to add `jsonSchema`. Must stay a prototype entry: redefining it per instance demotes instances to dictionary mode.
+  get "~standard"() {
+    return util_exports.hide(this, "~standard", {
+      ...standardProps(this),
+      jsonSchema: {
+        input: createStandardJSONSchemaMethod(this, "input"),
+        output: createStandardJSONSchemaMethod(this, "output")
+      }
+    });
+  },
+  set "~standard"(value) {
+    util_exports.own(this, "~standard", value);
+  },
+  parse: function _parse2(data, params) {
+    return parse2(this, data, params, { callee: _parse2 });
+  },
+  parseAsync: async function _parseAsync2(data, params) {
+    return await parseAsync2(this, data, params, { callee: _parseAsync2 });
+  },
+  safeParse(data, params) {
+    return safeParse2(this, data, params);
+  },
+  async safeParseAsync(data, params) {
+    return safeParseAsync2(this, data, params);
+  },
+  // `spa` is an alias: same function object as `safeParseAsync`, as before.
+  get spa() {
+    return this?.safeParseAsync;
+  },
+  set spa(value) {
+    util_exports.own(this, "spa", value);
+  },
+  encode: function _encode2(data, params) {
+    return encode(this, data, params, { callee: _encode2 });
+  },
+  decode: function _decode2(data, params) {
+    return decode(this, data, params, { callee: _decode2 });
+  },
+  encodeAsync: async function _encodeAsync2(data, params) {
+    return await encodeAsync(this, data, params, { callee: _encodeAsync2 });
+  },
+  decodeAsync: async function _decodeAsync2(data, params) {
+    return await decodeAsync(this, data, params, { callee: _decodeAsync2 });
+  },
+  safeEncode(data, params) {
+    return safeEncode(this, data, params);
+  },
+  safeDecode(data, params) {
+    return safeDecode(this, data, params);
+  },
+  async safeEncodeAsync(data, params) {
+    return safeEncodeAsync(this, data, params);
+  },
+  async safeDecodeAsync(data, params) {
+    return safeDecodeAsync(this, data, params);
+  },
+  toJSONSchema(params) {
+    return createToJSONSchemaMethod(this, {})(params);
+  },
+  // Reads through to the registry on every access, so it must not cache.
+  get description() {
+    return globalRegistry.get(this)?.description;
+  },
+  // No setter: `schema._def = x` throws, as it did when `_def` was a non-writable own property.
+  get _def() {
+    return this._zod.def;
+  }
 });
 var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   $ZodString.init(inst, def);
@@ -20797,84 +21768,135 @@ var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   inst.format = bag.format ?? null;
   inst.minLength = bag.minimum ?? null;
   inst.maxLength = bag.maximum ?? null;
-  _installLazyMethods(inst, "_ZodString", {
-    regex(...args) {
-      return this.check(_regex(...args));
-    },
-    includes(...args) {
-      return this.check(_includes(...args));
-    },
-    startsWith(...args) {
-      return this.check(_startsWith(...args));
-    },
-    endsWith(...args) {
-      return this.check(_endsWith(...args));
-    },
-    min(...args) {
-      return this.check(_minLength(...args));
-    },
-    max(...args) {
-      return this.check(_maxLength(...args));
-    },
-    length(...args) {
-      return this.check(_length(...args));
-    },
-    nonempty(...args) {
-      return this.check(_minLength(1, ...args));
-    },
-    lowercase(params) {
-      return this.check(_lowercase(params));
-    },
-    uppercase(params) {
-      return this.check(_uppercase(params));
-    },
-    trim() {
-      return this.check(_trim());
-    },
-    normalize(...args) {
-      return this.check(_normalize(...args));
-    },
-    toLowerCase() {
-      return this.check(_toLowerCase());
-    },
-    toUpperCase() {
-      return this.check(_toUpperCase());
-    },
-    slugify() {
-      return this.check(_slugify());
-    }
-  });
+}, {
+  regex(...args) {
+    return this.check(_regex(...args));
+  },
+  includes(...args) {
+    return this.check(_includes(...args));
+  },
+  startsWith(...args) {
+    return this.check(_startsWith(...args));
+  },
+  endsWith(...args) {
+    return this.check(_endsWith(...args));
+  },
+  min(...args) {
+    return this.check(_minLength(...args));
+  },
+  max(...args) {
+    return this.check(_maxLength(...args));
+  },
+  length(...args) {
+    return this.check(_length(...args));
+  },
+  nonempty(...args) {
+    return this.check(_minLength(1, ...args));
+  },
+  lowercase(params) {
+    return this.check(_lowercase(params));
+  },
+  uppercase(params) {
+    return this.check(_uppercase(params));
+  },
+  trim() {
+    return this.check(_trim());
+  },
+  normalize(...args) {
+    return this.check(_normalize(...args));
+  },
+  toLowerCase() {
+    return this.check(_toLowerCase());
+  },
+  toUpperCase() {
+    return this.check(_toUpperCase());
+  },
+  slugify() {
+    return this.check(_slugify());
+  }
 });
 var ZodString = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
   $ZodString.init(inst, def);
   _ZodString.init(inst, def);
-  inst.email = (params) => inst.check(_email(ZodEmail, params));
-  inst.url = (params) => inst.check(_url(ZodURL, params));
-  inst.jwt = (params) => inst.check(_jwt(ZodJWT, params));
-  inst.emoji = (params) => inst.check(_emoji2(ZodEmoji, params));
-  inst.guid = (params) => inst.check(_guid(ZodGUID, params));
-  inst.uuid = (params) => inst.check(_uuid(ZodUUID, params));
-  inst.uuidv4 = (params) => inst.check(_uuidv4(ZodUUID, params));
-  inst.uuidv6 = (params) => inst.check(_uuidv6(ZodUUID, params));
-  inst.uuidv7 = (params) => inst.check(_uuidv7(ZodUUID, params));
-  inst.nanoid = (params) => inst.check(_nanoid(ZodNanoID, params));
-  inst.guid = (params) => inst.check(_guid(ZodGUID, params));
-  inst.cuid = (params) => inst.check(_cuid(ZodCUID, params));
-  inst.cuid2 = (params) => inst.check(_cuid2(ZodCUID2, params));
-  inst.ulid = (params) => inst.check(_ulid(ZodULID, params));
-  inst.base64 = (params) => inst.check(_base64(ZodBase64, params));
-  inst.base64url = (params) => inst.check(_base64url(ZodBase64URL, params));
-  inst.xid = (params) => inst.check(_xid(ZodXID, params));
-  inst.ksuid = (params) => inst.check(_ksuid(ZodKSUID, params));
-  inst.ipv4 = (params) => inst.check(_ipv4(ZodIPv4, params));
-  inst.ipv6 = (params) => inst.check(_ipv6(ZodIPv6, params));
-  inst.cidrv4 = (params) => inst.check(_cidrv4(ZodCIDRv4, params));
-  inst.cidrv6 = (params) => inst.check(_cidrv6(ZodCIDRv6, params));
-  inst.e164 = (params) => inst.check(_e164(ZodE164, params));
-  inst.datetime = (params) => inst.check(datetime2(params));
-  inst.date = (params) => inst.check(date2(params));
-  inst.time = (params) => inst.check(time2(params));
-  inst.duration = (params) => inst.check(duration2(params));
+}, {
+  email(params) {
+    return this.check(_email(ZodEmail, params));
+  },
+  url(params) {
+    return this.check(_url(ZodURL, params));
+  },
+  jwt(params) {
+    return this.check(_jwt(ZodJWT, params));
+  },
+  emoji(params) {
+    return this.check(_emoji2(ZodEmoji, params));
+  },
+  guid(params) {
+    return this.check(_guid(ZodGUID, params));
+  },
+  uuid(params) {
+    return this.check(_uuid(ZodUUID, params));
+  },
+  uuidv4(params) {
+    return this.check(_uuidv4(ZodUUID, params));
+  },
+  uuidv6(params) {
+    return this.check(_uuidv6(ZodUUID, params));
+  },
+  uuidv7(params) {
+    return this.check(_uuidv7(ZodUUID, params));
+  },
+  nanoid(params) {
+    return this.check(_nanoid(ZodNanoID, params));
+  },
+  cuid(params) {
+    return this.check(_cuid(ZodCUID, params));
+  },
+  cuid2(params) {
+    return this.check(_cuid2(ZodCUID2, params));
+  },
+  ulid(params) {
+    return this.check(_ulid(ZodULID, params));
+  },
+  base64(params) {
+    return this.check(_base64(ZodBase64, params));
+  },
+  base64url(params) {
+    return this.check(_base64url(ZodBase64URL, params));
+  },
+  xid(params) {
+    return this.check(_xid(ZodXID, params));
+  },
+  ksuid(params) {
+    return this.check(_ksuid(ZodKSUID, params));
+  },
+  ipv4(params) {
+    return this.check(_ipv4(ZodIPv4, params));
+  },
+  ipv6(params) {
+    return this.check(_ipv6(ZodIPv6, params));
+  },
+  cidrv4(params) {
+    return this.check(_cidrv4(ZodCIDRv4, params));
+  },
+  cidrv6(params) {
+    return this.check(_cidrv6(ZodCIDRv6, params));
+  },
+  e164(params) {
+    return this.check(_e164(ZodE164, params));
+  },
+  datetime(params) {
+    return this.check(_isoDateTime(ZodISODateTime, params));
+  },
+  date(params) {
+    return this.check(_isoDate(ZodISODate, params));
+  },
+  time(params) {
+    return this.check(_isoTime(ZodISOTime, params));
+  },
+  duration(params) {
+    return this.check(_isoDuration(ZodISODuration, params));
+  }
 });
 function string2(params) {
   return _string(ZodString, params);
@@ -20882,6 +21904,22 @@ function string2(params) {
 var ZodStringFormat = /* @__PURE__ */ $constructor("ZodStringFormat", (inst, def) => {
   $ZodStringFormat.init(inst, def);
   _ZodString.init(inst, def);
+});
+var ZodISODateTime = /* @__PURE__ */ $constructor("ZodISODateTime", (inst, def) => {
+  $ZodISODateTime.init(inst, def);
+  ZodStringFormat.init(inst, def);
+});
+var ZodISODate = /* @__PURE__ */ $constructor("ZodISODate", (inst, def) => {
+  $ZodISODate.init(inst, def);
+  ZodStringFormat.init(inst, def);
+});
+var ZodISOTime = /* @__PURE__ */ $constructor("ZodISOTime", (inst, def) => {
+  $ZodISOTime.init(inst, def);
+  ZodStringFormat.init(inst, def);
+});
+var ZodISODuration = /* @__PURE__ */ $constructor("ZodISODuration", (inst, def) => {
+  $ZodISODuration.init(inst, def);
+  ZodStringFormat.init(inst, def);
 });
 var ZodEmail = /* @__PURE__ */ $constructor("ZodEmail", (inst, def) => {
   $ZodEmail.init(inst, def);
@@ -20969,59 +22007,58 @@ var ZodNumber = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
   $ZodNumber.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => numberProcessor(inst, ctx, json, params);
-  _installLazyMethods(inst, "ZodNumber", {
-    gt(value, params) {
-      return this.check(_gt(value, params));
-    },
-    gte(value, params) {
-      return this.check(_gte(value, params));
-    },
-    min(value, params) {
-      return this.check(_gte(value, params));
-    },
-    lt(value, params) {
-      return this.check(_lt(value, params));
-    },
-    lte(value, params) {
-      return this.check(_lte(value, params));
-    },
-    max(value, params) {
-      return this.check(_lte(value, params));
-    },
-    int(params) {
-      return this.check(int(params));
-    },
-    safe(params) {
-      return this.check(int(params));
-    },
-    positive(params) {
-      return this.check(_gt(0, params));
-    },
-    nonnegative(params) {
-      return this.check(_gte(0, params));
-    },
-    negative(params) {
-      return this.check(_lt(0, params));
-    },
-    nonpositive(params) {
-      return this.check(_lte(0, params));
-    },
-    multipleOf(value, params) {
-      return this.check(_multipleOf(value, params));
-    },
-    step(value, params) {
-      return this.check(_multipleOf(value, params));
-    },
-    finite() {
-      return this;
-    }
-  });
   const bag = inst._zod.bag;
   inst.minValue = Math.max(bag.minimum ?? Number.NEGATIVE_INFINITY, bag.exclusiveMinimum ?? Number.NEGATIVE_INFINITY) ?? null;
   inst.maxValue = Math.min(bag.maximum ?? Number.POSITIVE_INFINITY, bag.exclusiveMaximum ?? Number.POSITIVE_INFINITY) ?? null;
   inst.isInt = (bag.format ?? "").includes("int") || Number.isSafeInteger(bag.multipleOf ?? 0.5);
   inst.isFinite = true;
   inst.format = bag.format ?? null;
+}, {
+  gt(value, params) {
+    return this.check(_gt(value, params));
+  },
+  gte(value, params) {
+    return this.check(_gte(value, params));
+  },
+  min(value, params) {
+    return this.check(_gte(value, params));
+  },
+  lt(value, params) {
+    return this.check(_lt(value, params));
+  },
+  lte(value, params) {
+    return this.check(_lte(value, params));
+  },
+  max(value, params) {
+    return this.check(_lte(value, params));
+  },
+  int(params) {
+    return this.check(int(params));
+  },
+  safe(params) {
+    return this.check(int(params));
+  },
+  positive(params) {
+    return this.check(_gt(0, params));
+  },
+  nonnegative(params) {
+    return this.check(_gte(0, params));
+  },
+  negative(params) {
+    return this.check(_lt(0, params));
+  },
+  nonpositive(params) {
+    return this.check(_lte(0, params));
+  },
+  multipleOf(value, params) {
+    return this.check(_multipleOf(value, params));
+  },
+  step(value, params) {
+    return this.check(_multipleOf(value, params));
+  },
+  finite() {
+    return this;
+  }
 });
 function number2(params) {
   return _number(ZodNumber, params);
@@ -21045,23 +22082,44 @@ var ZodBigInt = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
   $ZodBigInt.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => bigintProcessor(inst, ctx, json, params);
-  inst.gte = (value, params) => inst.check(_gte(value, params));
-  inst.min = (value, params) => inst.check(_gte(value, params));
-  inst.gt = (value, params) => inst.check(_gt(value, params));
-  inst.gte = (value, params) => inst.check(_gte(value, params));
-  inst.min = (value, params) => inst.check(_gte(value, params));
-  inst.lt = (value, params) => inst.check(_lt(value, params));
-  inst.lte = (value, params) => inst.check(_lte(value, params));
-  inst.max = (value, params) => inst.check(_lte(value, params));
-  inst.positive = (params) => inst.check(_gt(BigInt(0), params));
-  inst.negative = (params) => inst.check(_lt(BigInt(0), params));
-  inst.nonpositive = (params) => inst.check(_lte(BigInt(0), params));
-  inst.nonnegative = (params) => inst.check(_gte(BigInt(0), params));
-  inst.multipleOf = (value, params) => inst.check(_multipleOf(value, params));
   const bag = inst._zod.bag;
   inst.minValue = bag.minimum ?? null;
   inst.maxValue = bag.maximum ?? null;
   inst.format = bag.format ?? null;
+}, {
+  gte(value, params) {
+    return this.check(_gte(value, params));
+  },
+  min(value, params) {
+    return this.check(_gte(value, params));
+  },
+  gt(value, params) {
+    return this.check(_gt(value, params));
+  },
+  lt(value, params) {
+    return this.check(_lt(value, params));
+  },
+  lte(value, params) {
+    return this.check(_lte(value, params));
+  },
+  max(value, params) {
+    return this.check(_lte(value, params));
+  },
+  positive(params) {
+    return this.check(_gt(BigInt(0), params));
+  },
+  negative(params) {
+    return this.check(_lt(BigInt(0), params));
+  },
+  nonpositive(params) {
+    return this.check(_lte(BigInt(0), params));
+  },
+  nonnegative(params) {
+    return this.check(_gte(BigInt(0), params));
+  },
+  multipleOf(value, params) {
+    return this.check(_multipleOf(value, params));
+  }
 });
 var ZodNull = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
   $ZodNull.init(inst, def);
@@ -21106,79 +22164,80 @@ var ZodDate = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
   inst.maxDate = c.maximum ? new Date(c.maximum) : null;
 });
 var ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
+  _ensureDefaultMemoizer();
   $ZodArray.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => arrayProcessor(inst, ctx, json, params);
   inst.element = def.element;
-  _installLazyMethods(inst, "ZodArray", {
-    min(n, params) {
-      return this.check(_minLength(n, params));
-    },
-    nonempty(params) {
-      return this.check(_minLength(1, params));
-    },
-    max(n, params) {
-      return this.check(_maxLength(n, params));
-    },
-    length(n, params) {
-      return this.check(_length(n, params));
-    },
-    unwrap() {
-      return this.element;
-    }
-  });
+}, {
+  min(n, params) {
+    return this.check(_minLength(n, params));
+  },
+  nonempty(params) {
+    return this.check(_minLength(1, params));
+  },
+  max(n, params) {
+    return this.check(_maxLength(n, params));
+  },
+  length(n, params) {
+    return this.check(_length(n, params));
+  },
+  unwrap() {
+    return this.element;
+  }
 });
 function array(element2, params) {
   return _array(ZodArray, element2, params);
 }
 var ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
+  _ensureDefaultMemoizer();
   $ZodObjectJIT.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => objectProcessor(inst, ctx, json, params);
-  util_exports.defineLazy(inst, "shape", () => {
-    return def.shape;
-  });
-  _installLazyMethods(inst, "ZodObject", {
-    keyof() {
-      return _enum(Object.keys(this._zod.def.shape));
-    },
-    catchall(catchall) {
-      return this.clone({ ...this._zod.def, catchall });
-    },
-    passthrough() {
-      return this.clone({ ...this._zod.def, catchall: unknown() });
-    },
-    loose() {
-      return this.clone({ ...this._zod.def, catchall: unknown() });
-    },
-    strict() {
-      return this.clone({ ...this._zod.def, catchall: never() });
-    },
-    strip() {
-      return this.clone({ ...this._zod.def, catchall: void 0 });
-    },
-    extend(incoming) {
-      return util_exports.extend(this, incoming);
-    },
-    safeExtend(incoming) {
-      return util_exports.safeExtend(this, incoming);
-    },
-    merge(other) {
-      return util_exports.merge(this, other);
-    },
-    pick(mask) {
-      return util_exports.pick(this, mask);
-    },
-    omit(mask) {
-      return util_exports.omit(this, mask);
-    },
-    partial(...args) {
-      return util_exports.partial(ZodOptional, this, args[0]);
-    },
-    required(...args) {
-      return util_exports.required(ZodNonOptional, this, args[0]);
-    }
-  });
+  util_exports.installLazyProp(inst, "shape", (self2) => self2._zod.def.shape, false);
+}, {
+  keyof() {
+    return _enum(Object.keys(this._zod.def.shape));
+  },
+  catchall(catchall) {
+    return this.clone({ ...this._zod.def, catchall });
+  },
+  passthrough() {
+    return this.clone({ ...this._zod.def, catchall: unknown() });
+  },
+  loose() {
+    return this.clone({ ...this._zod.def, catchall: unknown() });
+  },
+  strict() {
+    return this.clone({ ...this._zod.def, catchall: never() });
+  },
+  strip() {
+    return this.clone({ ...this._zod.def, catchall: void 0 });
+  },
+  extend(incoming) {
+    return util_exports.extend(this, incoming);
+  },
+  safeExtend(incoming) {
+    return util_exports.safeExtend(this, incoming);
+  },
+  merge(other) {
+    return util_exports.merge(this, other);
+  },
+  pick(mask) {
+    return util_exports.pick(this, mask);
+  },
+  omit(mask) {
+    return util_exports.omit(this, mask);
+  },
+  partial(...args) {
+    return util_exports.partial(ZodOptional, this, args[0]);
+  },
+  exactPartial(...args) {
+    return util_exports.partial(ZodExactOptional, this, args[0], "exactPartial");
+  },
+  required(...args) {
+    return util_exports.required(ZodNonOptional, this, args[0]);
+  }
 });
 function object(shape, params) {
   const def = {
@@ -21234,6 +22293,7 @@ function intersection(left, right) {
   });
 }
 var ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
+  _ensureDefaultMemoizer();
   $ZodRecord.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => recordProcessor(inst, ctx, json, params);
@@ -21324,6 +22384,7 @@ function literal(value, params) {
   });
 }
 var ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
+  _ensureDefaultMemoizer();
   $ZodTransform.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json, params) => transformProcessor(inst, ctx, json, params);
@@ -21339,7 +22400,8 @@ var ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
         if (_issue.fatal)
           _issue.continue = false;
         _issue.code ?? (_issue.code = "custom");
-        _issue.input ?? (_issue.input = payload.value);
+        if (!("input" in _issue))
+          _issue.input = payload.value;
         _issue.inst ?? (_issue.inst = inst);
         payload.issues.push(util_exports.issue(_issue));
       }
@@ -21348,12 +22410,10 @@ var ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
     if (output instanceof Promise) {
       return output.then((output2) => {
         payload.value = output2;
-        payload.fallback = true;
         return payload;
       });
     }
     payload.value = output;
-    payload.fallback = true;
     return payload;
   };
 });
@@ -21454,7 +22514,7 @@ function _catch(innerType, catchValue) {
   return new ZodCatch({
     type: "catch",
     innerType,
-    catchValue: typeof catchValue === "function" ? catchValue : () => catchValue
+    catchValue: typeof catchValue === "function" ? catchValue : util_exports.constantCatch(catchValue)
   });
 }
 var ZodPipe = /* @__PURE__ */ $constructor("ZodPipe", (inst, def) => {
@@ -21537,6 +22597,31 @@ var ZodFirstPartyTypeKind;
 /* @__PURE__ */ (function(ZodFirstPartyTypeKind2) {
 })(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
 
+// node_modules/zod/v4/classic/iso.js
+var iso_exports = {};
+__export(iso_exports, {
+  ZodISODate: () => ZodISODate,
+  ZodISODateTime: () => ZodISODateTime,
+  ZodISODuration: () => ZodISODuration,
+  ZodISOTime: () => ZodISOTime,
+  date: () => date2,
+  datetime: () => datetime2,
+  duration: () => duration2,
+  time: () => time2
+});
+function datetime2(params) {
+  return _isoDateTime(ZodISODateTime, params);
+}
+function date2(params) {
+  return _isoDate(ZodISODate, params);
+}
+function time2(params) {
+  return _isoTime(ZodISOTime, params);
+}
+function duration2(params) {
+  return _isoDuration(ZodISODuration, params);
+}
+
 // node_modules/zod/v4/classic/coerce.js
 var coerce_exports = {};
 __export(coerce_exports, {
@@ -21561,9 +22646,6 @@ function bigint2(params) {
 function date3(params) {
   return _coercedDate(ZodDate, params);
 }
-
-// node_modules/zod/v4/classic/external.js
-config(en_default());
 
 // node_modules/@modelcontextprotocol/core/dist/auth-CUe6YdwF.mjs
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
@@ -23622,13 +24704,13 @@ function wrapOutputSchemaForLegacy(natural) {
     required: ["result"]
   };
   const convertRecursiveRefs = declares2019Dialect(natural["$schema"]) && natural["$recursiveAnchor"] !== true;
-  const rewriteRefs = (node, parentIsNameMap) => {
-    if (Array.isArray(node)) return node.map((item) => rewriteRefs(item, false));
-    if (node === null || typeof node !== "object") return node;
-    if (!parentIsNameMap && establishesNewBase(node["$id"])) return node;
+  const rewriteRefs = (node2, parentIsNameMap) => {
+    if (Array.isArray(node2)) return node2.map((item) => rewriteRefs(item, false));
+    if (node2 === null || typeof node2 !== "object") return node2;
+    if (!parentIsNameMap && establishesNewBase(node2["$id"])) return node2;
     const out = {};
     let convertedRecursion = false;
-    for (const [k, v] of Object.entries(node)) if (parentIsNameMap) out[k] = rewriteRefs(v, false);
+    for (const [k, v] of Object.entries(node2)) if (parentIsNameMap) out[k] = rewriteRefs(v, false);
     else if ((k === "$ref" || k === "$dynamicRef") && typeof v === "string") out[k] = v === "#" ? "#/properties/result" : v.startsWith("#/") ? `#/properties/result${v.slice(1)}` : v;
     else if (k === "$recursiveRef" && v === "#" && convertRecursiveRefs) convertedRecursion = true;
     else if (REF_REWRITE_DATA_POSITION_KEYS.has(k)) out[k] = v;
@@ -24736,9 +25818,9 @@ function build() {
     DiscoverResultResponseSchema: wireResultResponse(DiscoverResultSchema$1)
   };
 }
-var memo;
+var memo2;
 function buildSchemas2026() {
-  return memo ??= build();
+  return memo2 ??= build();
 }
 var CACHEABLE_RESULT_METHODS = [
   "tools/list",
@@ -25448,9 +26530,9 @@ var PERMITTED_X_MCP_HEADER_TYPES = /* @__PURE__ */ new Set([
 function scanXMcpHeaderDeclarations(inputSchema) {
   const declarations = [];
   const seenLower = /* @__PURE__ */ new Map();
-  const visit = (node, path, reachable) => {
-    if (node === null || typeof node !== "object") return void 0;
-    const schema = node;
+  const visit = (node2, path, reachable) => {
+    if (node2 === null || typeof node2 !== "object") return void 0;
+    const schema = node2;
     if (X_MCP_HEADER_KEY in schema) {
       if (!reachable || path.length === 0) return `${pathName(path)}: x-mcp-header is only permitted on properties statically reachable via a chain of 'properties' keys (not under items, additionalProperties, oneOf/anyOf/allOf/not, if/then/else, or $ref)`;
       const raw = schema[X_MCP_HEADER_KEY];
@@ -25697,8 +26779,8 @@ function isProvablyObjectShapedRoot(schema) {
     "anyOf",
     "allOf"
   ]) {
-    const members = schema[key2];
-    if (Array.isArray(members) && members.length > 0) return members.every((m) => m !== null && typeof m === "object" && (m.type === "object" || isProvablyObjectShapedRoot(m)));
+    const members2 = schema[key2];
+    if (Array.isArray(members2) && members2.length > 0) return members2.every((m) => m !== null && typeof m === "object" && (m.type === "object" || isProvablyObjectShapedRoot(m)));
   }
   return false;
 }
@@ -25808,22 +26890,22 @@ var PROPERTY_KEYS_BY_TYPE = {
   array: shapeKeys([UntitledMultiSelectEnumSchemaSchema, TitledMultiSelectEnumSchemaSchema])
 };
 var SUPPORTED_STRING_FORMATS = new Set(StringSchemaSchema.shape.format.unwrap().options);
-function walkProperty(node, path, vendor, unsupported) {
-  if (!isJsonObject(node)) return node;
-  const allowedKeys = typeof node.type === "string" && Object.hasOwn(PROPERTY_KEYS_BY_TYPE, node.type) ? PROPERTY_KEYS_BY_TYPE[node.type] : void 0;
-  if (allowedKeys === void 0) return node;
+function walkProperty(node2, path, vendor, unsupported) {
+  if (!isJsonObject(node2)) return node2;
+  const allowedKeys = typeof node2.type === "string" && Object.hasOwn(PROPERTY_KEYS_BY_TYPE, node2.type) ? PROPERTY_KEYS_BY_TYPE[node2.type] : void 0;
+  if (allowedKeys === void 0) return node2;
   const pruned = {};
-  for (const [key2, value] of Object.entries(node)) if (allowedKeys.has(key2) || isAnnotationOnlyJsonSchemaKeyword(key2)) pruned[key2] = value;
-  else if (key2 === "pattern" && node.type === "string" && typeof node.format === "string") {
-    if (!SUPPORTED_STRING_FORMATS.has(node.format)) pruned[key2] = value;
-    else if (typeof value !== "string" || !isLibraryFormatPattern(node.format, value, vendor)) unsupported.push(`${path}.${key2}`);
+  for (const [key2, value] of Object.entries(node2)) if (allowedKeys.has(key2) || isAnnotationOnlyJsonSchemaKeyword(key2)) pruned[key2] = value;
+  else if (key2 === "pattern" && node2.type === "string" && typeof node2.format === "string") {
+    if (!SUPPORTED_STRING_FORMATS.has(node2.format)) pruned[key2] = value;
+    else if (typeof value !== "string" || !isLibraryFormatPattern(node2.format, value, vendor)) unsupported.push(`${path}.${key2}`);
   } else unsupported.push(`${path}.${key2}`);
   return pruned;
 }
 function walkRequestedSchema(converted, vendor) {
   const pruned = {};
   const unsupported = [];
-  for (const [key2, value] of Object.entries(converted)) if (key2 === "properties" && isJsonObject(value)) pruned[key2] = Object.fromEntries(Object.entries(value).map(([name254, node]) => [name254, walkProperty(node, `properties.${name254}`, vendor, unsupported)]));
+  for (const [key2, value] of Object.entries(converted)) if (key2 === "properties" && isJsonObject(value)) pruned[key2] = Object.fromEntries(Object.entries(value).map(([name254, node2]) => [name254, walkProperty(node2, `properties.${name254}`, vendor, unsupported)]));
   else if (ROOT_KEYS.has(key2)) pruned[key2] = value;
   else if (!isAnnotationOnlyJsonSchemaKeyword(key2)) unsupported.push(key2);
   if (unsupported.length > 0) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Elicitation requestedSchema contains unsupported JSON Schema constraint(s) after Standard Schema conversion: ${unsupported.join(", ")}`);
@@ -25831,7 +26913,7 @@ function walkRequestedSchema(converted, vendor) {
 }
 function describeUnsupportedProperties(pruned, fallback) {
   if (!isJsonObject(pruned.properties)) return fallback;
-  const offenders = Object.entries(pruned.properties).filter(([, node]) => !parseSchema(PrimitiveSchemaDefinitionSchema, node).success).map(([name254]) => `properties.${name254}`);
+  const offenders = Object.entries(pruned.properties).filter(([, node2]) => !parseSchema(PrimitiveSchemaDefinitionSchema, node2).success).map(([name254]) => `properties.${name254}`);
   return offenders.length > 0 ? offenders.join(", ") : fallback;
 }
 function findDroppedConstraintPaths(original, parsed, path = "") {
@@ -27897,8 +28979,8 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     endIf() {
       return this._endBlockNode(If, Else);
     }
-    _for(node, forBody) {
-      this._blockNode(node);
+    _for(node2, forBody) {
+      this._blockNode(node2);
       if (forBody) this.code(forBody).endFor();
       return this;
     }
@@ -27935,24 +29017,24 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this._leafNode(new Break(label));
     }
     return(value) {
-      const node = new Return();
-      this._blockNode(node);
+      const node2 = new Return();
+      this._blockNode(node2);
       this.code(value);
-      if (node.nodes.length !== 1) throw new Error('CodeGen: "return" should have one node');
+      if (node2.nodes.length !== 1) throw new Error('CodeGen: "return" should have one node');
       return this._endBlockNode(Return);
     }
     try(tryBody, catchCode, finallyCode) {
       if (!catchCode && !finallyCode) throw new Error('CodeGen: "try" without "catch" and "finally"');
-      const node = new Try();
-      this._blockNode(node);
+      const node2 = new Try();
+      this._blockNode(node2);
       this.code(tryBody);
       if (catchCode) {
         const error2 = this.name("e");
-        this._currNode = node.catch = new Catch(error2);
+        this._currNode = node2.catch = new Catch(error2);
         catchCode(error2);
       }
       if (finallyCode) {
-        this._currNode = node.finally = new Finally();
+        this._currNode = node2.finally = new Finally();
         this.code(finallyCode);
       }
       return this._endBlockNode(Catch, Finally);
@@ -27987,13 +29069,13 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
         this._root.optimizeNames(this._root.names, this._constants);
       }
     }
-    _leafNode(node) {
-      this._currNode.nodes.push(node);
+    _leafNode(node2) {
+      this._currNode.nodes.push(node2);
       return this;
     }
-    _blockNode(node) {
-      this._currNode.nodes.push(node);
-      this._nodes.push(node);
+    _blockNode(node2) {
+      this._currNode.nodes.push(node2);
+      this._nodes.push(node2);
     }
     _endBlockNode(N1, N2) {
       const n = this._currNode;
@@ -28003,10 +29085,10 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       }
       throw new Error(`CodeGen: not in block "${N2 ? `${N1.kind}/${N2.kind}` : N1.kind}"`);
     }
-    _elseNode(node) {
+    _elseNode(node2) {
       const n = this._currNode;
       if (!(n instanceof If)) throw new Error('CodeGen: "else" without "if"');
-      this._currNode = n.else = node;
+      this._currNode = n.else = node2;
       return this;
     }
     get _root() {
@@ -28016,9 +29098,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       const ns = this._nodes;
       return ns[ns.length - 1];
     }
-    set _currNode(node) {
+    set _currNode(node2) {
       const ns = this._nodes;
-      ns[ns.length - 1] = node;
+      ns[ns.length - 1] = node2;
     }
   };
   exports.CodeGen = CodeGen;
@@ -29130,10 +30212,10 @@ var require_resolve = /* @__PURE__ */ __commonJSMin(((exports) => {
         } else this.refs[ref] = fullPath;
         return ref;
       }
-      function addAnchor(anchor) {
-        if (typeof anchor == "string") {
-          if (!ANCHOR.test(anchor)) throw new Error(`invalid anchor "${anchor}"`);
-          addRef.call(this, `#${anchor}`);
+      function addAnchor(anchor2) {
+        if (typeof anchor2 == "string") {
+          if (!ANCHOR.test(anchor2)) throw new Error(`invalid anchor "${anchor2}"`);
+          addRef.call(this, `#${anchor2}`);
         }
       }
     });
@@ -32680,10 +33762,10 @@ var require_dynamicAnchor = /* @__PURE__ */ __commonJSMin(((exports) => {
     schemaType: "string",
     code: (cxt) => dynamicAnchor(cxt, cxt.schema)
   };
-  function dynamicAnchor(cxt, anchor) {
+  function dynamicAnchor(cxt, anchor2) {
     const { gen, it } = cxt;
-    it.schemaEnv.root.dynamicAnchors[anchor] = true;
-    const v = (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`;
+    it.schemaEnv.root.dynamicAnchors[anchor2] = true;
+    const v = (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor2)}`;
     const validate3 = it.errSchemaPath === "#" ? it.validateName : _getValidate(cxt);
     gen.if((0, codegen_1._)`!${v}`, () => gen.assign(v, validate3));
   }
@@ -32719,7 +33801,7 @@ var require_dynamicRef = /* @__PURE__ */ __commonJSMin(((exports) => {
   function dynamicRef(cxt, ref) {
     const { gen, keyword, it } = cxt;
     if (ref[0] !== "#") throw new Error(`"${keyword}" only supports hash fragment reference`);
-    const anchor = ref.slice(1);
+    const anchor2 = ref.slice(1);
     if (it.allErrors) _dynamicRef();
     else {
       const valid = gen.let("valid", false);
@@ -32727,8 +33809,8 @@ var require_dynamicRef = /* @__PURE__ */ __commonJSMin(((exports) => {
       cxt.ok(valid);
     }
     function _dynamicRef(valid) {
-      if (it.schemaEnv.root.dynamicAnchors[anchor]) {
-        const v = gen.let("_v", (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`);
+      if (it.schemaEnv.root.dynamicAnchors[anchor2]) {
+        const v = gen.let("_v", (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor2)}`);
         gen.if(v, _callRef(v, valid), _callRef(it.validateName, valid));
       } else _callRef(it.validateName, valid)();
     }
@@ -36422,17 +37504,18 @@ var PerformanceTracker = class {
 };
 var perfTracker = new PerformanceTracker();
 async function getPackageVersion() {
+  if (true) return "4.3.0";
   try {
     const packageJsonPath = new URL("../package.json", import.meta.url);
     const packageJson = await import(packageJsonPath.href, {
       with: { type: "json" }
     });
-    return packageJson.default.version || "2.0.1";
+    return packageJson.default.version || "0.0.0-dev";
   } catch (error2) {
     logger.warn("Failed to read package.json version", {
       error: error2 instanceof Error ? error2.message : String(error2)
     });
-    return "2.0.1";
+    return "0.0.0-dev";
   }
 }
 
@@ -37093,7 +38176,7 @@ async function stopTelemetryServer() {
 }
 
 // node_modules/@danielsimonjr/mathts-core/dist/index.js
-init_chunk_VPK5YTKG();
+init_chunk_L5MWGOLB();
 
 // node_modules/typed-function/build/typed-function.mjs
 var NOT_TYPED_FUNCTION = "Argument is not a typed-function.";
@@ -40993,12 +42076,59 @@ function sumSquaredDeviations(xs) {
   const n = xs.length;
   if (n < 2) return 0;
   const mean8 = pairwiseSum(xs) / n;
-  const d = new Float64Array(n);
-  for (let i2 = 0; i2 < n; i2++) d[i2] = xs[i2] - mean8;
-  const sumD = pairwiseSum(d);
-  const sumDD = pairwiseDot(d, d);
+  const { sumD, sumDD } = pairwiseDeviationSums(xs, mean8, 0, n);
   const corrected = sumDD - sumD * sumD / n;
   return corrected < 0 ? 0 : corrected;
+}
+function pairwiseDeviationSums(xs, mean8, start, end) {
+  const n = end - start;
+  if (n <= PAIRWISE_BLOCK) {
+    let d0 = 0, d1 = 0, d2 = 0, d3 = 0, d4 = 0, d5 = 0, d6 = 0, d7 = 0;
+    let q0 = 0, q1 = 0, q2 = 0, q3 = 0, q4 = 0, q5 = 0, q6 = 0, q7 = 0;
+    let i2 = start;
+    const limit2 = start + (n - n % 8);
+    for (; i2 < limit2; i2 += 8) {
+      const a0 = xs[i2] - mean8;
+      const a1 = xs[i2 + 1] - mean8;
+      const a2 = xs[i2 + 2] - mean8;
+      const a3 = xs[i2 + 3] - mean8;
+      const a4 = xs[i2 + 4] - mean8;
+      const a5 = xs[i2 + 5] - mean8;
+      const a6 = xs[i2 + 6] - mean8;
+      const a7 = xs[i2 + 7] - mean8;
+      d0 += a0;
+      q0 += a0 * a0;
+      d1 += a1;
+      q1 += a1 * a1;
+      d2 += a2;
+      q2 += a2 * a2;
+      d3 += a3;
+      q3 += a3 * a3;
+      d4 += a4;
+      q4 += a4 * a4;
+      d5 += a5;
+      q5 += a5 * a5;
+      d6 += a6;
+      q6 += a6 * a6;
+      d7 += a7;
+      q7 += a7 * a7;
+    }
+    let tailD = 0;
+    let tailDD = 0;
+    for (; i2 < end; i2++) {
+      const a = xs[i2] - mean8;
+      tailD += a;
+      tailDD += a * a;
+    }
+    return {
+      sumD: d0 + d1 + (d2 + d3) + (d4 + d5 + (d6 + d7)) + tailD,
+      sumDD: q0 + q1 + (q2 + q3) + (q4 + q5 + (q6 + q7)) + tailDD
+    };
+  }
+  const half = (n >> 1) - (n >> 1) % 8;
+  const left = pairwiseDeviationSums(xs, mean8, start, start + half);
+  const right = pairwiseDeviationSums(xs, mean8, start + half, end);
+  return { sumD: left.sumD + right.sumD, sumDD: left.sumDD + right.sumDD };
 }
 function neumaierCumsum(xs, out) {
   let sum6 = 0;
@@ -41396,6 +42526,7 @@ __export(dist_exports, {
   fallingFactorial: () => fallingFactorial,
   faraday: () => faraday,
   fermiCoupling: () => fermiCoupling,
+  ferrersP: () => ferrersP,
   fft: () => fft,
   fft2d: () => fft2d,
   fftGpuDispatch: () => fftGpuDispatch,
@@ -41953,9 +43084,14 @@ __export(dist_exports, {
   spearman: () => spearman,
   spearmanr: () => spearmanr,
   spectralClustering: () => spectralClustering,
+  spectralRadiance: () => spectralRadiance,
   spectrogram: () => spectrogram,
   speedOfLight: () => speedOfLight,
   sphericalVoronoi: () => sphericalVoronoi,
+  spheroidalAngular: () => spheroidalAngular,
+  spheroidalCharacteristic: () => spheroidalCharacteristic,
+  spheroidalLambda: () => spheroidalLambda,
+  spheroidalRadial: () => spheroidalRadial,
   splitUnit: () => splitUnit,
   sqrt: () => sqrt3,
   sqrtm: () => sqrtm,
@@ -50609,15 +51745,15 @@ function householder(x, degenerateBeta = -2) {
     } else {
       v[0] = -sigma / (x[0] + mu);
     }
-    const beta2 = 2 * v[0] * v[0] / (sigma + v[0] * v[0]);
+    const beta3 = 2 * v[0] * v[0] / (sigma + v[0] * v[0]);
     const v0 = v[0];
     for (let i2 = 0; i2 < n; i2++) {
       v[i2] /= v0;
     }
-    return { v, beta: beta2 };
+    return { v, beta: beta3 };
   }
 }
-function applyHouseholderLeft(A, v, beta2, startRow, startCol) {
+function applyHouseholderLeft(A, v, beta3, startRow, startCol) {
   const n = A[0].length;
   const len = v.length;
   for (let j = startCol; j < n; j++) {
@@ -50625,13 +51761,13 @@ function applyHouseholderLeft(A, v, beta2, startRow, startCol) {
     for (let i2 = 0; i2 < len; i2++) {
       dot9 += v[i2] * A[startRow + i2][j];
     }
-    dot9 *= beta2;
+    dot9 *= beta3;
     for (let i2 = 0; i2 < len; i2++) {
       A[startRow + i2][j] -= dot9 * v[i2];
     }
   }
 }
-function applyHouseholderRight(A, v, beta2, startRow, startCol) {
+function applyHouseholderRight(A, v, beta3, startRow, startCol) {
   const m = A.length;
   const len = v.length;
   for (let i2 = startRow; i2 < m; i2++) {
@@ -50639,7 +51775,7 @@ function applyHouseholderRight(A, v, beta2, startRow, startCol) {
     for (let j = 0; j < len; j++) {
       dot9 += A[i2][startCol + j] * v[j];
     }
-    dot9 *= beta2;
+    dot9 *= beta3;
     for (let j = 0; j < len; j++) {
       A[i2][startCol + j] -= dot9 * v[j];
     }
@@ -51115,10 +52251,10 @@ function bidiagonalize(A) {
       for (let i2 = k; i2 < m; i2++) {
         col.push(B2[i2][k]);
       }
-      const { v, beta: beta2 } = householder(col);
-      if (beta2 !== 0) {
-        applyHouseholderLeft(B2, v, beta2, k, k);
-        applyHouseholderRight(U, v, beta2, 0, k);
+      const { v, beta: beta3 } = householder(col);
+      if (beta3 !== 0) {
+        applyHouseholderLeft(B2, v, beta3, k, k);
+        applyHouseholderRight(U, v, beta3, 0, k);
       }
     }
     if (k < n - 2) {
@@ -51126,10 +52262,10 @@ function bidiagonalize(A) {
       for (let j = k + 1; j < n; j++) {
         row22.push(B2[k][j]);
       }
-      const { v, beta: beta2 } = householder(row22);
-      if (beta2 !== 0) {
-        applyHouseholderRight(B2, v, beta2, k, k + 1);
-        applyHouseholderRight(V, v, beta2, 0, k + 1);
+      const { v, beta: beta3 } = householder(row22);
+      if (beta3 !== 0) {
+        applyHouseholderRight(B2, v, beta3, k, k + 1);
+        applyHouseholderRight(V, v, beta3, 0, k + 1);
       }
     }
   }
@@ -51228,19 +52364,19 @@ function jacobiSVD(A) {
     let rotated = false;
     for (let p = 0; p < n - 1; p++) {
       for (let q = p + 1; q < n; q++) {
-        let alpha = 0;
-        let beta2 = 0;
+        let alpha2 = 0;
+        let beta3 = 0;
         let gamma2 = 0;
         for (let i2 = 0; i2 < m; i2++) {
-          alpha += W[i2][p] * W[i2][p];
+          alpha2 += W[i2][p] * W[i2][p];
           gamma2 += W[i2][q] * W[i2][q];
-          beta2 += W[i2][p] * W[i2][q];
+          beta3 += W[i2][p] * W[i2][q];
         }
-        if (Math.abs(beta2) <= EPS5 * Math.sqrt(alpha * gamma2) || alpha === 0 && gamma2 === 0) {
+        if (Math.abs(beta3) <= EPS5 * Math.sqrt(alpha2 * gamma2) || alpha2 === 0 && gamma2 === 0) {
           continue;
         }
         rotated = true;
-        const zeta2 = (gamma2 - alpha) / (2 * beta2);
+        const zeta2 = (gamma2 - alpha2) / (2 * beta3);
         const sign4 = zeta2 >= 0 ? 1 : -1;
         const t = sign4 / (Math.abs(zeta2) + Math.sqrt(1 + zeta2 * zeta2));
         const c = 1 / Math.sqrt(1 + t * t);
@@ -51721,11 +52857,11 @@ function hessenbergReduce(A) {
   for (let k = 0; k < n - 2; k++) {
     const x = [];
     for (let i2 = k + 1; i2 < n; i2++) x.push(H[i2][k]);
-    const { v, beta: beta2 } = householder(x, 2);
-    if (beta2 !== 0) {
-      applyHouseholderLeft(H, v, beta2, k + 1, k);
-      applyHouseholderRight(H, v, beta2, 0, k + 1);
-      applyHouseholderRight(Q2, v, beta2, 0, k + 1);
+    const { v, beta: beta3 } = householder(x, 2);
+    if (beta3 !== 0) {
+      applyHouseholderLeft(H, v, beta3, k + 1, k);
+      applyHouseholderRight(H, v, beta3, 0, k + 1);
+      applyHouseholderRight(Q2, v, beta3, 0, k + 1);
     }
   }
   for (let i2 = 0; i2 < n; i2++) for (let j = 0; j < i2 - 1; j++) H[i2][j] = 0;
@@ -51800,11 +52936,11 @@ function qrStepDouble(H, Q2, start, end) {
   let y = H[start + 1][start] * (H[start][start] + H[start + 1][start + 1] - s);
   let z = H[start + 1][start] * H[start + 2][start + 1];
   for (let k = start; k <= end - 2; k++) {
-    const { v, beta: beta2 } = householder([x, y, z], 2);
+    const { v, beta: beta3 } = householder([x, y, z], 2);
     const q = Math.max(start, k - 1);
     for (let j = q; j < n; j++) {
       let dot9 = v[0] * H[k][j] + v[1] * H[k + 1][j] + v[2] * H[k + 2][j];
-      dot9 *= beta2;
+      dot9 *= beta3;
       H[k][j] -= dot9 * v[0];
       H[k + 1][j] -= dot9 * v[1];
       H[k + 2][j] -= dot9 * v[2];
@@ -51812,14 +52948,14 @@ function qrStepDouble(H, Q2, start, end) {
     const r = Math.min(k + 4, end + 1);
     for (let i2 = 0; i2 < r; i2++) {
       let dot9 = v[0] * H[i2][k] + v[1] * H[i2][k + 1] + v[2] * H[i2][k + 2];
-      dot9 *= beta2;
+      dot9 *= beta3;
       H[i2][k] -= dot9 * v[0];
       H[i2][k + 1] -= dot9 * v[1];
       H[i2][k + 2] -= dot9 * v[2];
     }
     for (let i2 = 0; i2 < n; i2++) {
       let dot9 = v[0] * Q2[i2][k] + v[1] * Q2[i2][k + 1] + v[2] * Q2[i2][k + 2];
-      dot9 *= beta2;
+      dot9 *= beta3;
       Q2[i2][k] -= dot9 * v[0];
       Q2[i2][k + 1] -= dot9 * v[1];
       Q2[i2][k + 2] -= dot9 * v[2];
@@ -53411,8 +54547,8 @@ function isConstantNode(x) {
   const obj = x;
   return obj.isConstantNode === true && obj.constructor?.prototype?.isNode === true;
 }
-function rule2Node(node) {
-  return isConstantNode(node) || isOperatorNode(node) && node.args.length === 1 && isConstantNode(node.args[0]) && "-+~".includes(node.op);
+function rule2Node(node2) {
+  return isConstantNode(node2) || isOperatorNode(node2) && node2.args.length === 1 && isConstantNode(node2.args[0]) && "-+~".includes(node2.op);
 }
 function isFunctionAssignmentNode(x) {
   if (!x || typeof x !== "object") return false;
@@ -53726,19 +54862,19 @@ var properties = [
 ];
 function unwrapParen(_node, parenthesis) {
   if (!parenthesis || parenthesis !== "auto") return _node;
-  let node = _node;
-  while (isParenthesisNode(node)) {
-    node = node.content;
+  let node2 = _node;
+  while (isParenthesisNode(node2)) {
+    node2 = node2.content;
   }
-  return node;
+  return node2;
 }
 function getPrecedence(_node, parenthesis, implicit, parent) {
-  let node = _node;
+  let node2 = _node;
   const parentNode = parent;
   if (parenthesis !== "keep") {
-    node = node.getContent();
+    node2 = node2.getContent();
   }
-  const identifier = node.getIdentifier();
+  const identifier = node2.getIdentifier();
   let precedence = null;
   for (let i2 = 0; i2 < properties.length; i2++) {
     if (identifier in properties[i2]) {
@@ -53746,8 +54882,8 @@ function getPrecedence(_node, parenthesis, implicit, parent) {
       break;
     }
   }
-  if (identifier === "OperatorNode:multiply" && node.implicit && implicit !== "show") {
-    const leftArg = unwrapParen(node.args[0], parenthesis);
+  if (identifier === "OperatorNode:multiply" && node2.implicit && implicit !== "show") {
+    const leftArg = unwrapParen(node2.args[0], parenthesis);
     if (!(isConstantNode(leftArg) && parentNode && parentNode.getIdentifier() === "OperatorNode:divide" && rule2Node(unwrapParen(parentNode.args[0], parenthesis))) && !(leftArg.getIdentifier() === "OperatorNode:divide" && rule2Node(unwrapParen(leftArg.args[0], parenthesis)) && isConstantNode(unwrapParen(leftArg.args[1], parenthesis)))) {
       precedence = (precedence ?? 0) + 1;
     }
@@ -53755,12 +54891,12 @@ function getPrecedence(_node, parenthesis, implicit, parent) {
   return precedence;
 }
 function getAssociativity(_node, parenthesis) {
-  let node = _node;
+  let node2 = _node;
   if (parenthesis !== "keep") {
-    node = node.getContent();
+    node2 = node2.getContent();
   }
-  const identifier = node.getIdentifier();
-  const index = getPrecedence(node, parenthesis, void 0, void 0);
+  const identifier = node2.getIdentifier();
+  const index = getPrecedence(node2, parenthesis, void 0, void 0);
   if (index === null) {
     return null;
   }
@@ -54240,7 +55376,7 @@ var createParse = /* @__PURE__ */ factory2(
       const state = initialState();
       Object.assign(state, { expression, extraNodes });
       getToken(state);
-      const node = parseBlock(state);
+      const node2 = parseBlock(state);
       if (state.token !== "") {
         if (state.tokenType === 1) {
           throw createError2(state, "Unexpected operator " + state.token);
@@ -54248,31 +55384,31 @@ var createParse = /* @__PURE__ */ factory2(
           throw createSyntaxError(state, 'Unexpected part "' + state.token + '"');
         }
       }
-      return node;
+      return node2;
     }
     function parseBlock(state) {
-      let node;
+      let node2;
       const blocks = [];
       let hasSeparators = false;
       let nodePushed = true;
       while (state.token !== "") {
         if (state.token !== "\n" && state.token !== ";") {
-          node = parseAssignment(state);
+          node2 = parseAssignment(state);
           nodePushed = false;
           if (state.comment) {
-            node.comment = state.comment;
+            node2.comment = state.comment;
           }
         }
         if (state.token === "\n" || state.token === ";") {
           hasSeparators = true;
-          if (node && !nodePushed) {
-            blocks.push({ node, visible: state.token !== ";" });
+          if (node2 && !nodePushed) {
+            blocks.push({ node: node2, visible: state.token !== ";" });
             nodePushed = true;
           }
           getToken(state);
         } else {
-          if (node && hasSeparators && !nodePushed) {
-            blocks.push({ node, visible: state.token !== ";" });
+          if (node2 && hasSeparators && !nodePushed) {
+            blocks.push({ node: node2, visible: state.token !== ";" });
             nodePushed = true;
           }
           break;
@@ -54281,13 +55417,13 @@ var createParse = /* @__PURE__ */ factory2(
       if (blocks.length > 0) {
         return new BlockNode(blocks);
       } else {
-        if (!node) {
-          node = new ConstantNode(void 0);
+        if (!node2) {
+          node2 = new ConstantNode(void 0);
           if (state.comment) {
-            node.comment = state.comment;
+            node2.comment = state.comment;
           }
         }
-        return node;
+        return node2;
       }
     }
     function parseAssignment(state) {
@@ -54295,25 +55431,25 @@ var createParse = /* @__PURE__ */ factory2(
       let args;
       let value;
       let valid;
-      const node = parseConditional(state);
+      const node2 = parseConditional(state);
       if (state.token === "=") {
-        if (isSymbolNode(node)) {
-          name473 = node.name;
+        if (isSymbolNode(node2)) {
+          name473 = node2.name;
           getTokenSkipNewline(state);
           value = parseAssignment(state);
           return new AssignmentNode(new SymbolNode(name473), value);
-        } else if (isAccessorNode(node)) {
-          const accessor = node;
+        } else if (isAccessorNode(node2)) {
+          const accessor = node2;
           if (accessor.optionalChaining) {
             throw createSyntaxError(state, "Cannot assign to optional chain");
           }
           getTokenSkipNewline(state);
           value = parseAssignment(state);
           return new AssignmentNode(accessor.object, accessor.index, value);
-        } else if (isFunctionNode(node) && isSymbolNode(node.fn)) {
+        } else if (isFunctionNode(node2) && isSymbolNode(node2.fn)) {
           valid = true;
           args = [];
-          const fnNode = node;
+          const fnNode = node2;
           name473 = fnNode.name;
           fnNode.args.forEach(function(arg4, index) {
             if (isSymbolNode(arg4)) {
@@ -54330,73 +55466,73 @@ var createParse = /* @__PURE__ */ factory2(
         }
         throw createSyntaxError(state, "Invalid left hand side of assignment operator =");
       }
-      return node;
+      return node2;
     }
     function parseConditional(state) {
-      let node = parseLogicalOr(state);
+      let node2 = parseLogicalOr(state);
       while (state.token === "?") {
         const prev = state.conditionalLevel;
         state.conditionalLevel = state.nestingLevel;
         getTokenSkipNewline(state);
-        const condition = node;
+        const condition = node2;
         const trueExpr = parseAssignment(state);
         if (state.token !== ":")
           throw createSyntaxError(state, "False part of conditional expression expected");
         state.conditionalLevel = null;
         getTokenSkipNewline(state);
         const falseExpr = parseAssignment(state);
-        node = new ConditionalNode(condition, trueExpr, falseExpr);
+        node2 = new ConditionalNode(condition, trueExpr, falseExpr);
         state.conditionalLevel = prev;
       }
-      return node;
+      return node2;
     }
     function parseLogicalOr(state) {
-      let node = parseLogicalXor(state);
+      let node2 = parseLogicalXor(state);
       while (state.token === "or") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("or", "or", [node, parseLogicalXor(state)]);
+        node2 = new OperatorNode("or", "or", [node2, parseLogicalXor(state)]);
       }
-      return node;
+      return node2;
     }
     function parseLogicalXor(state) {
-      let node = parseLogicalAnd(state);
+      let node2 = parseLogicalAnd(state);
       while (state.token === "xor") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("xor", "xor", [node, parseLogicalAnd(state)]);
+        node2 = new OperatorNode("xor", "xor", [node2, parseLogicalAnd(state)]);
       }
-      return node;
+      return node2;
     }
     function parseLogicalAnd(state) {
-      let node = parseBitwiseOr(state);
+      let node2 = parseBitwiseOr(state);
       while (state.token === "and") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("and", "and", [node, parseBitwiseOr(state)]);
+        node2 = new OperatorNode("and", "and", [node2, parseBitwiseOr(state)]);
       }
-      return node;
+      return node2;
     }
     function parseBitwiseOr(state) {
-      let node = parseBitwiseXor(state);
+      let node2 = parseBitwiseXor(state);
       while (state.token === "|") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("|", "bitOr", [node, parseBitwiseXor(state)]);
+        node2 = new OperatorNode("|", "bitOr", [node2, parseBitwiseXor(state)]);
       }
-      return node;
+      return node2;
     }
     function parseBitwiseXor(state) {
-      let node = parseBitwiseAnd(state);
+      let node2 = parseBitwiseAnd(state);
       while (state.token === "^|") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("^|", "bitXor", [node, parseBitwiseAnd(state)]);
+        node2 = new OperatorNode("^|", "bitXor", [node2, parseBitwiseAnd(state)]);
       }
-      return node;
+      return node2;
     }
     function parseBitwiseAnd(state) {
-      let node = parseRelational(state);
+      let node2 = parseRelational(state);
       while (state.token === "&") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("&", "bitAnd", [node, parseRelational(state)]);
+        node2 = new OperatorNode("&", "bitAnd", [node2, parseRelational(state)]);
       }
-      return node;
+      return node2;
     }
     function parseRelational(state) {
       const params = [parseShift(state)];
@@ -54427,11 +55563,11 @@ var createParse = /* @__PURE__ */ factory2(
       }
     }
     function parseShift(state) {
-      let node;
+      let node2;
       let name473;
       let fn;
       let params;
-      node = parseConversion(state);
+      node2 = parseConversion(state);
       const operators = {
         "<<": "leftShift",
         ">>": "rightArithShift",
@@ -54441,17 +55577,17 @@ var createParse = /* @__PURE__ */ factory2(
         name473 = state.token;
         fn = operators[name473];
         getTokenSkipNewline(state);
-        params = [node, parseConversion(state)];
-        node = new OperatorNode(name473, fn, params);
+        params = [node2, parseConversion(state)];
+        node2 = new OperatorNode(name473, fn, params);
       }
-      return node;
+      return node2;
     }
     function parseConversion(state) {
-      let node;
+      let node2;
       let name473;
       let fn;
       let params;
-      node = parseRange(state);
+      node2 = parseRange(state);
       const operators = {
         to: "to",
         in: "to"
@@ -54462,16 +55598,16 @@ var createParse = /* @__PURE__ */ factory2(
         fn = operators[name473];
         getTokenSkipNewline(state);
         if (name473 === "in" && "])},;".includes(state.token)) {
-          node = new OperatorNode("*", "multiply", [node, new SymbolNode("in")], true);
+          node2 = new OperatorNode("*", "multiply", [node2, new SymbolNode("in")], true);
         } else {
-          params = [node, parseRange(state)];
-          node = new OperatorNode(name473, fn, params);
+          params = [node2, parseRange(state)];
+          node2 = new OperatorNode(name473, fn, params);
         }
       }
-      return node;
+      return node2;
     }
     function parseRange(state) {
-      let node;
+      let node2;
       const params = [];
       if (state.token === ":") {
         if (state.conditionalLevel === state.nestingLevel) {
@@ -54480,13 +55616,13 @@ var createParse = /* @__PURE__ */ factory2(
             "The true-expression of a conditional operator may not be empty"
           );
         } else {
-          node = new ConstantNode(1);
+          node2 = new ConstantNode(1);
         }
       } else {
-        node = parseAddSubtract(state);
+        node2 = parseAddSubtract(state);
       }
       if (state.token === ":" && state.conditionalLevel !== state.nestingLevel) {
-        params.push(node);
+        params.push(node2);
         while (state.token === ":" && params.length < 3) {
           getTokenSkipNewline(state);
           if (state.token === ")" || state.token === "]" || state.token === "," || state.token === "") {
@@ -54496,19 +55632,19 @@ var createParse = /* @__PURE__ */ factory2(
           }
         }
         if (params.length === 3) {
-          node = new RangeNode(params[0], params[2], params[1]);
+          node2 = new RangeNode(params[0], params[2], params[1]);
         } else {
-          node = new RangeNode(params[0], params[1]);
+          node2 = new RangeNode(params[0], params[1]);
         }
       }
-      return node;
+      return node2;
     }
     function parseAddSubtract(state) {
-      let node;
+      let node2;
       let name473;
       let fn;
       let params;
-      node = parseMultiplyDivideModulus(state);
+      node2 = parseMultiplyDivideModulus(state);
       const operators = {
         "+": "add",
         "-": "subtract"
@@ -54519,21 +55655,21 @@ var createParse = /* @__PURE__ */ factory2(
         getTokenSkipNewline(state);
         const rightNode = parseMultiplyDivideModulus(state);
         if (rightNode.isPercentage) {
-          params = [node, new OperatorNode("*", "multiply", [node, rightNode])];
+          params = [node2, new OperatorNode("*", "multiply", [node2, rightNode])];
         } else {
-          params = [node, rightNode];
+          params = [node2, rightNode];
         }
-        node = new OperatorNode(name473, fn, params);
+        node2 = new OperatorNode(name473, fn, params);
       }
-      return node;
+      return node2;
     }
     function parseMultiplyDivideModulus(state) {
-      let node;
+      let node2;
       let last22;
       let name473;
       let fn;
-      node = parseImplicitMultiplication(state);
-      last22 = node;
+      node2 = parseImplicitMultiplication(state);
+      last22 = node2;
       const operators = {
         "*": "multiply",
         ".*": "dotMultiply",
@@ -54548,25 +55684,25 @@ var createParse = /* @__PURE__ */ factory2(
           fn = operators[name473];
           getTokenSkipNewline(state);
           last22 = parseImplicitMultiplication(state);
-          node = new OperatorNode(name473, fn, [node, last22]);
+          node2 = new OperatorNode(name473, fn, [node2, last22]);
         } else {
           break;
         }
       }
-      return node;
+      return node2;
     }
     function parseImplicitMultiplication(state) {
-      let node;
+      let node2;
       let last22;
-      node = parseRule2(state);
-      last22 = node;
+      node2 = parseRule2(state);
+      last22 = node2;
       while (true) {
-        if (state.tokenType === 3 || state.token === "in" && isConstantNode(node) || state.token === "in" && isOperatorNode(node) && node.fn === "unaryMinus" && isConstantNode(node.args[0]) || state.tokenType === 2 && !isConstantNode(last22) && (!isOperatorNode(last22) || last22.op === "!") || state.token === "(") {
+        if (state.tokenType === 3 || state.token === "in" && isConstantNode(node2) || state.token === "in" && isOperatorNode(node2) && node2.fn === "unaryMinus" && isConstantNode(node2.args[0]) || state.tokenType === 2 && !isConstantNode(last22) && (!isOperatorNode(last22) || last22.op === "!") || state.token === "(") {
           last22 = parseRule2(state);
-          node = new OperatorNode(
+          node2 = new OperatorNode(
             "*",
             "multiply",
-            [node, last22],
+            [node2, last22],
             true
             /* implicit */
           );
@@ -54574,11 +55710,11 @@ var createParse = /* @__PURE__ */ factory2(
           break;
         }
       }
-      return node;
+      return node2;
     }
     function parseRule2(state) {
-      let node = parseUnaryPercentage(state);
-      let last22 = node;
+      let node2 = parseUnaryPercentage(state);
+      let last22 = node2;
       const tokenStates = [];
       while (true) {
         if (state.token === "/" && rule2Node(last22)) {
@@ -54591,7 +55727,7 @@ var createParse = /* @__PURE__ */ factory2(
               Object.assign(state, tokenStates.pop());
               tokenStates.pop();
               last22 = parseUnaryPercentage(state);
-              node = new OperatorNode("/", "divide", [node, last22]);
+              node2 = new OperatorNode("/", "divide", [node2, last22]);
             } else {
               tokenStates.pop();
               Object.assign(state, tokenStates.pop());
@@ -54605,10 +55741,10 @@ var createParse = /* @__PURE__ */ factory2(
           break;
         }
       }
-      return node;
+      return node2;
     }
     function parseUnaryPercentage(state) {
-      let node = parseUnary(state);
+      let node2 = parseUnary(state);
       if (state.token === "%") {
         const previousState = Object.assign({}, state);
         getTokenSkipNewline(state);
@@ -54616,10 +55752,10 @@ var createParse = /* @__PURE__ */ factory2(
           parseUnary(state);
           Object.assign(state, previousState);
         } catch {
-          node = new OperatorNode("/", "divide", [node, new ConstantNode(100)], false, true);
+          node2 = new OperatorNode("/", "divide", [node2, new ConstantNode(100)], false, true);
         }
       }
-      return node;
+      return node2;
     }
     function parseUnary(state) {
       let name473;
@@ -54641,34 +55777,34 @@ var createParse = /* @__PURE__ */ factory2(
       return parsePow(state);
     }
     function parsePow(state) {
-      let node;
+      let node2;
       let name473;
       let fn;
       let params;
-      node = parseNullishCoalescing(state);
+      node2 = parseNullishCoalescing(state);
       if (state.token === "^" || state.token === ".^") {
         name473 = state.token;
         fn = name473 === "^" ? "pow" : "dotPow";
         getTokenSkipNewline(state);
-        params = [node, parseUnary(state)];
-        node = new OperatorNode(name473, fn, params);
+        params = [node2, parseUnary(state)];
+        node2 = new OperatorNode(name473, fn, params);
       }
-      return node;
+      return node2;
     }
     function parseNullishCoalescing(state) {
-      let node = parseLeftHandOperators(state);
+      let node2 = parseLeftHandOperators(state);
       while (state.token === "??") {
         getTokenSkipNewline(state);
-        node = new OperatorNode("??", "nullish", [node, parseLeftHandOperators(state)]);
+        node2 = new OperatorNode("??", "nullish", [node2, parseLeftHandOperators(state)]);
       }
-      return node;
+      return node2;
     }
     function parseLeftHandOperators(state) {
-      let node;
+      let node2;
       let name473;
       let fn;
       let params;
-      node = parseCustomNodes(state);
+      node2 = parseCustomNodes(state);
       const operators = {
         "!": "factorial",
         "'": "ctranspose"
@@ -54677,11 +55813,11 @@ var createParse = /* @__PURE__ */ factory2(
         name473 = state.token;
         fn = operators[name473];
         getToken(state);
-        params = [node];
-        node = new OperatorNode(name473, fn, params);
-        node = parseAccessors(state, node);
+        params = [node2];
+        node2 = new OperatorNode(name473, fn, params);
+        node2 = parseAccessors(state, node2);
       }
-      return node;
+      return node2;
     }
     function parseCustomNodes(state) {
       let params = [];
@@ -54710,24 +55846,24 @@ var createParse = /* @__PURE__ */ factory2(
       return parseSymbol(state);
     }
     function parseSymbol(state) {
-      let node;
+      let node2;
       let name473;
       if (state.tokenType === 3 || state.tokenType === 1 && state.token in NAMED_DELIMITERS) {
         name473 = state.token;
         getToken(state);
         if (hasOwnProperty(CONSTANTS, name473)) {
-          node = new ConstantNode(CONSTANTS[name473]);
+          node2 = new ConstantNode(CONSTANTS[name473]);
         } else if (NUMERIC_CONSTANTS.includes(name473)) {
-          node = new ConstantNode(numeric2(name473, "number"));
+          node2 = new ConstantNode(numeric2(name473, "number"));
         } else {
-          node = new SymbolNode(name473);
+          node2 = new SymbolNode(name473);
         }
-        node = parseAccessors(state, node);
-        return node;
+        node2 = parseAccessors(state, node2);
+        return node2;
       }
       return parseString(state);
     }
-    function parseAccessors(state, node, types) {
+    function parseAccessors(state, node2, types) {
       let params;
       while (true) {
         let optional2 = false;
@@ -54741,7 +55877,7 @@ var createParse = /* @__PURE__ */ factory2(
         }
         params = [];
         if (state.token === "(") {
-          if (optional2 || isSymbolNode(node) || isAccessorNode(node)) {
+          if (optional2 || isSymbolNode(node2) || isAccessorNode(node2)) {
             openParams(state);
             getToken(state);
             if (state.token !== ")") {
@@ -54756,9 +55892,9 @@ var createParse = /* @__PURE__ */ factory2(
             }
             closeParams(state);
             getToken(state);
-            node = new FunctionNode(node, params, optional2);
+            node2 = new FunctionNode(node2, params, optional2);
           } else {
-            return node;
+            return node2;
           }
         } else if (state.token === "[") {
           openParams(state);
@@ -54775,7 +55911,7 @@ var createParse = /* @__PURE__ */ factory2(
           }
           closeParams(state);
           getToken(state);
-          node = new AccessorNode(node, new IndexNode(params), optional2);
+          node2 = new AccessorNode(node2, new IndexNode(params), optional2);
         } else {
           if (!optional2) getToken(state);
           const isPropertyName = state.tokenType === 3 || state.tokenType === 1 && state.token in NAMED_DELIMITERS;
@@ -54787,19 +55923,19 @@ var createParse = /* @__PURE__ */ factory2(
           params.push(new ConstantNode(state.token));
           getToken(state);
           const dotNotation = true;
-          node = new AccessorNode(node, new IndexNode(params, dotNotation), optional2);
+          node2 = new AccessorNode(node2, new IndexNode(params, dotNotation), optional2);
         }
       }
-      return node;
+      return node2;
     }
     function parseString(state) {
-      let node;
+      let node2;
       let str;
       if (state.token === '"' || state.token === "'") {
         str = parseStringToken(state, state.token);
-        node = new ConstantNode(str);
-        node = parseAccessors(state, node);
-        return node;
+        node2 = new ConstantNode(str);
+        node2 = parseAccessors(state, node2);
+        return node2;
       }
       return parseMatrix(state);
     }
@@ -54929,9 +56065,9 @@ var createParse = /* @__PURE__ */ factory2(
         }
         closeParams(state);
         getToken(state);
-        let node = new ObjectNode(properties22);
-        node = parseAccessors(state, node);
-        return node;
+        let node2 = new ObjectNode(properties22);
+        node2 = parseAccessors(state, node2);
+        return node2;
       }
       return parseNumber(state);
     }
@@ -54947,19 +56083,19 @@ var createParse = /* @__PURE__ */ factory2(
       return parseParentheses(state);
     }
     function parseParentheses(state) {
-      let node;
+      let node2;
       if (state.token === "(") {
         openParams(state);
         getToken(state);
-        node = parseAssignment(state);
+        node2 = parseAssignment(state);
         if (state.token !== ")") {
           throw createSyntaxError(state, "Parenthesis ) expected");
         }
         closeParams(state);
         getToken(state);
-        node = new ParenthesisNode(node);
-        node = parseAccessors(state, node);
-        return node;
+        node2 = new ParenthesisNode(node2);
+        node2 = parseAccessors(state, node2);
+        return node2;
       }
       return parseEnd(state);
     }
@@ -59482,8 +60618,8 @@ var embeddedDocs = {
   erfc: erfcDocs,
   gammainc: gammaincDocs
 };
-function compile(node, mathScope2) {
-  const evalFn = compileNode(node, mathScope2, {});
+function compile2(node2, mathScope2) {
+  const evalFn = compileNode(node2, mathScope2, {});
   return {
     evaluate(userScope) {
       let scope;
@@ -59498,63 +60634,63 @@ function compile(node, mathScope2) {
     }
   };
 }
-function compileNode(node, math2, argNames) {
-  const n = node;
+function compileNode(node2, math2, argNames) {
+  const n = node2;
   if (n.isConstantNode) {
-    return compileConstantNode(node);
+    return compileConstantNode(node2);
   }
   if (n.isSymbolNode) {
-    return compileSymbolNode(node, math2, argNames);
+    return compileSymbolNode(node2, math2, argNames);
   }
   if (n.isOperatorNode) {
-    return compileOperatorNode(node, math2, argNames);
+    return compileOperatorNode(node2, math2, argNames);
   }
   if (n.isFunctionNode) {
-    return compileFunctionNode(node, math2, argNames);
+    return compileFunctionNode(node2, math2, argNames);
   }
   if (n.isParenthesisNode) {
     return compileNode(n.content, math2, argNames);
   }
   if (n.isArrayNode) {
-    return compileArrayNode(node, math2, argNames);
+    return compileArrayNode(node2, math2, argNames);
   }
   if (n.isAssignmentNode) {
-    return compileAssignmentNode(node, math2, argNames);
+    return compileAssignmentNode(node2, math2, argNames);
   }
   if (n.isBlockNode) {
-    return compileBlockNode(node, math2, argNames);
+    return compileBlockNode(node2, math2, argNames);
   }
   if (n.isConditionalNode) {
-    return compileConditionalNode(node, math2, argNames);
+    return compileConditionalNode(node2, math2, argNames);
   }
   if (n.isObjectNode) {
-    return compileObjectNode(node, math2, argNames);
+    return compileObjectNode(node2, math2, argNames);
   }
   if (n.isRangeNode) {
-    return compileRangeNode(node, math2, argNames);
+    return compileRangeNode(node2, math2, argNames);
   }
   if (n.isRelationalNode) {
-    return compileRelationalNode(node, math2, argNames);
+    return compileRelationalNode(node2, math2, argNames);
   }
   if (n.isFunctionAssignmentNode) {
-    return compileFunctionAssignmentNode(node, math2, argNames);
+    return compileFunctionAssignmentNode(node2, math2, argNames);
   }
   if (n.isAccessorNode) {
-    return compileAccessorNode(node, math2, argNames);
+    return compileAccessorNode(node2, math2, argNames);
   }
   if (n.isIndexNode) {
-    return compileIndexNode(node, math2, argNames);
+    return compileIndexNode(node2, math2, argNames);
   }
-  throw new Error(`Unknown node type: ${node.type || node.constructor?.name}`);
+  throw new Error(`Unknown node type: ${node2.type || node2.constructor?.name}`);
 }
-function compileConstantNode(node) {
-  const value = node.value;
+function compileConstantNode(node2) {
+  const value = node2.value;
   return function evalConstantNode() {
     return value;
   };
 }
-function compileSymbolNode(node, math2, argNames) {
-  const name473 = node.name;
+function compileSymbolNode(node2, math2, argNames) {
+  const name473 = node2.name;
   if (argNames[name473] === true) {
     return function evalSymbolArg(_scope, args) {
       return args[name473];
@@ -59575,8 +60711,8 @@ function compileSymbolNode(node, math2, argNames) {
     throw new Error(`Undefined symbol "${name473}"`);
   };
 }
-function compileOperatorNode(node, math2, argNames) {
-  const opNode = node;
+function compileOperatorNode(node2, math2, argNames) {
+  const opNode = node2;
   const fnName = opNode.fn;
   if (typeof fnName !== "string" || !(fnName in math2)) {
     throw new Error(`Function "${fnName}" missing in provided namespace "math"`);
@@ -59607,8 +60743,8 @@ function compileOperatorNode(node, math2, argNames) {
     return fn(...values);
   };
 }
-function compileFunctionNode(node, math2, argNames) {
-  const fnNodeOuter = node;
+function compileFunctionNode(node2, math2, argNames) {
+  const fnNodeOuter = node2;
   const fnNode = fnNodeOuter.fn;
   if (fnNode && fnNode.isSymbolNode) {
     const name473 = fnNode.name;
@@ -59696,15 +60832,15 @@ function compileFunctionNode(node, math2, argNames) {
     return fn(...values);
   };
 }
-function compileArrayNode(node, math2, argNames) {
-  const items = node.items;
+function compileArrayNode(node2, math2, argNames) {
+  const items = node2.items;
   const evalItems = items.map((item) => compileNode(item, math2, argNames));
   return function evalArrayNode(scope, args, context2) {
     return evalItems.map((e2) => e2(scope, args, context2));
   };
 }
-function compileAssignmentNode(node, math2, argNames) {
-  const asgNode = node;
+function compileAssignmentNode(node2, math2, argNames) {
+  const asgNode = node2;
   const evalValue = compileNode(asgNode.value, math2, argNames);
   if (asgNode.object && asgNode.object.isSymbolNode && !asgNode.index) {
     const name483 = asgNode.object.name;
@@ -59735,8 +60871,8 @@ function compileAssignmentNode(node, math2, argNames) {
   }
   throw new Error("Unsupported assignment target");
 }
-function compileBlockNode(node, math2, argNames) {
-  const blocks = node.blocks;
+function compileBlockNode(node2, math2, argNames) {
+  const blocks = node2.blocks;
   const evalBlocks = blocks.map((block) => ({
     evaluate: compileNode(block.node, math2, argNames),
     visible: block.visible
@@ -59754,8 +60890,8 @@ function compileBlockNode(node, math2, argNames) {
     return void 0;
   };
 }
-function compileConditionalNode(node, math2, argNames) {
-  const condNode = node;
+function compileConditionalNode(node2, math2, argNames) {
+  const condNode = node2;
   const evalCondition = compileNode(condNode.condition, math2, argNames);
   const evalTrueExpr = compileNode(condNode.trueExpr, math2, argNames);
   const evalFalseExpr = compileNode(condNode.falseExpr, math2, argNames);
@@ -59764,8 +60900,8 @@ function compileConditionalNode(node, math2, argNames) {
     return testCondition(condition) ? evalTrueExpr(scope, args, context2) : evalFalseExpr(scope, args, context2);
   };
 }
-function compileObjectNode(node, math2, argNames) {
-  const properties22 = node.properties;
+function compileObjectNode(node2, math2, argNames) {
+  const properties22 = node2.properties;
   const keys = Object.keys(properties22);
   const evalProps = keys.map((key2) => ({
     key: key2,
@@ -59779,12 +60915,12 @@ function compileObjectNode(node, math2, argNames) {
     return result;
   };
 }
-function compileRangeNode(node, math2, argNames) {
+function compileRangeNode(node2, math2, argNames) {
   const rangeFn = math2.range;
   if (!rangeFn) {
     throw new Error('Function "range" missing in math namespace (required for range expressions)');
   }
-  const rngNode = node;
+  const rngNode = node2;
   const evalStart = compileNode(rngNode.start, math2, argNames);
   const evalEnd = compileNode(rngNode.end, math2, argNames);
   if (rngNode.step) {
@@ -59801,8 +60937,8 @@ function compileRangeNode(node, math2, argNames) {
     return rangeFn(evalStart(scope, args, context2), evalEnd(scope, args, context2));
   };
 }
-function compileRelationalNode(node, math2, argNames) {
-  const relNode = node;
+function compileRelationalNode(node2, math2, argNames) {
+  const relNode = node2;
   const compiled = relNode.params.map((p) => compileNode(p, math2, argNames));
   const conditionals = relNode.conditionals;
   return function evalRelationalNode(scope, args, context2) {
@@ -59822,8 +60958,8 @@ function compileRelationalNode(node, math2, argNames) {
     return true;
   };
 }
-function compileFunctionAssignmentNode(node, math2, argNames) {
-  const faNode = node;
+function compileFunctionAssignmentNode(node2, math2, argNames) {
+  const faNode = node2;
   const childArgNames = Object.create(argNames);
   for (const param of faNode.params) {
     childArgNames[param] = true;
@@ -59844,8 +60980,8 @@ function compileFunctionAssignmentNode(node, math2, argNames) {
     return fn;
   };
 }
-function compileAccessorNode(node, math2, argNames) {
-  const accNode = node;
+function compileAccessorNode(node2, math2, argNames) {
+  const accNode = node2;
   const evalObject = compileNode(accNode.object, math2, argNames);
   if (accNode.index && accNode.index.isObjectProperty && accNode.index.isObjectProperty()) {
     const prop = accNode.index.getObjectProperty();
@@ -59869,8 +61005,8 @@ function compileAccessorNode(node, math2, argNames) {
     return getSafeProperty2(object2, index);
   };
 }
-function compileIndexNode(node, math2, argNames) {
-  const dimensionNodes = node.dimensions;
+function compileIndexNode(node2, math2, argNames) {
+  const dimensionNodes = node2.dimensions;
   const usesEnd = dimensionNodes.map(
     (dim2) => dim2.filter?.(
       (n) => n.isSymbolNode === true && n.name === "end"
@@ -59937,11 +61073,11 @@ var FORBIDDEN_FUNCTIONS = /* @__PURE__ */ new Set([
   "help",
   "chain"
 ]);
-function validateAst(node) {
-  if (node === null || node === void 0 || typeof node !== "object") {
+function validateAst(node2) {
+  if (node2 === null || node2 === void 0 || typeof node2 !== "object") {
     return;
   }
-  const n = node;
+  const n = node2;
   if (n.isAssignmentNode === true) {
     throw new Error(
       "Security: assignment expressions are disabled. Pass `{ unsafe: true }` to opt out."
@@ -60005,21 +61141,21 @@ function createEvaluate(parseFn, mathScope2) {
     return evaluateOne(exprOrExprs, scope, options);
   }
   function evaluateOne(expr, scope, options) {
-    const node = parseFn(expr);
+    const node2 = parseFn(expr);
     if (!options || options.unsafe !== true) {
-      validateAst(node);
+      validateAst(node2);
     }
-    const compiled = compile(node, mathScope2);
+    const compiled = compile2(node2, mathScope2);
     return compiled.evaluate(scope);
   }
   return evaluate3;
 }
 function compileExpression(parseFn, mathScope2, expr, options) {
-  const node = parseFn(expr);
+  const node2 = parseFn(expr);
   if (!options || options.unsafe !== true) {
-    validateAst(node);
+    validateAst(node2);
   }
-  return compile(node, mathScope2);
+  return compile2(node2, mathScope2);
 }
 var mathmlSymbols = {
   alpha: "\u03B1",
@@ -60152,13 +61288,13 @@ var createNode = /* @__PURE__ */ factory2(
     function dotEscape(s) {
       return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
     }
-    function dotNodeLabel(node) {
-      const t = node.type;
-      if (isConstantNode(node))
-        return `${t}: ${String(node.value)}`;
-      if (isSymbolNode(node)) return `${t}: ${node.name}`;
-      if (isOperatorNode(node)) return `${t}: ${node.op}`;
-      if (isFunctionNode(node)) return `${t}: ${node.name}`;
+    function dotNodeLabel(node2) {
+      const t = node2.type;
+      if (isConstantNode(node2))
+        return `${t}: ${String(node2.value)}`;
+      if (isSymbolNode(node2)) return `${t}: ${node2.name}`;
+      if (isOperatorNode(node2)) return `${t}: ${node2.op}`;
+      if (isFunctionNode(node2)) return `${t}: ${node2.name}`;
       return t;
     }
     class Node {
@@ -60235,11 +61371,11 @@ var createNode = /* @__PURE__ */ factory2(
        * @returns {Node} Returns the input if it's a node, else throws an Error
        * @protected
        */
-      _ifNode(node) {
-        if (!isNode(node)) {
+      _ifNode(node2) {
+        if (!isNode(node2)) {
           throw new TypeError("Callback function must return a Node");
         }
-        return node;
+        return node2;
       }
       /**
        * Recursively traverse all nodes in a node tree. Executes given callback for
@@ -60249,8 +61385,8 @@ var createNode = /* @__PURE__ */ factory2(
        */
       traverse(callback) {
         callback(this, null, null);
-        function _traverse(node, callback2) {
-          node.forEach(function(child, path, parent) {
+        function _traverse(node2, callback2) {
+          node2.forEach(function(child, path, parent) {
             callback2(child, path, parent);
             _traverse(child, callback2);
           });
@@ -60306,9 +61442,9 @@ var createNode = /* @__PURE__ */ factory2(
        */
       filter(callback) {
         const nodes = [];
-        this.traverse(function(node, path, parent) {
-          if (callback(node, path, parent)) {
-            nodes.push(node);
+        this.traverse(function(node2, path, parent) {
+          if (callback(node2, path, parent)) {
+            nodes.push(node2);
           }
         });
         return nodes;
@@ -60325,8 +61461,8 @@ var createNode = /* @__PURE__ */ factory2(
        * @return {Node}
        */
       cloneDeep() {
-        return this.map(function(node) {
-          return node.cloneDeep();
+        return this.map(function(node2) {
+          return node2.cloneDeep();
         });
       }
       /**
@@ -60454,10 +61590,10 @@ var createNode = /* @__PURE__ */ factory2(
         const nodes = [];
         const edges = [];
         let counter = 0;
-        this.traverse((node, _path, parent) => {
+        this.traverse((node2, _path, parent) => {
           const id = "n" + counter++;
-          ids.set(node, id);
-          nodes.push(`  ${id} [label="${dotEscape(dotNodeLabel(node))}"];`);
+          ids.set(node2, id);
+          nodes.push(`  ${id} [label="${dotEscape(dotNodeLabel(node2))}"];`);
           if (parent) {
             const pid = ids.get(parent);
             if (pid) edges.push(`  ${pid} -> ${id};`);
@@ -60601,8 +61737,8 @@ var createAccessorNode = /* @__PURE__ */ factory2(
     Node
   }) => {
     const access = accessFactory({ subset: subset3 });
-    function needParenthesis(node) {
-      return !(isAccessorNode(node) || isArrayNode(node) || isConstantNode(node) || isFunctionNode(node) || isObjectNode(node) || isParenthesisNode(node) || isSymbolNode(node));
+    function needParenthesis(node2) {
+      return !(isAccessorNode(node2) || isArrayNode(node2) || isConstantNode(node2) || isFunctionNode(node2) || isObjectNode(node2) || isParenthesisNode(node2) || isSymbolNode(node2));
     }
     class AccessorNode extends Node {
       object;
@@ -60859,8 +61995,8 @@ var createArrayNode = /* @__PURE__ */ factory2(
        */
       forEach(callback) {
         for (let i2 = 0; i2 < this.items.length; i2++) {
-          const node = this.items[i2];
-          callback(node, "items[" + i2 + "]", this);
+          const node2 = this.items[i2];
+          callback(node2, "items[" + i2 + "]", this);
         }
       }
       /**
@@ -60890,8 +62026,8 @@ var createArrayNode = /* @__PURE__ */ factory2(
        * @override
        */
       _toString(options) {
-        const items = this.items.map(function(node) {
-          return node.toString(options);
+        const items = this.items.map(function(node2) {
+          return node2.toString(options);
         });
         return "[" + items.join(", ") + "]";
       }
@@ -60922,8 +62058,8 @@ var createArrayNode = /* @__PURE__ */ factory2(
        * @override
        */
       _toHTML(options) {
-        const items = this.items.map(function(node) {
-          return node.toHTML(options);
+        const items = this.items.map(function(node2) {
+          return node2.toHTML(options);
         });
         return '<span class="math-parenthesis math-square-parenthesis">[</span>' + items.join('<span class="math-separator">,</span>') + '<span class="math-parenthesis math-square-parenthesis">]</span>';
       }
@@ -60937,12 +62073,12 @@ var createArrayNode = /* @__PURE__ */ factory2(
           const mixedItems = items.some(isArrayNode) && !items.every(isArrayNode);
           const itemsFormRow = nested || mixedItems;
           const itemSep = itemsFormRow ? "&" : "\\\\";
-          const itemsTex = items.map(function(node) {
-            const arrayItems = node.items;
+          const itemsTex = items.map(function(node2) {
+            const arrayItems = node2.items;
             if (arrayItems) {
               return itemsToTex(arrayItems, !nested);
             } else {
-              return node.toTex(options);
+              return node2.toTex(options);
             }
           }).join(itemSep);
           return mixedItems || !itemsFormRow || itemsFormRow && !nested ? "\\begin{bmatrix}" + itemsTex + "\\end{bmatrix}" : itemsTex;
@@ -60992,12 +62128,12 @@ var createAssignmentNode = /* @__PURE__ */ factory2(
   }) => {
     const access = accessFactory({ subset: subset3 });
     const assign2 = assignFactory({ subset: subset3 });
-    function needParenthesis(node, parenthesis, implicit) {
+    function needParenthesis(node2, parenthesis, implicit) {
       if (!parenthesis) {
         parenthesis = "keep";
       }
-      const precedence = getPrecedence(node, parenthesis, implicit, void 0);
-      const exprPrecedence = getPrecedence(node.value, parenthesis, implicit, void 0);
+      const precedence = getPrecedence(node2, parenthesis, implicit, void 0);
+      const exprPrecedence = getPrecedence(node2.value, parenthesis, implicit, void 0);
       return parenthesis === "all" || exprPrecedence !== null && exprPrecedence <= precedence;
     }
     class AssignmentNode extends Node {
@@ -61273,13 +62409,13 @@ var createBlockNode = /* @__PURE__ */ factory2(
         super();
         if (!Array.isArray(blocks)) throw new Error("Array expected");
         this.blocks = blocks.map(function(block) {
-          const node = block && block.node;
+          const node2 = block && block.node;
           const visible = block && block.visible !== void 0 ? block.visible : true;
-          if (!isNode(node)) throw new TypeError('Property "node" must be a Node');
+          if (!isNode(node2)) throw new TypeError('Property "node" must be a Node');
           if (typeof visible !== "boolean") {
             throw new TypeError('Property "visible" must be a boolean');
           }
-          return { node, visible };
+          return { node: node2, visible };
         });
       }
       static name = name9;
@@ -61339,9 +62475,9 @@ var createBlockNode = /* @__PURE__ */ factory2(
         const blocks = [];
         for (let i2 = 0; i2 < this.blocks.length; i2++) {
           const block = this.blocks[i2];
-          const node = this._ifNode(callback(block.node, "blocks[" + i2 + "].node", this));
+          const node2 = this._ifNode(callback(block.node, "blocks[" + i2 + "].node", this));
           blocks[i2] = {
-            node,
+            node: node2,
             visible: block.visible
           };
         }
@@ -61934,8 +63070,8 @@ var latexFunctions = {
   // unit
   to: { 2: `\\left(\${args[0]}${latexOperators.to}\${args[1]}\\right)` },
   // utils
-  numeric: function(node, _options) {
-    return node.args[0].toTex();
+  numeric: function(node2, _options) {
+    return node2.args[0].toTex();
   },
   // type
   number: {
@@ -62167,9 +63303,9 @@ var createFunctionAssignmentNode = /* @__PURE__ */ factory2(
     typed: typed2,
     Node
   }) => {
-    function needParenthesis(node, parenthesis, implicit) {
-      const precedence = getPrecedence(node, parenthesis, implicit, void 0);
-      const exprPrecedence = getPrecedence(node.expr, parenthesis, implicit, void 0);
+    function needParenthesis(node2, parenthesis, implicit) {
+      const precedence = getPrecedence(node2, parenthesis, implicit, void 0);
+      const exprPrecedence = getPrecedence(node2.expr, parenthesis, implicit, void 0);
       return parenthesis === "all" || exprPrecedence !== null && exprPrecedence <= precedence;
     }
     class FunctionAssignmentNode extends Node {
@@ -62395,7 +63531,7 @@ var createFunctionNode = /* @__PURE__ */ factory2(
     SymbolNode
   }) => {
     const strin = (entity) => format3(entity, { truncate: 78 });
-    function expandTemplate(template, node, options) {
+    function expandTemplate(template, node2, options) {
       let latex = "";
       const regex = /\$(?:\{([a-z_][a-z_0-9]*)(?:\[([0-9]+)\])?\}|\$)/gi;
       let inputPos = 0;
@@ -62409,7 +63545,7 @@ var createFunctionNode = /* @__PURE__ */ factory2(
           inputPos++;
         } else {
           inputPos += match[0].length;
-          const property = node[match[1]];
+          const property = node2[match[1]];
           if (!property) {
             throw new ReferenceError("Template: Property " + match[1] + " does not exist.");
           }
@@ -62888,7 +64024,7 @@ var createIndexNode = /* @__PURE__ */ factory2(
         const evalDimensions = map(
           this.dimensions,
           function(dimension, i2) {
-            const needsEnd = dimension.filter((node) => !!(node.isSymbolNode && node.name === "end")).length > 0;
+            const needsEnd = dimension.filter((node2) => !!(node2.isSymbolNode && node2.name === "end")).length > 0;
             if (needsEnd) {
               const childArgNames = Object.create(argNames);
               childArgNames.end = true;
@@ -63907,16 +65043,16 @@ var createRangeNode = /* @__PURE__ */ factory2(
   name18,
   dependencies18,
   ({ Node }) => {
-    function calculateNecessaryParentheses(node, parenthesis, implicit) {
-      const precedence = getPrecedence(node, parenthesis, implicit, void 0);
+    function calculateNecessaryParentheses(node2, parenthesis, implicit) {
+      const precedence = getPrecedence(node2, parenthesis, implicit, void 0);
       const parens = { start: false, end: false };
-      const startPrecedence = getPrecedence(node.start, parenthesis, implicit, void 0);
+      const startPrecedence = getPrecedence(node2.start, parenthesis, implicit, void 0);
       parens.start = startPrecedence !== null && startPrecedence <= precedence || parenthesis === "all";
-      if (node.step) {
-        const stepPrecedence = getPrecedence(node.step, parenthesis, implicit, void 0);
+      if (node2.step) {
+        const stepPrecedence = getPrecedence(node2.step, parenthesis, implicit, void 0);
         parens.step = stepPrecedence !== null && stepPrecedence <= precedence || parenthesis === "all";
       }
-      const endPrecedence = getPrecedence(node.end, parenthesis, implicit, void 0);
+      const endPrecedence = getPrecedence(node2.end, parenthesis, implicit, void 0);
       parens.end = endPrecedence !== null && endPrecedence <= precedence || parenthesis === "all";
       return parens;
     }
@@ -63955,8 +65091,8 @@ var createRangeNode = /* @__PURE__ */ factory2(
        * @return {boolean}
        */
       needsEnd() {
-        const endSymbols = this.filter(function(node) {
-          return isSymbolNode(node) && node.name === "end";
+        const endSymbols = this.filter(function(node2) {
+          return isSymbolNode(node2) && node2.name === "end";
         });
         return endSymbols.length > 0;
       }
@@ -64735,9 +65871,9 @@ var createDiffTransform = /* @__PURE__ */ factory2(
   { isTransformFunction: true }
 );
 function compileInlineExpression(expression, math2, scope) {
-  const symbol = expression.filter(function(node) {
-    const named = node;
-    return isSymbolNode(node) && !(named.name in math2) && !scope.has(named.name);
+  const symbol = expression.filter(function(node2) {
+    const named = node2;
+    return isSymbolNode(node2) && !(named.name in math2) && !scope.has(named.name);
   })[0];
   if (!symbol) {
     throw new Error(
@@ -71745,7 +72881,7 @@ function dwt(x, wavelet = "haar") {
     try {
       return dwtPeriodization(x, wavelet);
     } catch (err) {
-      throw new Error(`dwt: ${err instanceof Error ? err.message : String(err)}`);
+      throw new Error(`dwt: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
     }
   }
 }
@@ -73852,7 +74988,7 @@ function betaincScalar(a, b, x) {
   }
   const lnBeta = _lgamma(a) + _lgamma(b) - _lgamma(a + b);
   const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta) / a;
-  let f = 1;
+  let f;
   let c = 1;
   let d = 1 - (a + b) * x / (a + 1);
   if (Math.abs(d) < 1e-30) d = 1e-30;
@@ -74108,9 +75244,9 @@ function _carlsonRJ(x, y, z, p) {
     const sy = Math.sqrt(yy);
     const sz = Math.sqrt(zz);
     const lam = sx * sy + sy * sz + sz * sx;
-    const alpha = pp * (sx + sy + sz) + sx * sy * sz;
-    const beta2 = pp * (pp + lam) * (pp + lam);
-    sum32 += fac * _carlsonRC(alpha * alpha, beta2);
+    const alpha2 = pp * (sx + sy + sz) + sx * sy * sz;
+    const beta3 = pp * (pp + lam) * (pp + lam);
+    sum32 += fac * _carlsonRC(alpha2 * alpha2, beta3);
     fac /= 4;
     xx = (xx + lam) / 4;
     yy = (yy + lam) / 4;
@@ -75704,19 +76840,19 @@ var jsDivergence = mathTyped("jsDivergence", {
     return jsd;
   }
 });
-function betaPDFScalar(x, alpha, beta_) {
-  if (alpha <= 0 || beta_ <= 0) return NaN;
+function betaPDFScalar(x, alpha2, beta_) {
+  if (alpha2 <= 0 || beta_ <= 0) return NaN;
   if (x <= 0 || x >= 1) return 0;
-  const logB = _lgammaD(alpha) + _lgammaD(beta_) - _lgammaD(alpha + beta_);
-  return Math.exp((alpha - 1) * Math.log(x) + (beta_ - 1) * Math.log(1 - x) - logB);
+  const logB = _lgammaD(alpha2) + _lgammaD(beta_) - _lgammaD(alpha2 + beta_);
+  return Math.exp((alpha2 - 1) * Math.log(x) + (beta_ - 1) * Math.log(1 - x) - logB);
 }
 var betaPDF = mathTyped("betaPDF", {
-  "number, number, number": (x, alpha, beta_) => betaPDFScalar(x, alpha, beta_),
-  "Float64Array, number, number": (x, alpha, beta_) => {
+  "number, number, number": (x, alpha2, beta_) => betaPDFScalar(x, alpha2, beta_),
+  "Float64Array, number, number": (x, alpha2, beta_) => {
     const out = new Float64Array(x.length);
-    const lgAlpha = _lgammaD(alpha);
+    const lgAlpha = _lgammaD(alpha2);
     const lgBeta = _lgammaD(beta_);
-    const lgAlphaBeta = _lgammaD(alpha + beta_);
+    const lgAlphaBeta = _lgammaD(alpha2 + beta_);
     const logB = lgAlpha + lgBeta - lgAlphaBeta;
     if (x.length >= WASM_SPECIAL_THRESHOLD) {
       for (let i2 = 0; i2 < x.length; i2++) {
@@ -75724,13 +76860,13 @@ var betaPDF = mathTyped("betaPDF", {
         if (xi <= 0 || xi >= 1) {
           out[i2] = 0;
         } else {
-          out[i2] = Math.exp((alpha - 1) * Math.log(xi) + (beta_ - 1) * Math.log(1 - xi) - logB);
+          out[i2] = Math.exp((alpha2 - 1) * Math.log(xi) + (beta_ - 1) * Math.log(1 - xi) - logB);
         }
       }
       return Promise.resolve(out);
     }
     for (let i2 = 0; i2 < x.length; i2++) {
-      out[i2] = betaPDFScalar(x[i2], alpha, beta_);
+      out[i2] = betaPDFScalar(x[i2], alpha2, beta_);
     }
     return Promise.resolve(out);
   }
@@ -76300,15 +77436,15 @@ function kdTree(points) {
 function kdTreeNearest(root2, target) {
   if (!root2) return null;
   let best = { point: root2.point, index: root2.index, distance: distanceNDSq(root2.point, target) };
-  function search(node) {
-    if (!node) return;
-    const d = distanceNDSq(node.point, target);
+  function search(node2) {
+    if (!node2) return;
+    const d = distanceNDSq(node2.point, target);
     if (d < best.distance) {
-      best = { point: node.point, index: node.index, distance: d };
+      best = { point: node2.point, index: node2.index, distance: d };
     }
-    const diff2 = target[node.axis] - node.point[node.axis];
-    const first = diff2 < 0 ? node.left : node.right;
-    const second = diff2 < 0 ? node.right : node.left;
+    const diff2 = target[node2.axis] - node2.point[node2.axis];
+    const first = diff2 < 0 ? node2.left : node2.right;
+    const second = diff2 < 0 ? node2.right : node2.left;
     search(first);
     if (diff2 * diff2 < best.distance) {
       search(second);
@@ -79899,7 +81035,7 @@ function linearInterp(xs, ys, x) {
   if (xs.length !== ys.length || xs.length < 2) {
     throw new Error("linearInterp requires at least 2 data points with matching lengths");
   }
-  let i2 = 0;
+  let i2;
   if (x <= xs[0]) {
     i2 = 0;
   } else if (x >= xs[xs.length - 1]) {
@@ -80086,7 +81222,7 @@ function pchipInterp(xs, ys, x) {
       delta[n - 3]
     );
   }
-  let i2 = 0;
+  let i2;
   if (x <= xs[0]) {
     i2 = 0;
   } else if (x >= xs[n - 1]) {
@@ -81029,7 +82165,7 @@ function bdfSolve(f, tspan, y0raw, options = {}) {
     const F0 = _fArr(f, t, y);
     const J = _jacobianAt(f, t, y, F0, options);
     let stepAccepted = false;
-    let yNew = y;
+    let yNew;
     let dVec = new Array(n).fill(0);
     let errorNorm = 0;
     let nIter = 1;
@@ -82423,7 +83559,7 @@ function minimize(f, x0, opts) {
   const maxIter = opts?.maxIter ?? 1e3;
   const step = opts?.step ?? 0.1;
   const n = x0.length;
-  const alpha = 1;
+  const alpha2 = 1;
   const gamma2 = 2;
   const rho = 0.5;
   const sigma = 0.5;
@@ -82455,7 +83591,7 @@ function minimize(f, x0, opts) {
       }
     }
     for (let j = 0; j < n; j++) centroid2[j] /= n;
-    const xr = centroid2.map((c, j) => c + alpha * (c - simplex[n][j]));
+    const xr = centroid2.map((c, j) => c + alpha2 * (c - simplex[n][j]));
     const fr = f(xr);
     if (fr < fValues[n - 1] && fr >= fValues[0]) {
       simplex[n] = xr;
@@ -82588,9 +83724,9 @@ function interpolate(xs, ys, method = "linear") {
       const n = xs.length - 1;
       const h = [];
       for (let i2 = 0; i2 < n; i2++) h[i2] = xs[i2 + 1] - xs[i2];
-      const alpha = [0];
+      const alpha2 = [0];
       for (let i2 = 1; i2 < n; i2++) {
-        alpha[i2] = 3 / h[i2] * (ys[i2 + 1] - ys[i2]) - 3 / h[i2 - 1] * (ys[i2] - ys[i2 - 1]);
+        alpha2[i2] = 3 / h[i2] * (ys[i2 + 1] - ys[i2]) - 3 / h[i2 - 1] * (ys[i2] - ys[i2 - 1]);
       }
       const l = [1];
       const mu = [0];
@@ -82598,7 +83734,7 @@ function interpolate(xs, ys, method = "linear") {
       for (let i2 = 1; i2 < n; i2++) {
         l[i2] = 2 * (xs[i2 + 1] - xs[i2 - 1]) - h[i2 - 1] * mu[i2 - 1];
         mu[i2] = h[i2] / l[i2];
-        z[i2] = (alpha[i2] - h[i2 - 1] * z[i2 - 1]) / l[i2];
+        z[i2] = (alpha2[i2] - h[i2 - 1] * z[i2 - 1]) / l[i2];
       }
       const c = new Array(n + 1).fill(0);
       const bArr = new Array(n);
@@ -82614,7 +83750,6 @@ function interpolate(xs, ys, method = "linear") {
         if (x <= xs[0]) j = 0;
         else if (x >= xs[n]) j = n - 1;
         else {
-          j = 0;
           for (j = 0; j < n; j++) {
             if (x >= xs[j] && x <= xs[j + 1]) break;
           }
@@ -82626,7 +83761,7 @@ function interpolate(xs, ys, method = "linear") {
     case "linear":
     default:
       return (x) => {
-        let i2 = 0;
+        let i2;
         if (x <= xs[0]) i2 = 0;
         else if (x >= xs[xs.length - 1]) i2 = xs.length - 2;
         else {
@@ -82666,7 +83801,7 @@ function pchip(xs, ys, x) {
     m[0] = delta[0];
     m[n - 1] = delta[n - 2];
   }
-  let idx = 0;
+  let idx;
   if (x <= xs[0]) idx = 0;
   else if (x >= xs[n - 1]) idx = n - 2;
   else {
@@ -82743,9 +83878,9 @@ function bspline(controlPoints, degree3, t) {
   for (let r = 1; r <= p; r++) {
     for (let j = p; j >= r; j--) {
       const idx = k - p + j;
-      const alpha = (tClamped - knots[idx]) / (knots[idx + p - r + 1] - knots[idx]);
+      const alpha2 = (tClamped - knots[idx]) / (knots[idx + p - r + 1] - knots[idx]);
       for (let dd = 0; dd < dim2; dd++) {
-        d[j][dd] = (1 - alpha) * d[j - 1][dd] + alpha * d[j][dd];
+        d[j][dd] = (1 - alpha2) * d[j - 1][dd] + alpha2 * d[j][dd];
       }
     }
   }
@@ -83943,11 +85078,11 @@ function linprog(c, arg22, arg32) {
   return linprogTwoPhase(c, arg22);
 }
 function solvePDE(pde, domain, bc) {
-  const { alpha } = pde;
+  const { alpha: alpha2 } = pde;
   const { L, nx, nt, T } = domain;
   const dx = L / (nx - 1);
   const dt = T / nt;
-  const r = alpha * dt / (dx * dx);
+  const r = alpha2 * dt / (dx * dx);
   if (r > 0.5) {
   }
   const x = [];
@@ -84947,11 +86082,11 @@ function normalSampleRng(rng) {
   const u2 = rng();
   return Math.sqrt(-2 * Math.log(u1 < 1e-300 ? 1e-300 : u1)) * Math.cos(2 * Math.PI * u2);
 }
-function gammaSampleRng(alpha, rng) {
-  if (alpha < 1) {
-    return gammaSampleRng(alpha + 1, rng) * Math.pow(rng(), 1 / alpha);
+function gammaSampleRng(alpha2, rng) {
+  if (alpha2 < 1) {
+    return gammaSampleRng(alpha2 + 1, rng) * Math.pow(rng(), 1 / alpha2);
   }
-  const d = alpha - 1 / 3;
+  const d = alpha2 - 1 / 3;
   const c = 1 / Math.sqrt(9 * d);
   for (; ; ) {
     let x;
@@ -85165,28 +86300,28 @@ function normalDist(mu = 0, sigma = 1) {
     })
   };
 }
-function betaDist(alpha, beta_) {
-  if (alpha <= 0 || beta_ <= 0) throw new Error("betaDist: alpha and beta must be positive");
-  const B2 = _gamma(alpha) * _gamma(beta_) / _gamma(alpha + beta_);
+function betaDist(alpha2, beta_) {
+  if (alpha2 <= 0 || beta_ <= 0) throw new Error("betaDist: alpha and beta must be positive");
+  const B2 = _gamma(alpha2) * _gamma(beta_) / _gamma(alpha2 + beta_);
   return {
     pdf: (x) => {
       if (x < 0 || x > 1) return 0;
-      if (x === 0 && alpha < 1) return Infinity;
+      if (x === 0 && alpha2 < 1) return Infinity;
       if (x === 1 && beta_ < 1) return Infinity;
-      return Math.pow(x, alpha - 1) * Math.pow(1 - x, beta_ - 1) / B2;
+      return Math.pow(x, alpha2 - 1) * Math.pow(1 - x, beta_ - 1) / B2;
     },
     cdf: (x) => {
       if (x <= 0) return 0;
       if (x >= 1) return 1;
-      return _betainc(x, alpha, beta_);
+      return _betainc(x, alpha2, beta_);
     },
     quantile: (p) => {
       if (p <= 0) return 0;
       if (p >= 1) return 1;
-      let x = alpha / (alpha + beta_);
+      let x = alpha2 / (alpha2 + beta_);
       for (let i2 = 0; i2 < 100; i2++) {
-        const fx = _betainc(x, alpha, beta_) - p;
-        const dx = Math.pow(x, alpha - 1) * Math.pow(1 - x, beta_ - 1) / B2;
+        const fx = _betainc(x, alpha2, beta_) - p;
+        const dx = Math.pow(x, alpha2 - 1) * Math.pow(1 - x, beta_ - 1) / B2;
         if (dx === 0) break;
         const step = fx / dx;
         x = Math.max(1e-15, Math.min(1 - 1e-15, x - step));
@@ -85194,17 +86329,17 @@ function betaDist(alpha, beta_) {
       }
       return x;
     },
-    mean: alpha / (alpha + beta_),
-    variance: alpha * beta_ / ((alpha + beta_) ** 2 * (alpha + beta_ + 1)),
+    mean: alpha2 / (alpha2 + beta_),
+    variance: alpha2 * beta_ / ((alpha2 + beta_) ** 2 * (alpha2 + beta_ + 1)),
     sample: () => {
-      const ga = _gammaRandom(alpha);
+      const ga = _gammaRandom(alpha2);
       const gb = _gammaRandom(beta_);
       return ga / (ga + gb);
     },
-    sampleN: (n, opts) => _sampleNDispatch("beta", [alpha, beta_], n, opts, (count2, rng) => {
+    sampleN: (n, opts) => _sampleNDispatch("beta", [alpha2, beta_], n, opts, (count2, rng) => {
       const out = new Float64Array(count2);
       for (let i2 = 0; i2 < count2; i2++) {
-        const ga = _gammaRandomRng(alpha, rng);
+        const ga = _gammaRandomRng(alpha2, rng);
         const gb = _gammaRandomRng(beta_, rng);
         out[i2] = ga / (ga + gb);
       }
@@ -85212,14 +86347,14 @@ function betaDist(alpha, beta_) {
     })
   };
 }
-function _gammaRandom(alpha) {
-  return gammaSampleRng(alpha, Math.random);
+function _gammaRandom(alpha2) {
+  return gammaSampleRng(alpha2, Math.random);
 }
 function _normalRandom() {
   return normalSampleRng(Math.random);
 }
-function _gammaRandomRng(alpha, rng) {
-  return gammaSampleRng(alpha, rng);
+function _gammaRandomRng(alpha2, rng) {
+  return gammaSampleRng(alpha2, rng);
 }
 function binomialDist(n, p) {
   if (!Number.isInteger(n) || n < 0)
@@ -85369,7 +86504,7 @@ function fDist(d1, d2) {
     quantile: (p) => {
       if (p <= 0) return 0;
       if (p >= 1) return Infinity;
-      let x = d1 > 2 ? d2 * (d1 - 2) / (d1 * (d2 + 2)) : 1;
+      let x;
       let lo = 0;
       let hi = 1e3;
       for (let i2 = 0; i2 < 100; i2++) {
@@ -85834,18 +86969,18 @@ function discreteUniformDist(lo, hi) {
     })
   };
 }
-function gumbelDist(mu, beta2) {
-  if (beta2 <= 0) throw new Error("gumbelDist: scale beta must be positive");
-  const quantile = (p) => p <= 0 ? -Infinity : p >= 1 ? Infinity : mu - beta2 * Math.log(-Math.log(p));
+function gumbelDist(mu, beta3) {
+  if (beta3 <= 0) throw new Error("gumbelDist: scale beta must be positive");
+  const quantile = (p) => p <= 0 ? -Infinity : p >= 1 ? Infinity : mu - beta3 * Math.log(-Math.log(p));
   return {
     pdf: (x) => {
-      const z = (x - mu) / beta2;
-      return 1 / beta2 * Math.exp(-(z + Math.exp(-z)));
+      const z = (x - mu) / beta3;
+      return 1 / beta3 * Math.exp(-(z + Math.exp(-z)));
     },
-    cdf: (x) => Math.exp(-Math.exp(-(x - mu) / beta2)),
+    cdf: (x) => Math.exp(-Math.exp(-(x - mu) / beta3)),
     quantile,
-    mean: mu + beta2 * EULER_GAMMA,
-    variance: Math.PI * Math.PI / 6 * beta2 * beta2,
+    mean: mu + beta3 * EULER_GAMMA,
+    variance: Math.PI * Math.PI / 6 * beta3 * beta3,
     sample: () => _contSample(quantile, Math.random),
     sampleN: (n, opts) => _sampleNDispatch(null, [], n, opts, (count2, rng) => {
       const out = new Float64Array(count2);
@@ -87028,12 +88163,12 @@ function dagostinoTest(data) {
   if (n < 8) throw new Error("dagostinoTest: need at least 8 observations");
   const { skew, kurtPearson } = _skewKurt(data);
   const y = skew * Math.sqrt((n + 1) * (n + 3) / (6 * (n - 2)));
-  const beta2 = 3 * (n * n + 27 * n - 70) * (n + 1) * (n + 3) / ((n - 2) * (n + 5) * (n + 7) * (n + 9));
-  const w2 = -1 + Math.sqrt(2 * (beta2 - 1));
+  const beta22 = 3 * (n * n + 27 * n - 70) * (n + 1) * (n + 3) / ((n - 2) * (n + 5) * (n + 7) * (n + 9));
+  const w2 = -1 + Math.sqrt(2 * (beta22 - 1));
   const delta = 1 / Math.sqrt(0.5 * Math.log(w2));
-  const alpha = Math.sqrt(2 / (w2 - 1));
+  const alpha2 = Math.sqrt(2 / (w2 - 1));
   const yy = y === 0 ? 1 : y;
-  const z1 = delta * Math.log(yy / alpha + Math.sqrt(yy / alpha * (yy / alpha) + 1));
+  const z1 = delta * Math.log(yy / alpha2 + Math.sqrt(yy / alpha2 * (yy / alpha2) + 1));
   const E = 3 * (n - 1) / (n + 1);
   const varb2 = 24 * n * (n - 2) * (n - 3) / ((n + 1) * (n + 1) * (n + 3) * (n + 5));
   const xx = (kurtPearson - E) / Math.sqrt(varb2);
@@ -87400,14 +88535,14 @@ function hessenbergForm(A) {
     let normV = 0;
     for (let i2 = 0; i2 < len; i2++) normV += v[i2] * v[i2];
     if (normV < 1e-30) continue;
-    const beta2 = 2 / normV;
+    const beta3 = 2 / normV;
     for (let j = k; j < n; j++) {
       let dot9 = 0;
       for (let i2 = 0; i2 < len; i2++) {
         dot9 += v[i2] * H[k + 1 + i2][j];
       }
       for (let i2 = 0; i2 < len; i2++) {
-        H[k + 1 + i2][j] -= beta2 * v[i2] * dot9;
+        H[k + 1 + i2][j] -= beta3 * v[i2] * dot9;
       }
     }
     for (let i2 = 0; i2 < n; i2++) {
@@ -87416,7 +88551,7 @@ function hessenbergForm(A) {
         dot9 += H[i2][k + 1 + j] * v[j];
       }
       for (let j = 0; j < len; j++) {
-        H[i2][k + 1 + j] -= beta2 * dot9 * v[j];
+        H[i2][k + 1 + j] -= beta3 * dot9 * v[j];
       }
     }
     for (let i2 = 0; i2 < n; i2++) {
@@ -87425,7 +88560,7 @@ function hessenbergForm(A) {
         dot9 += Q2[i2][k + 1 + j] * v[j];
       }
       for (let j = 0; j < len; j++) {
-        Q2[i2][k + 1 + j] -= beta2 * dot9 * v[j];
+        Q2[i2][k + 1 + j] -= beta3 * dot9 * v[j];
       }
     }
   }
@@ -88827,6 +89962,7 @@ __export2(factories_exports, {
   solveODE: () => solveODE,
   sort: () => sort,
   sparse: () => sparse,
+  spectralRadiance: () => spectralRadiance,
   speedOfLight: () => speedOfLight,
   splitUnit: () => splitUnit,
   sqrtm: () => sqrtm,
@@ -91302,7 +92438,7 @@ var createIsPrime = /* @__PURE__ */ factory3(
           d = d.div(2);
           r += 1;
         }
-        let bases = null;
+        let bases;
         if (n.toBigInt() < 3317044064679887385961981n) {
           bases = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41].filter((x) => x < n.toNumber());
         } else {
@@ -93530,7 +94666,7 @@ var createCsAmd = /* @__PURE__ */ factory3(
 );
 function csLeaf(i2, j, w, first, maxfirst, prevleaf, ancestor) {
   let s, sparent;
-  let jleaf = 0;
+  let jleaf;
   let q;
   if (i2 <= j || w[first + j] <= w[maxfirst + i2]) {
     return -1;
@@ -98007,7 +99143,8 @@ var createPow = /* @__PURE__ */ factory3(
         } catch (error2) {
           if (error2 instanceof Error && error2.message === "Cannot calculate inverse, determinant is zero") {
             throw new TypeError(
-              "For A^b, when A is not invertible, b must be a positive integer (value is " + y + ")"
+              "For A^b, when A is not invertible, b must be a positive integer (value is " + y + ")",
+              { cause: error2 }
             );
           }
           throw error2;
@@ -99816,14 +100953,14 @@ var createQr = /* @__PURE__ */ factory3(
         for (i2 = k; i2 < rows; i2++) {
           alphaSquared = addScalar22(alphaSquared, multiplyScalar22(Rdata[i2][k], conj32(Rdata[i2][k])));
         }
-        const alpha = multiplyScalar22(sgn, sqrt22(alphaSquared));
-        if (!isZero4(alpha)) {
-          const u1 = subtractScalar22(pivot, alpha);
+        const alpha2 = multiplyScalar22(sgn, sqrt22(alphaSquared));
+        if (!isZero4(alpha2)) {
+          const u1 = subtractScalar22(pivot, alpha2);
           w[k] = 1;
           for (i2 = k + 1; i2 < rows; i2++) {
             w[i2] = divideScalar22(Rdata[i2][k], u1);
           }
-          const tau22 = unaryMinus22(conj32(divideScalar22(u1, alpha)));
+          const tau22 = unaryMinus22(conj32(divideScalar22(u1, alpha2)));
           let s;
           for (j = k; j < cols; j++) {
             s = 0;
@@ -101265,9 +102402,9 @@ var createLeafCount = /* @__PURE__ */ factory3(
   name191,
   dependencies191,
   ({ parse: _parse22, typed: typed3 }) => {
-    function countLeaves(node) {
+    function countLeaves(node2) {
       let count2 = 0;
-      node.forEach((n) => {
+      node2.forEach((n) => {
         count2 += countLeaves(n);
       });
       return count2 || 1;
@@ -101300,12 +102437,12 @@ var createResolve = /* @__PURE__ */ factory3(
     ParenthesisNode
   }) => {
     const referTo = typed3.referTo;
-    function _resolve(node, scope, within = /* @__PURE__ */ new Set()) {
+    function _resolve(node2, scope, within = /* @__PURE__ */ new Set()) {
       if (!scope) {
-        return node;
+        return node2;
       }
-      if (isSymbolNode2(node)) {
-        const symbolNode = node;
+      if (isSymbolNode2(node2)) {
+        const symbolNode = node2;
         if (within.has(symbolNode.name)) {
           const variables2 = Array.from(within).join(", ");
           throw new ReferenceError(`recursive loop of variable definitions among {${variables2}}`);
@@ -101320,25 +102457,25 @@ var createResolve = /* @__PURE__ */ factory3(
         } else if (value !== void 0) {
           return new ConstantNode(value);
         } else {
-          return node;
+          return node2;
         }
-      } else if (isOperatorNode2(node)) {
-        const opNode = node;
+      } else if (isOperatorNode2(node2)) {
+        const opNode = node2;
         const args = opNode.args.map(function(arg32) {
           return _resolve(arg32, scope, within);
         });
         return new OperatorNode(opNode.op, opNode.fn, args, opNode.implicit);
-      } else if (isParenthesisNode2(node)) {
-        const parenNode = node;
+      } else if (isParenthesisNode2(node2)) {
+        const parenNode = node2;
         return new ParenthesisNode(_resolve(parenNode.content, scope, within));
-      } else if (isFunctionNode2(node)) {
-        const funcNode = node;
+      } else if (isFunctionNode2(node2)) {
+        const funcNode = node2;
         const args = funcNode.args.map(function(arg32) {
           return _resolve(arg32, scope, within);
         });
         return new FunctionNode(funcNode.name, args);
       }
-      return node.map((child) => _resolve(child, scope, within));
+      return node2.map((child) => _resolve(child, scope, within));
     }
     return typed3("resolve", {
       Node: _resolve,
@@ -101440,11 +102577,11 @@ var createUtil = /* @__PURE__ */ factory3(
       }
       return defaultContext[defaultName][property];
     }
-    function isCommutative(node, context2 = defaultContext) {
-      return hasProperty(node, "commutative", context2);
+    function isCommutative(node2, context2 = defaultContext) {
+      return hasProperty(node2, "commutative", context2);
     }
-    function isAssociative(node, context2 = defaultContext) {
-      return hasProperty(node, "associative", context2);
+    function isAssociative(node2, context2 = defaultContext) {
+      return hasProperty(node2, "associative", context2);
     }
     function mergeContext(primary, secondary) {
       const merged = { ...primary };
@@ -101457,21 +102594,21 @@ var createUtil = /* @__PURE__ */ factory3(
       }
       return merged;
     }
-    function flatten5(node, context2 = defaultContext) {
-      if (!node.args || node.args.length === 0) {
+    function flatten5(node2, context2 = defaultContext) {
+      if (!node2.args || node2.args.length === 0) {
         return;
       }
-      node.args = allChildren(node, context2);
-      for (let i2 = 0; i2 < node.args.length; i2++) {
-        flatten5(node.args[i2], context2);
+      node2.args = allChildren(node2, context2);
+      for (let i2 = 0; i2 < node2.args.length; i2++) {
+        flatten5(node2.args[i2], context2);
       }
     }
-    function allChildren(node, context2) {
+    function allChildren(node2, context2) {
       let op;
       const children = [];
-      const findChildren = function(node2) {
-        for (let i2 = 0; i2 < (node2.args?.length ?? 0); i2++) {
-          const child = node2.args[i2];
+      const findChildren = function(node22) {
+        for (let i2 = 0; i2 < (node22.args?.length ?? 0); i2++) {
+          const child = node22.args[i2];
           if (isOperatorNode2(child) && op === child.op) {
             findChildren(child);
           } else {
@@ -101479,53 +102616,53 @@ var createUtil = /* @__PURE__ */ factory3(
           }
         }
       };
-      if (isAssociative(node, context2)) {
-        op = node.op;
-        findChildren(node);
+      if (isAssociative(node2, context2)) {
+        op = node2.op;
+        findChildren(node2);
         return children;
       } else {
-        return node.args ?? [];
+        return node2.args ?? [];
       }
     }
-    function unflattenr(node, context2 = defaultContext) {
-      if (!node.args || node.args.length === 0) {
+    function unflattenr(node2, context2 = defaultContext) {
+      if (!node2.args || node2.args.length === 0) {
         return;
       }
-      const makeNode = createMakeNodeFunction(node);
-      const l = node.args.length;
+      const makeNode = createMakeNodeFunction(node2);
+      const l = node2.args.length;
       for (let i2 = 0; i2 < l; i2++) {
-        unflattenr(node.args[i2], context2);
+        unflattenr(node2.args[i2], context2);
       }
-      if (l > 2 && isAssociative(node, context2)) {
-        let curnode = node.args.pop();
-        while (node.args.length > 0) {
-          curnode = makeNode([node.args.pop(), curnode]);
+      if (l > 2 && isAssociative(node2, context2)) {
+        let curnode = node2.args.pop();
+        while (node2.args.length > 0) {
+          curnode = makeNode([node2.args.pop(), curnode]);
         }
-        node.args = curnode.args;
+        node2.args = curnode.args;
       }
     }
-    function unflattenl(node, context2 = defaultContext) {
-      if (!node.args || node.args.length === 0) {
+    function unflattenl(node2, context2 = defaultContext) {
+      if (!node2.args || node2.args.length === 0) {
         return;
       }
-      const makeNode = createMakeNodeFunction(node);
-      const l = node.args.length;
+      const makeNode = createMakeNodeFunction(node2);
+      const l = node2.args.length;
       for (let i2 = 0; i2 < l; i2++) {
-        unflattenl(node.args[i2], context2);
+        unflattenl(node2.args[i2], context2);
       }
-      if (l > 2 && isAssociative(node, context2)) {
-        let curnode = node.args.shift();
-        while (node.args.length > 0) {
-          curnode = makeNode([curnode, node.args.shift()]);
+      if (l > 2 && isAssociative(node2, context2)) {
+        let curnode = node2.args.shift();
+        while (node2.args.length > 0) {
+          curnode = makeNode([curnode, node2.args.shift()]);
         }
-        node.args = curnode.args;
+        node2.args = curnode.args;
       }
     }
-    function createMakeNodeFunction(node) {
-      if (isOperatorNode2(node)) {
+    function createMakeNodeFunction(node2) {
+      if (isOperatorNode2(node2)) {
         return function(args) {
           try {
-            return new OperatorNode(node.op, node.fn, args, node.implicit);
+            return new OperatorNode(node2.op, node2.fn, args, node2.implicit);
           } catch (err) {
             console.error(err);
             return [];
@@ -101533,7 +102670,7 @@ var createUtil = /* @__PURE__ */ factory3(
         };
       } else {
         return function(args) {
-          return new FunctionNode(new SymbolNode(node.name), args);
+          return new FunctionNode(new SymbolNode(node2.name), args);
         };
       }
     }
@@ -101603,7 +102740,7 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
       "string, Object": function(expr, options) {
         return _ensureNode(foldFraction(parse32(expr), options));
       },
-      Node: (node) => _ensureNode(foldFraction(node, {})),
+      Node: (node2) => _ensureNode(foldFraction(node2, {})),
       "Node, Object": function(expr, options) {
         return _ensureNode(foldFraction(expr, options));
       }
@@ -101821,40 +102958,40 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
       }
       return makeNode([reduction[0], _toNode(reduction[1])]);
     }
-    function foldFraction(node, options) {
-      switch (node.type) {
+    function foldFraction(node2, options) {
+      switch (node2.type) {
         case "SymbolNode":
-          return node;
+          return node2;
         case "ConstantNode":
-          switch (typeof node.value) {
+          switch (typeof node2.value) {
             case "number":
-              return _toNumber(node.value, options);
+              return _toNumber(node2.value, options);
             case "bigint":
-              return _toNumber(node.value, options);
+              return _toNumber(node2.value, options);
             case "string":
-              return node.value;
+              return node2.value;
             default:
-              if (!isNaN(node.value))
-                return _toNumber(node.value, options);
+              if (!isNaN(node2.value))
+                return _toNumber(node2.value, options);
           }
-          return node;
+          return node2;
         case "FunctionNode":
-          if (mathWithTransform[node.name] && mathWithTransform[node.name].rawArgs) {
-            return node;
+          if (mathWithTransform[node2.name] && mathWithTransform[node2.name].rawArgs) {
+            return node2;
           }
           {
             const operatorFunctions = ["add", "multiply"];
-            if (!operatorFunctions.includes(node.name)) {
-              const args = node.args.map(
+            if (!operatorFunctions.includes(node2.name)) {
+              const args = node2.args.map(
                 (arg32) => foldFraction(arg32, options)
               );
               if (!args.some(isNode2)) {
                 try {
-                  return _eval(node.name, args, options);
+                  return _eval(node2.name, args, options);
                 } catch {
                 }
               }
-              if (node.name === "size" && args.length === 1 && isArrayNode2(args[0])) {
+              if (node2.name === "size" && args.length === 1 && isArrayNode2(args[0])) {
                 const sz = [];
                 let section = args[0];
                 while (isArrayNode2(section)) {
@@ -101863,22 +103000,22 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
                 }
                 return matrix22(sz);
               }
-              return new FunctionNode(node.name, args.map(_ensureNode));
+              return new FunctionNode(node2.name, args.map(_ensureNode));
             }
-            return _foldOperatorNode(node, options);
+            return _foldOperatorNode(node2, options);
           }
         case "OperatorNode":
-          return _foldOperatorNode(node, options);
+          return _foldOperatorNode(node2, options);
         case "ParenthesisNode":
-          return foldFraction(node.content, options);
+          return foldFraction(node2.content, options);
         case "AccessorNode":
           return _foldAccessor(
-            foldFraction(node.object, options),
-            foldFraction(node.index, options),
+            foldFraction(node2.object, options),
+            foldFraction(node2.index, options),
             options
           );
         case "ArrayNode": {
-          const foldItems = node.items.map(
+          const foldItems = node2.items.map(
             (item) => foldFraction(item, options)
           );
           if (foldItems.some(isNode2)) {
@@ -101888,13 +103025,13 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
         }
         case "IndexNode": {
           return new IndexNode(
-            node.dimensions.map((n) => simplifyConstant2(n, options))
+            node2.dimensions.map((n) => simplifyConstant2(n, options))
           );
         }
         case "ObjectNode": {
           const foldProps = {};
-          for (const prop in node.properties) {
-            foldProps[prop] = simplifyConstant2(node.properties[prop], options);
+          for (const prop in node2.properties) {
+            foldProps[prop] = simplifyConstant2(node2.properties[prop], options);
           }
           return new ObjectNode(foldProps);
         }
@@ -101909,26 +103046,26 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
         case "ConditionalNode":
         /* falls through */
         default:
-          throw new Error(`Unimplemented node type in simplifyConstant: ${node.type}`);
+          throw new Error(`Unimplemented node type in simplifyConstant: ${node2.type}`);
       }
     }
-    function _foldOperatorNode(node, options) {
-      const fn = node.fn.toString();
+    function _foldOperatorNode(node2, options) {
+      const fn = node2.fn.toString();
       let args;
       let res;
       const makeNode = createMakeNodeFunction(
-        node
+        node2
       );
-      if (isOperatorNode2(node) && node.isUnary()) {
-        args = [foldFraction(node.args[0], options)];
+      if (isOperatorNode2(node2) && node2.isUnary()) {
+        args = [foldFraction(node2.args[0], options)];
         if (!isNode2(args[0])) {
           res = _eval(fn, args, options);
         } else {
           res = makeNode(args);
         }
-      } else if (isAssociative(node, options.context)) {
+      } else if (isAssociative(node2, options.context)) {
         args = allChildren(
-          node,
+          node2,
           options.context
         );
         args = args.map((arg32) => foldFraction(arg32, options));
@@ -101953,7 +103090,7 @@ var createSimplifyConstant = /* @__PURE__ */ factory3(
           res = foldOp(fn, args, makeNode, options);
         }
       } else {
-        args = node.args.map((arg32) => foldFraction(arg32, options));
+        args = node2.args.map((arg32) => foldFraction(arg32, options));
         res = foldOp(fn, args, makeNode, options);
       }
       return res;
@@ -102324,7 +103461,16 @@ var createSubtract = /* @__PURE__ */ factory3(
         // =========================================================================
         // EXISTING SIGNATURES - Keep after Node signatures
         // =========================================================================
-        "any, any": subtractScalar22
+        "any, any": subtractScalar22,
+        "any, any, ...any": typed3.referToSelf(
+          (self2) => (x, y, ...rest) => {
+            let res = self2(x, y);
+            for (let i2 = 0; i2 < rest.length; i2++) {
+              res = self2(res, rest[i2]);
+            }
+            return res;
+          }
+        )
       },
       matrixAlgorithmSuite({
         elop: subtractScalar22,
@@ -102875,27 +104021,27 @@ var createFibonacciHeapClass = /* @__PURE__ */ factory3(
        * @memberof FibonacciHeap
        */
       insert(key2, value) {
-        const node = {
+        const node2 = {
           key: key2,
           value,
           degree: 0
         };
         if (this._minimum) {
           const minimum = this._minimum;
-          node.left = minimum;
-          node.right = minimum.right;
-          minimum.right = node;
-          node.right.left = node;
+          node2.left = minimum;
+          node2.right = minimum.right;
+          minimum.right = node2;
+          node2.right.left = node2;
           if (smaller2(key2, minimum.key)) {
-            this._minimum = node;
+            this._minimum = node2;
           }
         } else {
-          node.left = node;
-          node.right = node;
-          this._minimum = node;
+          node2.left = node2;
+          node2.right = node2;
+          this._minimum = node2;
         }
         this._size++;
-        return node;
+        return node2;
       }
       /**
        * Returns the number of nodes in heap. Running time: O(1) actual.
@@ -102925,13 +104071,13 @@ var createFibonacciHeapClass = /* @__PURE__ */ factory3(
        * @memberof FibonacciHeap
        */
       extractMinimum() {
-        const node = this._minimum;
-        if (node === null) {
-          return node;
+        const node2 = this._minimum;
+        if (node2 === null) {
+          return node2;
         }
         let minimum = this._minimum;
-        let numberOfChildren = node.degree;
-        let x = node.child;
+        let numberOfChildren = node2.degree;
+        let x = node2.child;
         while (numberOfChildren > 0) {
           const tempRight = x.right;
           x.left.right = x.right;
@@ -102944,17 +104090,17 @@ var createFibonacciHeapClass = /* @__PURE__ */ factory3(
           x = tempRight;
           numberOfChildren--;
         }
-        node.left.right = node.right;
-        node.right.left = node.left;
-        if (node === node.right) {
+        node2.left.right = node2.right;
+        node2.right.left = node2.left;
+        if (node2 === node2.right) {
           minimum = null;
         } else {
-          minimum = node.right;
+          minimum = node2.right;
           minimum = _findMinimumNode(minimum, this._size);
         }
         this._size--;
         this._minimum = minimum;
-        return node;
+        return node2;
       }
       /**
        * Removes a node from the heap given the reference to the node. The trees
@@ -102963,68 +104109,68 @@ var createFibonacciHeapClass = /* @__PURE__ */ factory3(
        * Running time: O(log n) amortized.
        * @memberof FibonacciHeap
        */
-      remove(node) {
-        this._minimum = _decreaseKey(this._minimum, node, -1);
+      remove(node2) {
+        this._minimum = _decreaseKey(this._minimum, node2, -1);
         this.extractMinimum();
       }
     }
-    function _decreaseKey(minimum, node, key2) {
-      node.key = key2;
-      const parent = node.parent;
-      if (parent && smaller2(node.key, parent.key)) {
-        _cut(minimum, node, parent);
+    function _decreaseKey(minimum, node2, key2) {
+      node2.key = key2;
+      const parent = node2.parent;
+      if (parent && smaller2(node2.key, parent.key)) {
+        _cut(minimum, node2, parent);
         _cascadingCut(minimum, parent);
       }
-      if (smaller2(node.key, minimum.key)) {
-        minimum = node;
+      if (smaller2(node2.key, minimum.key)) {
+        minimum = node2;
       }
       return minimum;
     }
-    function _cut(minimum, node, parent) {
-      node.left.right = node.right;
-      node.right.left = node.left;
+    function _cut(minimum, node2, parent) {
+      node2.left.right = node2.right;
+      node2.right.left = node2.left;
       parent.degree--;
-      if (parent.child === node) {
-        parent.child = node.right;
+      if (parent.child === node2) {
+        parent.child = node2.right;
       }
       if (parent.degree === 0) {
         parent.child = void 0;
       }
-      node.left = minimum;
-      node.right = minimum.right;
-      minimum.right = node;
-      node.right.left = node;
-      node.parent = void 0;
-      node.mark = false;
+      node2.left = minimum;
+      node2.right = minimum.right;
+      minimum.right = node2;
+      node2.right.left = node2;
+      node2.parent = void 0;
+      node2.mark = false;
     }
-    function _cascadingCut(minimum, node) {
-      const parent = node.parent;
+    function _cascadingCut(minimum, node2) {
+      const parent = node2.parent;
       if (!parent) {
         return;
       }
-      if (!node.mark) {
-        node.mark = true;
+      if (!node2.mark) {
+        node2.mark = true;
       } else {
-        _cut(minimum, node, parent);
+        _cut(minimum, node2, parent);
         _cascadingCut(minimum, parent);
       }
     }
-    function _linkNodes(node, parent) {
-      node.left.right = node.right;
-      node.right.left = node.left;
-      node.parent = parent;
+    function _linkNodes(node2, parent) {
+      node2.left.right = node2.right;
+      node2.right.left = node2.left;
+      node2.parent = parent;
       if (!parent.child) {
-        parent.child = node;
-        node.right = node;
-        node.left = node;
+        parent.child = node2;
+        node2.right = node2;
+        node2.left = node2;
       } else {
-        node.left = parent.child;
-        node.right = parent.child.right;
-        parent.child.right = node;
-        node.right.left = node;
+        node2.left = parent.child;
+        node2.right = parent.child.right;
+        parent.child.right = node2;
+        node2.right.left = node2;
       }
       parent.degree++;
-      node.mark = false;
+      node2.mark = false;
     }
     function _findMinimumNode(minimum, size22) {
       const arraySize2 = Math.floor(Math.log(size22) * oneOverLogPhi) + 1;
@@ -104097,12 +105243,10 @@ var createCsLu = /* @__PURE__ */ factory3(
       const size22 = m._size;
       const n = size22[1];
       let q;
-      let lnz = 100;
-      let unz = 100;
+      let lnz;
+      let unz;
       if (s) {
         q = s.q;
-        lnz = s.lnz || lnz;
-        unz = s.unz || unz;
       }
       const lvalues = [];
       const lindex = [];
@@ -104416,51 +105560,51 @@ var createSpaClass = /* @__PURE__ */ factory3(
        */
       set(i2, v) {
         if (!this._values[i2]) {
-          const node = this._heap.insert(i2, v);
-          this._values[i2] = node;
+          const node2 = this._heap.insert(i2, v);
+          this._values[i2] = node2;
         } else {
           this._values[i2].value = v;
         }
       }
       get(i2) {
-        const node = this._values[i2];
-        if (node) {
-          return node.value;
+        const node2 = this._values[i2];
+        if (node2) {
+          return node2.value;
         }
         return 0;
       }
       accumulate(i2, v) {
-        let node = this._values[i2];
-        if (!node) {
-          node = this._heap.insert(i2, v);
-          this._values[i2] = node;
+        let node2 = this._values[i2];
+        if (!node2) {
+          node2 = this._heap.insert(i2, v);
+          this._values[i2] = node2;
         } else {
-          node.value = addScalar22(node.value, v);
+          node2.value = addScalar22(node2.value, v);
         }
       }
       forEach(from, to3, callback) {
         const heap = this._heap;
         const values = this._values;
         const nodes = [];
-        let node = heap.extractMinimum();
-        if (node) {
-          nodes.push(node);
+        let node2 = heap.extractMinimum();
+        if (node2) {
+          nodes.push(node2);
         }
-        while (node && node.key <= to3) {
-          if (node.key >= from) {
-            if (!equalScalar3(node.value, 0)) {
-              callback(node.key, node.value, this);
+        while (node2 && node2.key <= to3) {
+          if (node2.key >= from) {
+            if (!equalScalar3(node2.value, 0)) {
+              callback(node2.key, node2.value, this);
             }
           }
-          node = heap.extractMinimum();
-          if (node) {
-            nodes.push(node);
+          node2 = heap.extractMinimum();
+          if (node2) {
+            nodes.push(node2);
           }
         }
         for (let i2 = 0; i2 < nodes.length; i2++) {
           const n = nodes[i2];
-          node = heap.insert(n.key, n.value);
-          values[node.key] = node;
+          node2 = heap.insert(n.key, n.value);
+          values[node2.key] = node2;
         }
       }
       swap(i2, j) {
@@ -105601,7 +106745,7 @@ var createSetPowerset = /* @__PURE__ */ factory3(
       return result;
     }
     function _sort(array2) {
-      let temp = [];
+      let temp;
       for (let i2 = array2.length - 1; i2 > 0; i2--) {
         for (let j = 0; j < i2; j++) {
           if (array2[j].length > array2[j + 1].length) {
@@ -105931,8 +107075,8 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
     const node1 = new ConstantNode(1);
     const nodeT = new ConstantNode(true);
     const nodeF = new ConstantNode(false);
-    function isAlwaysBoolean(node) {
-      return isOperatorNode2(node) && ["and", "not", "or"].includes(node.op);
+    function isAlwaysBoolean(node2) {
+      return isOperatorNode2(node2) && ["and", "not", "or"].includes(node2.op);
     }
     const { hasProperty, isCommutative } = createUtil({
       FunctionNode,
@@ -105957,19 +107101,19 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
           return simpChild;
         }
       }
-      let node = nodeToSimplify;
-      if (isFunctionNode2(node)) {
-        const fnode = node;
+      let node2 = nodeToSimplify;
+      if (isFunctionNode2(node2)) {
+        const fnode = node2;
         const op = getOperator(fnode.name);
         if (op) {
-          if (fnode.args.length > 2 && hasProperty(node, "associative", context2)) {
+          if (fnode.args.length > 2 && hasProperty(node2, "associative", context2)) {
             while (fnode.args.length > 2) {
               const last22 = fnode.args.pop();
               const seclast = fnode.args.pop();
               fnode.args.push(new OperatorNode(op, fnode.name, [last22, seclast]));
             }
           }
-          node = new OperatorNode(op, fnode.name, fnode.args);
+          node2 = new OperatorNode(op, fnode.name, fnode.args);
         } else {
           return new FunctionNode(
             _simplifyCore(fnode.fn),
@@ -105977,14 +107121,14 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
           );
         }
       }
-      if (isOperatorNode2(node) && node.isUnary()) {
-        const a0 = _simplifyCore(node.args[0], options);
-        if (node.op === "~") {
+      if (isOperatorNode2(node2) && node2.isUnary()) {
+        const a0 = _simplifyCore(node2.args[0], options);
+        if (node2.op === "~") {
           if (isOperatorNode2(a0) && a0.isUnary() && a0.op === "~") {
             return a0.args[0];
           }
         }
-        if (node.op === "not") {
+        if (node2.op === "not") {
           if (isOperatorNode2(a0) && a0.isUnary() && a0.op === "not") {
             if (isAlwaysBoolean(a0.args[0])) {
               return a0.args[0];
@@ -105992,10 +107136,10 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
           }
         }
         let finish = true;
-        if (node.op === "-") {
+        if (node2.op === "-") {
           if (isOperatorNode2(a0)) {
             if (a0.isBinary() && a0.fn === "subtract") {
-              node = new OperatorNode("-", "subtract", [a0.args[1], a0.args[0]]);
+              node2 = new OperatorNode("-", "subtract", [a0.args[1], a0.args[0]]);
               finish = false;
             }
             if (a0.isUnary() && a0.op === "-") {
@@ -106003,12 +107147,12 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
             }
           }
         }
-        if (finish) return new OperatorNode(node.op, node.fn, [a0]);
+        if (finish) return new OperatorNode(node2.op, node2.fn, [a0]);
       }
-      if (isOperatorNode2(node) && node.isBinary()) {
-        const a0 = _simplifyCore(node.args[0], options);
-        let a1 = _simplifyCore(node.args[1], options);
-        if (node.op === "+") {
+      if (isOperatorNode2(node2) && node2.isBinary()) {
+        const a0 = _simplifyCore(node2.args[0], options);
+        let a1 = _simplifyCore(node2.args[1], options);
+        if (node2.op === "+") {
           if (isConstantNode2(a0) && isZero4(a0.value)) {
             return a1;
           }
@@ -106017,10 +107161,10 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
           }
           if (isOperatorNode2(a1) && a1.isUnary() && a1.op === "-") {
             a1 = a1.args[0];
-            node = new OperatorNode("-", "subtract", [a0, a1]);
+            node2 = new OperatorNode("-", "subtract", [a0, a1]);
           }
         }
-        if (node.op === "-") {
+        if (node2.op === "-") {
           if (isOperatorNode2(a1) && a1.isUnary() && a1.op === "-") {
             return _simplifyCore(new OperatorNode("+", "add", [a0, a1.args[0]]), options);
           }
@@ -106030,9 +107174,9 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
           if (isConstantNode2(a1) && isZero4(a1.value)) {
             return a0;
           }
-          return new OperatorNode(node.op, node.fn, [a0, a1]);
+          return new OperatorNode(node2.op, node2.fn, [a0, a1]);
         }
-        if (node.op === "*") {
+        if (node2.op === "*") {
           if (isConstantNode2(a0)) {
             if (isZero4(a0.value)) {
               return node0;
@@ -106046,22 +107190,22 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
             } else if (equal22(a1.value, 1)) {
               return a0;
             }
-            if (isCommutative(node, context2)) {
-              return new OperatorNode(node.op, node.fn, [a1, a0], node.implicit);
+            if (isCommutative(node2, context2)) {
+              return new OperatorNode(node2.op, node2.fn, [a1, a0], node2.implicit);
             }
           }
-          return new OperatorNode(node.op, node.fn, [a0, a1], node.implicit);
+          return new OperatorNode(node2.op, node2.fn, [a0, a1], node2.implicit);
         }
-        if (node.op === "/") {
+        if (node2.op === "/") {
           if (isConstantNode2(a0) && isZero4(a0.value)) {
             return node0;
           }
           if (isConstantNode2(a1) && equal22(a1.value, 1)) {
             return a0;
           }
-          return new OperatorNode(node.op, node.fn, [a0, a1]);
+          return new OperatorNode(node2.op, node2.fn, [a0, a1]);
         }
-        if (node.op === "^") {
+        if (node2.op === "^") {
           if (isConstantNode2(a1)) {
             if (isZero4(a1.value)) {
               return node1;
@@ -106070,7 +107214,7 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
             }
           }
         }
-        if (node.op === "and") {
+        if (node2.op === "and") {
           if (isConstantNode2(a0)) {
             if (a0.value) {
               if (isAlwaysBoolean(a1)) return a1;
@@ -106089,7 +107233,7 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
             }
           }
         }
-        if (node.op === "or") {
+        if (node2.op === "or") {
           if (isConstantNode2(a0)) {
             if (a0.value) {
               return nodeT;
@@ -106105,35 +107249,35 @@ var createSimplifyCore = /* @__PURE__ */ factory3(
             }
           }
         }
-        return new OperatorNode(node.op, node.fn, [a0, a1]);
+        return new OperatorNode(node2.op, node2.fn, [a0, a1]);
       }
-      if (isOperatorNode2(node)) {
+      if (isOperatorNode2(node2)) {
         return new OperatorNode(
-          node.op,
-          node.fn,
-          node.args.map((a) => _simplifyCore(a, options))
+          node2.op,
+          node2.fn,
+          node2.args.map((a) => _simplifyCore(a, options))
         );
       }
-      if (isArrayNode2(node)) {
-        return new ArrayNode(node.items.map((n) => _simplifyCore(n, options)));
+      if (isArrayNode2(node2)) {
+        return new ArrayNode(node2.items.map((n) => _simplifyCore(n, options)));
       }
-      if (isAccessorNode2(node)) {
+      if (isAccessorNode2(node2)) {
         return new AccessorNode(
-          _simplifyCore(node.object, options),
-          _simplifyCore(node.index, options)
+          _simplifyCore(node2.object, options),
+          _simplifyCore(node2.index, options)
         );
       }
-      if (isIndexNode2(node)) {
-        return new IndexNode(node.dimensions.map((n) => _simplifyCore(n, options)));
+      if (isIndexNode2(node2)) {
+        return new IndexNode(node2.dimensions.map((n) => _simplifyCore(n, options)));
       }
-      if (isObjectNode2(node)) {
+      if (isObjectNode2(node2)) {
         const newProps = {};
-        for (const prop in node.properties) {
-          newProps[prop] = _simplifyCore(node.properties[prop], options);
+        for (const prop in node2.properties) {
+          newProps[prop] = _simplifyCore(node2.properties[prop], options);
         }
         return new ObjectNode(newProps);
       }
-      return node;
+      return node2;
     }
     return typed3(name233, { Node: _simplifyCore, "Node,Object": _simplifyCore });
   }
@@ -107825,7 +108969,7 @@ var createMad = /* @__PURE__ */ factory3(
         );
       } catch (err) {
         if (err instanceof TypeError && err.message.includes("median")) {
-          throw new TypeError(err.message.replace("median", "mad"));
+          throw new TypeError(err.message.replace("median", "mad"), { cause: err });
         } else {
           throw improveErrorMessage(err, "mad", void 0);
         }
@@ -107867,7 +109011,7 @@ var createStd = /* @__PURE__ */ factory3(
         }
       } catch (err) {
         if (err instanceof TypeError && err.message.includes(" variance")) {
-          throw new TypeError(err.message.replace(" variance", " std"));
+          throw new TypeError(err.message.replace(" variance", " std"), { cause: err });
         } else {
           throw err;
         }
@@ -107990,9 +109134,9 @@ var createSimplify = /* @__PURE__ */ factory3(
     simplify2.defaultContext = defaultContext;
     simplify2.realContext = realContext;
     simplify2.positiveContext = positiveContext;
-    function removeParens(node) {
-      return node.transform(function(node2) {
-        return isParenthesisNode2(node2) ? removeParens(node2.content) : node2;
+    function removeParens(node2) {
+      return node2.transform(function(node22) {
+        return isParenthesisNode2(node22) ? removeParens(node22.content) : node22;
       });
     }
     const SUPPORTED_CONSTANTS = {
@@ -108389,18 +109533,18 @@ var createSimplify = /* @__PURE__ */ factory3(
       }
       return resNodes;
     }
-    function applyRule(node, rule, context2) {
+    function applyRule(node2, rule, context2) {
       if (rule.assuming) {
         for (const symbol in rule.assuming) {
           for (const property in rule.assuming[symbol]) {
             if (hasProperty(symbol, property, context2) !== rule.assuming[symbol][property]) {
-              return node;
+              return node2;
             }
           }
         }
       }
       const mergedContext = mergeContext(rule.imposeContext, context2);
-      let res = node;
+      let res = node2;
       if (res instanceof OperatorNode || res instanceof FunctionNode) {
         const newArgs = mapRule(res.args, rule, context2);
         if (newArgs !== res.args) {
@@ -108469,38 +109613,38 @@ var createSimplify = /* @__PURE__ */ factory3(
         if (implicit && "implicit" in repl) {
           res.implicit = true;
         }
-        res = res.transform(function(node2) {
-          if (node2.isSymbolNode && hasOwnProperty(matches.placeholders, node2.name)) {
-            return matches.placeholders[node2.name].clone();
+        res = res.transform(function(node22) {
+          if (node22.isSymbolNode && hasOwnProperty(matches.placeholders, node22.name)) {
+            return matches.placeholders[node22.name].clone();
           } else {
-            return node2;
+            return node22;
           }
         });
       }
-      if (rule.repeat && res !== node) {
+      if (rule.repeat && res !== node2) {
         res = applyRule(res, rule, context2);
       }
       return res;
     }
-    function getSplits(node, context2) {
+    function getSplits(node2, context2) {
       const res = [];
       let right;
       let rightArgs;
-      const makeNode = createMakeNodeFunction(node);
-      if (isCommutative(node, context2)) {
-        for (let i2 = 0; i2 < node.args.length; i2++) {
-          rightArgs = node.args.slice(0);
+      const makeNode = createMakeNodeFunction(node2);
+      if (isCommutative(node2, context2)) {
+        for (let i2 = 0; i2 < node2.args.length; i2++) {
+          rightArgs = node2.args.slice(0);
           rightArgs.splice(i2, 1);
           right = rightArgs.length === 1 ? rightArgs[0] : makeNode(rightArgs);
-          res.push(makeNode([node.args[i2], right]));
+          res.push(makeNode([node2.args[i2], right]));
         }
       } else {
-        for (let i2 = 1; i2 < node.args.length; i2++) {
-          let left = node.args[0];
+        for (let i2 = 1; i2 < node2.args.length; i2++) {
+          let left = node2.args[0];
           if (i2 > 1) {
-            left = makeNode(node.args.slice(0, i2));
+            left = makeNode(node2.args.slice(0, i2));
           }
-          rightArgs = node.args.slice(i2);
+          rightArgs = node2.args.slice(i2);
           right = rightArgs.length === 1 ? rightArgs[0] : makeNode(rightArgs);
           res.push(makeNode([left, right]));
         }
@@ -108565,24 +109709,24 @@ var createSimplify = /* @__PURE__ */ factory3(
       }
       return uniqueSets;
     }
-    function _ruleMatch(rule, node, context2, isSplit) {
+    function _ruleMatch(rule, node2, context2, isSplit) {
       let res = [{ placeholders: {} }];
-      if (rule instanceof OperatorNode && node instanceof OperatorNode || rule instanceof FunctionNode && node instanceof FunctionNode) {
+      if (rule instanceof OperatorNode && node2 instanceof OperatorNode || rule instanceof FunctionNode && node2 instanceof FunctionNode) {
         if (rule instanceof OperatorNode) {
-          if (rule.op !== node.op || rule.fn !== node.fn) {
+          if (rule.op !== node2.op || rule.fn !== node2.fn) {
             return [];
           }
         } else if (rule instanceof FunctionNode) {
-          if (rule.name !== node.name) {
+          if (rule.name !== node2.name) {
             return [];
           }
         }
-        if (node.args.length === 1 && rule.args.length === 1 || !isAssociative(node, context2) && node.args.length === rule.args.length || isSplit) {
+        if (node2.args.length === 1 && rule.args.length === 1 || !isAssociative(node2, context2) && node2.args.length === rule.args.length || isSplit) {
           let childMatches = [];
           for (let i2 = 0; i2 < rule.args.length; i2++) {
             const childMatch = _ruleMatch(
               rule.args[i2],
-              node.args[i2],
+              node2.args[i2],
               context2
             );
             if (childMatch.length === 0) {
@@ -108591,7 +109735,7 @@ var createSimplify = /* @__PURE__ */ factory3(
             childMatches.push(childMatch);
           }
           if (childMatches.length !== rule.args.length) {
-            if (!isCommutative(node, context2) || // exact match in order needed
+            if (!isCommutative(node2, context2) || // exact match in order needed
             rule.args.length === 1) {
               return [];
             }
@@ -108602,7 +109746,7 @@ var createSimplify = /* @__PURE__ */ factory3(
             }
             const leftMatch = _ruleMatch(
               rule.args[0],
-              node.args[1],
+              node2.args[1],
               context2
             );
             if (leftMatch.length === 0) {
@@ -108610,7 +109754,7 @@ var createSimplify = /* @__PURE__ */ factory3(
             }
             const rightMatch = _ruleMatch(
               rule.args[1],
-              node.args[0],
+              node2.args[0],
               context2
             );
             if (rightMatch.length === 0) {
@@ -108619,8 +109763,8 @@ var createSimplify = /* @__PURE__ */ factory3(
             childMatches = [leftMatch, rightMatch];
           }
           res = mergeChildMatches(childMatches);
-        } else if (node.args.length >= 2 && rule.args.length === 2) {
-          const splits = getSplits(node, context2);
+        } else if (node2.args.length >= 2 && rule.args.length === 2) {
+          const splits = getSplits(node2, context2);
           let splitMatches = [];
           for (let i2 = 0; i2 < splits.length; i2++) {
             const matchSet = _ruleMatch(rule, splits[i2], context2, true);
@@ -108637,61 +109781,61 @@ var createSimplify = /* @__PURE__ */ factory3(
           throw new Error("Symbol in rule has 0 length...!?");
         }
         if (SUPPORTED_CONSTANTS[rule.name]) {
-          if (rule.name !== node.name) {
+          if (rule.name !== node2.name) {
             return [];
           }
         } else {
           switch (rule.name[1] >= "a" && rule.name[1] <= "z" ? rule.name.substring(0, 2) : rule.name[0]) {
             case "n":
             case "_p":
-              res[0].placeholders[rule.name] = node;
+              res[0].placeholders[rule.name] = node2;
               break;
             case "c":
             case "cl":
-              if (isConstantNode2(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (isConstantNode2(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "v":
-              if (!isConstantNode2(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (!isConstantNode2(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "vl":
-              if (isSymbolNode2(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (isSymbolNode2(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "cd":
-              if (isNumericNode(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (isNumericNode(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "vd":
-              if (!isNumericNode(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (!isNumericNode(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "ce":
-              if (isConstantExpression(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (isConstantExpression(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
               break;
             case "ve":
-              if (!isConstantExpression(node)) {
-                res[0].placeholders[rule.name] = node;
+              if (!isConstantExpression(node2)) {
+                res[0].placeholders[rule.name] = node2;
               } else {
                 return [];
               }
@@ -108701,7 +109845,7 @@ var createSimplify = /* @__PURE__ */ factory3(
           }
         }
       } else if (rule instanceof ConstantNode) {
-        if (!equal22(rule.value, node.value)) {
+        if (!equal22(rule.value, node2.value)) {
           return [];
         }
       } else {
@@ -108784,13 +109928,13 @@ var createDerivative = /* @__PURE__ */ factory3(
       const variableName = variable.name;
       let res = expr;
       for (let i2 = 0; i2 < order; i2++) {
-        let isConstCached2 = function(node) {
-          const cached2 = cache.get(node);
+        let isConstCached2 = function(node2) {
+          const cached2 = cache.get(node2);
           if (cached2 !== void 0) {
             return cached2;
           }
-          const r = _isConst(isConstCached2, node, variableName);
-          cache.set(node, r);
+          const r = _isConst(isConstCached2, node2, variableName);
+          cache.set(node2, r);
           return r;
         };
         var isConstCached = isConstCached2;
@@ -108814,8 +109958,8 @@ var createDerivative = /* @__PURE__ */ factory3(
     const derivative3 = typed3(name244, {
       "Node, SymbolNode": plainDerivative,
       "Node, SymbolNode, Object": plainDerivative,
-      "Node, string": (node, symbol) => plainDerivative(node, parseIdentifier(symbol)),
-      "Node, string, Object": (node, symbol, options) => plainDerivative(node, parseIdentifier(symbol), options)
+      "Node, string": (node2, symbol) => plainDerivative(node2, parseIdentifier(symbol)),
+      "Node, string, Object": (node2, symbol, options) => plainDerivative(node2, parseIdentifier(symbol), options)
     });
     derivative3._simplify = true;
     derivative3.toTex = function(deriv) {
@@ -108857,53 +110001,53 @@ var createDerivative = /* @__PURE__ */ factory3(
       "function, ConstantNode, string": function() {
         return true;
       },
-      "function, SymbolNode, string": function(_isConst2, node, varName) {
-        return node.name !== varName;
+      "function, SymbolNode, string": function(_isConst2, node2, varName) {
+        return node2.name !== varName;
       },
-      "function, ParenthesisNode, string": function(isConst2, node, varName) {
-        return isConst2(node.content, varName);
+      "function, ParenthesisNode, string": function(isConst2, node2, varName) {
+        return isConst2(node2.content, varName);
       },
-      "function, FunctionAssignmentNode, string": function(isConst2, node, varName) {
-        if (!node.params.includes(varName)) {
+      "function, FunctionAssignmentNode, string": function(isConst2, node2, varName) {
+        if (!node2.params.includes(varName)) {
           return true;
         }
-        return isConst2(node.expr, varName);
+        return isConst2(node2.expr, varName);
       },
-      "function, FunctionNode | OperatorNode, string": function(isConst2, node, varName) {
-        return node.args.every((arg32) => isConst2(arg32, varName));
+      "function, FunctionNode | OperatorNode, string": function(isConst2, node2, varName) {
+        return node2.args.every((arg32) => isConst2(arg32, varName));
       }
     });
     const _derivative = typed3("_derivative", {
       "ConstantNode, function": function() {
         return createConstantNode2(0);
       },
-      "SymbolNode, function": function(node, isConst2) {
-        if (isConst2(node)) {
+      "SymbolNode, function": function(node2, isConst2) {
+        if (isConst2(node2)) {
           return createConstantNode2(0);
         }
         return createConstantNode2(1);
       },
-      "ParenthesisNode, function": function(node, isConst2) {
+      "ParenthesisNode, function": function(node2, isConst2) {
         return new ParenthesisNode(
-          _derivative(node.content, isConst2)
+          _derivative(node2.content, isConst2)
         );
       },
-      "FunctionAssignmentNode, function": function(node, isConst2) {
-        if (isConst2(node)) {
+      "FunctionAssignmentNode, function": function(node2, isConst2) {
+        if (isConst2(node2)) {
           return createConstantNode2(0);
         }
-        return _derivative(node.expr, isConst2);
+        return _derivative(node2.expr, isConst2);
       },
-      "FunctionNode, function": function(node, isConst2) {
-        if (isConst2(node)) {
+      "FunctionNode, function": function(node2, isConst2) {
+        if (isConst2(node2)) {
           return createConstantNode2(0);
         }
-        const arg0 = node.args[0];
+        const arg0 = node2.args[0];
         let arg1;
         let div2 = false;
         let negative = false;
         let funcDerivative;
-        switch (node.name) {
+        switch (node2.name) {
           case "cbrt":
             div2 = true;
             funcDerivative = new OperatorNode("*", "multiply", [
@@ -108916,44 +110060,44 @@ var createDerivative = /* @__PURE__ */ factory3(
             break;
           case "sqrt":
           case "nthRoot":
-            if (node.args.length === 1) {
+            if (node2.args.length === 1) {
               div2 = true;
               funcDerivative = new OperatorNode("*", "multiply", [
                 createConstantNode2(2),
                 new FunctionNode("sqrt", [arg0])
               ]);
-            } else if (node.args.length === 2) {
-              arg1 = new OperatorNode("/", "divide", [createConstantNode2(1), node.args[1]]);
+            } else if (node2.args.length === 2) {
+              arg1 = new OperatorNode("/", "divide", [createConstantNode2(1), node2.args[1]]);
               return _derivative(new OperatorNode("^", "pow", [arg0, arg1]), isConst2);
             }
             break;
           case "log10":
           case "log":
-            if (node.name === "log10") {
+            if (node2.name === "log10") {
               arg1 = createConstantNode2(10);
             }
-            if (!arg1 && node.args.length === 1) {
+            if (!arg1 && node2.args.length === 1) {
               funcDerivative = arg0.clone();
               div2 = true;
-            } else if (node.args.length === 1 && arg1 || node.args.length === 2 && isConst2(node.args[1])) {
+            } else if (node2.args.length === 1 && arg1 || node2.args.length === 2 && isConst2(node2.args[1])) {
               funcDerivative = new OperatorNode("*", "multiply", [
                 arg0.clone(),
-                new FunctionNode("log", [arg1 || node.args[1]])
+                new FunctionNode("log", [arg1 || node2.args[1]])
               ]);
               div2 = true;
-            } else if (node.args.length === 2) {
+            } else if (node2.args.length === 2) {
               return _derivative(
                 new OperatorNode("/", "divide", [
                   new FunctionNode("log", [arg0]),
-                  new FunctionNode("log", [node.args[1]])
+                  new FunctionNode("log", [node2.args[1]])
                 ]),
                 isConst2
               );
             }
             break;
           case "pow":
-            if (node.args.length === 2) {
-              return _derivative(new OperatorNode("^", "pow", [arg0, node.args[1]]), isConst2);
+            if (node2.args.length === 2) {
+              return _derivative(new OperatorNode("^", "pow", [arg0, node2.args[1]]), isConst2);
             }
             break;
           case "exp":
@@ -108975,14 +110119,14 @@ var createDerivative = /* @__PURE__ */ factory3(
             break;
           case "sec":
             funcDerivative = new OperatorNode("*", "multiply", [
-              node,
+              node2,
               new FunctionNode("tan", [arg0.clone()])
             ]);
             break;
           case "csc":
             negative = true;
             funcDerivative = new OperatorNode("*", "multiply", [
-              node,
+              node2,
               new FunctionNode("cot", [arg0.clone()])
             ]);
             break;
@@ -109067,14 +110211,14 @@ var createDerivative = /* @__PURE__ */ factory3(
           case "sech":
             negative = true;
             funcDerivative = new OperatorNode("*", "multiply", [
-              node,
+              node2,
               new FunctionNode("tanh", [arg0.clone()])
             ]);
             break;
           case "csch":
             negative = true;
             funcDerivative = new OperatorNode("*", "multiply", [
-              node,
+              node2,
               new FunctionNode("coth", [arg0.clone()])
             ]);
             break;
@@ -109154,7 +110298,7 @@ var createDerivative = /* @__PURE__ */ factory3(
           // Needs digamma function, d/dx(gamma(x)) = gamma(x)digamma(x)
           default:
             throw new Error(
-              'Cannot process function "' + node.name + '" in derivative: the function is not supported, undefined, or the number of arguments passed to it are not supported'
+              'Cannot process function "' + node2.name + '" in derivative: the function is not supported, undefined, or the number of arguments passed to it are not supported'
             );
         }
         let op;
@@ -109172,38 +110316,38 @@ var createDerivative = /* @__PURE__ */ factory3(
         }
         return new OperatorNode(op, func, [chainDerivative, funcDerivative]);
       },
-      "OperatorNode, function": function(node, isConst2) {
-        if (isConst2(node)) {
+      "OperatorNode, function": function(node2, isConst2) {
+        if (isConst2(node2)) {
           return createConstantNode2(0);
         }
-        if (node.op === "+") {
+        if (node2.op === "+") {
           return new OperatorNode(
-            node.op,
-            node.fn,
-            node.args.map(function(arg32) {
+            node2.op,
+            node2.fn,
+            node2.args.map(function(arg32) {
               return _derivative(arg32, isConst2);
             })
           );
         }
-        if (node.op === "-") {
-          if (node.isUnary()) {
-            return new OperatorNode(node.op, node.fn, [
-              _derivative(node.args[0], isConst2)
+        if (node2.op === "-") {
+          if (node2.isUnary()) {
+            return new OperatorNode(node2.op, node2.fn, [
+              _derivative(node2.args[0], isConst2)
             ]);
           }
-          if (node.isBinary()) {
-            return new OperatorNode(node.op, node.fn, [
-              _derivative(node.args[0], isConst2),
-              _derivative(node.args[1], isConst2)
+          if (node2.isBinary()) {
+            return new OperatorNode(node2.op, node2.fn, [
+              _derivative(node2.args[0], isConst2),
+              _derivative(node2.args[1], isConst2)
             ]);
           }
         }
-        if (node.op === "*") {
-          const constantTerms = node.args.filter(function(arg32) {
+        if (node2.op === "*") {
+          const constantTerms = node2.args.filter(function(arg32) {
             return isConst2(arg32);
           });
           if (constantTerms.length > 0) {
-            const nonConstantTerms = node.args.filter(function(arg32) {
+            const nonConstantTerms = node2.args.filter(function(arg32) {
               return !isConst2(arg32);
             });
             const nonConstantNode = nonConstantTerms.length === 1 ? nonConstantTerms[0] : new OperatorNode("*", "multiply", nonConstantTerms);
@@ -109213,20 +110357,20 @@ var createDerivative = /* @__PURE__ */ factory3(
           return new OperatorNode(
             "+",
             "add",
-            node.args.map(function(argOuter) {
+            node2.args.map(function(argOuter) {
               return new OperatorNode(
                 "*",
                 "multiply",
-                node.args.map(function(argInner) {
+                node2.args.map(function(argInner) {
                   return argInner === argOuter ? _derivative(argInner, isConst2) : argInner.clone();
                 })
               );
             })
           );
         }
-        if (node.op === "/" && node.isBinary()) {
-          const arg0 = node.args[0];
-          const arg1 = node.args[1];
+        if (node2.op === "/" && node2.isBinary()) {
+          const arg0 = node2.args[0];
+          const arg1 = node2.args[1];
           if (isConst2(arg1)) {
             return new OperatorNode("/", "divide", [_derivative(arg0, isConst2), arg1]);
           }
@@ -109247,15 +110391,15 @@ var createDerivative = /* @__PURE__ */ factory3(
             new OperatorNode("^", "pow", [arg1.clone(), createConstantNode2(2)])
           ]);
         }
-        if (node.op === "^" && node.isBinary()) {
-          const arg0 = node.args[0];
-          const arg1 = node.args[1];
+        if (node2.op === "^" && node2.isBinary()) {
+          const arg0 = node2.args[0];
+          const arg1 = node2.args[1];
           if (isConst2(arg0)) {
             if (isConstantNode2(arg0) && (isZero4(arg0.value) || equal22(arg0.value, 1))) {
               return createConstantNode2(0);
             }
             return new OperatorNode("*", "multiply", [
-              node,
+              node2,
               new OperatorNode("*", "multiply", [
                 new FunctionNode("log", [arg0.clone()]),
                 _derivative(arg1.clone(), isConst2)
@@ -109295,7 +110439,7 @@ var createDerivative = /* @__PURE__ */ factory3(
           ]);
         }
         throw new Error(
-          'Cannot process operator "' + node.op + '" in derivative: the operator is not supported, undefined, or the number of arguments passed to it are not supported'
+          'Cannot process operator "' + node2.op + '" in derivative: the operator is not supported, undefined, or the number of arguments passed to it are not supported'
         );
       }
     });
@@ -109650,43 +110794,43 @@ var createRationalize = /* @__PURE__ */ factory3(
     });
     function polynomial(expr, scope, extended, rules) {
       const variables2 = [];
-      const node = simplify2(expr, rules, scope, { exactFractions: false });
+      const node2 = simplify2(expr, rules, scope, { exactFractions: false });
       extended = !!extended;
-      recPoly(node);
+      recPoly(node2);
       const retFunc = {};
-      retFunc.expression = node;
+      retFunc.expression = node2;
       retFunc.variables = variables2;
       return retFunc;
-      function recPoly(node2) {
-        const tp = node2.type;
+      function recPoly(node22) {
+        const tp = node22.type;
         if (tp === "FunctionNode") {
           throw new Error("There is an unsolved function call");
         } else if (tp === "OperatorNode") {
-          if (node2.op === "^") {
-            if (node2.args[1].type !== "ConstantNode" || !isInteger(parseFloat(String(node2.args[1].value)))) {
+          if (node22.op === "^") {
+            if (node22.args[1].type !== "ConstantNode" || !isInteger(parseFloat(String(node22.args[1].value)))) {
               throw new Error("There is a non-integer exponent");
             } else {
-              recPoly(node2.args[0]);
+              recPoly(node22.args[0]);
             }
           } else {
-            const op = node2.op;
+            const op = node22.op;
             if (op !== "+" && op !== "-" && op !== "*" && op !== "^" && (!extended || op !== "/")) {
               throw new Error(
                 "Operator " + op + " invalid in polynomial expression"
               );
             }
-            for (let i2 = 0; i2 < node2.args.length; i2++) {
-              recPoly(node2.args[i2]);
+            for (let i2 = 0; i2 < node22.args.length; i2++) {
+              recPoly(node22.args[i2]);
             }
           }
         } else if (tp === "SymbolNode") {
-          const name254 = node2.name;
+          const name254 = node22.name;
           const pos = variables2.indexOf(name254);
           if (pos === -1) {
             variables2.push(name254);
           }
         } else if (tp === "ParenthesisNode") {
-          recPoly(node2.content);
+          recPoly(node22.content);
         } else if (tp !== "ConstantNode") {
           throw new Error("type " + tp + " is not allowed in polynomial expression");
         }
@@ -109816,54 +110960,54 @@ var createRationalize = /* @__PURE__ */ factory3(
       ];
       return setRules;
     }
-    function expandPower(node, parent, indParent) {
-      const tp = node.type;
+    function expandPower(node2, parent, indParent) {
+      const tp = node2.type;
       const internal = arguments.length > 1;
-      if (tp === "OperatorNode" && node.isBinary()) {
+      if (tp === "OperatorNode" && node2.isBinary()) {
         let does = false;
         let val;
-        if (node.op === "^") {
-          if ((node.args[0].type === "ParenthesisNode" || node.args[0].type === "OperatorNode") && node.args[1].type === "ConstantNode") {
-            val = parseFloat(String(node.args[1].value));
+        if (node2.op === "^") {
+          if ((node2.args[0].type === "ParenthesisNode" || node2.args[0].type === "OperatorNode") && node2.args[1].type === "ConstantNode") {
+            val = parseFloat(String(node2.args[1].value));
             does = val >= 2 && isInteger(val);
           }
         }
         if (does) {
           if (val > 2) {
-            const nEsqTopo = node.args[0];
+            const nEsqTopo = node2.args[0];
             const nDirTopo = new OperatorNode("^", "pow", [
-              node.args[0].cloneDeep(),
+              node2.args[0].cloneDeep(),
               new ConstantNode(val - 1)
             ]);
-            node = new OperatorNode("*", "multiply", [nEsqTopo, nDirTopo]);
+            node2 = new OperatorNode("*", "multiply", [nEsqTopo, nDirTopo]);
           } else {
-            node = new OperatorNode("*", "multiply", [
-              node.args[0],
-              node.args[0].cloneDeep()
+            node2 = new OperatorNode("*", "multiply", [
+              node2.args[0],
+              node2.args[0].cloneDeep()
             ]);
           }
           if (internal) {
             if (indParent === "content") {
-              parent.content = node;
+              parent.content = node2;
             } else {
-              parent.args[indParent] = node;
+              parent.args[indParent] = node2;
             }
           }
         }
       }
       if (tp === "ParenthesisNode") {
-        expandPower(node.content, node, "content");
+        expandPower(node2.content, node2, "content");
       } else if (tp !== "ConstantNode" && tp !== "SymbolNode") {
-        for (let i2 = 0; i2 < node.args.length; i2++) {
-          expandPower(node.args[i2], node, i2);
+        for (let i2 = 0; i2 < node2.args.length; i2++) {
+          expandPower(node2.args[i2], node2, i2);
         }
       }
       if (!internal) {
-        return node;
+        return node2;
       }
-      return node;
+      return node2;
     }
-    function polyToCanonical(node, coefficients) {
+    function polyToCanonical(node2, coefficients) {
       if (coefficients === void 0) {
         coefficients = [];
       }
@@ -109871,7 +111015,7 @@ var createRationalize = /* @__PURE__ */ factory3(
       const o = { cte: 1, oper: "+", fire: "" };
       let maxExpo = 0;
       let varname = "";
-      recurPol(node, null, o);
+      recurPol(node2, null, o);
       maxExpo = coefficients.length - 1;
       let first = true;
       let no;
@@ -109907,43 +111051,43 @@ var createRationalize = /* @__PURE__ */ factory3(
       } else {
         return no;
       }
-      function recurPol(node2, noPai, o2) {
-        const tp = node2.type;
+      function recurPol(node22, noPai, o2) {
+        const tp = node22.type;
         if (tp === "FunctionNode") {
           throw new Error("There is an unsolved function call");
         } else if (tp === "OperatorNode") {
-          const op = node2.op;
+          const op = node22.op;
           if (op !== "+" && op !== "-" && op !== "*" && op !== "^")
             throw new Error("Operator " + op + " invalid");
           if (noPai !== null) {
-            if ((node2.fn === "unaryMinus" || node2.fn === "pow") && noPai.fn !== "add" && noPai.fn !== "subtract" && noPai.fn !== "multiply") {
-              throw new Error("Invalid " + node2.op + " placing");
+            if ((node22.fn === "unaryMinus" || node22.fn === "pow") && noPai.fn !== "add" && noPai.fn !== "subtract" && noPai.fn !== "multiply") {
+              throw new Error("Invalid " + node22.op + " placing");
             }
-            if ((node2.fn === "subtract" || node2.fn === "add" || node2.fn === "multiply") && noPai.fn !== "add" && noPai.fn !== "subtract") {
-              throw new Error("Invalid " + node2.op + " placing");
+            if ((node22.fn === "subtract" || node22.fn === "add" || node22.fn === "multiply") && noPai.fn !== "add" && noPai.fn !== "subtract") {
+              throw new Error("Invalid " + node22.op + " placing");
             }
-            if ((node2.fn === "subtract" || node2.fn === "add" || node2.fn === "unaryMinus") && o2.noFil !== 0) {
-              throw new Error("Invalid " + node2.op + " placing");
+            if ((node22.fn === "subtract" || node22.fn === "add" || node22.fn === "unaryMinus") && o2.noFil !== 0) {
+              throw new Error("Invalid " + node22.op + " placing");
             }
           }
-          if (node2.op === "^" || node2.op === "*") {
-            o2.fire = node2.op;
+          if (node22.op === "^" || node22.op === "*") {
+            o2.fire = node22.op;
           }
-          for (let i2 = 0; i2 < node2.args.length; i2++) {
-            if (node2.fn === "unaryMinus") o2.oper = "-";
-            if (node2.op === "+" || node2.fn === "subtract") {
+          for (let i2 = 0; i2 < node22.args.length; i2++) {
+            if (node22.fn === "unaryMinus") o2.oper = "-";
+            if (node22.op === "+" || node22.fn === "subtract") {
               o2.fire = "";
               o2.cte = 1;
-              o2.oper = i2 === 0 ? "+" : node2.op;
+              o2.oper = i2 === 0 ? "+" : node22.op;
             }
             o2.noFil = i2;
-            recurPol(node2.args[i2], node2, o2);
+            recurPol(node22.args[i2], node22, o2);
           }
         } else if (tp === "SymbolNode") {
-          if (node2.name !== varname && varname !== "") {
+          if (node22.name !== varname && varname !== "") {
             throw new Error("There is more than one variable");
           }
-          varname = node2.name;
+          varname = node22.name;
           if (noPai === null) {
             coefficients[1] = 1;
             return;
@@ -109960,7 +111104,7 @@ var createRationalize = /* @__PURE__ */ factory3(
             maxExpo = Math.max(1, maxExpo);
           }
         } else if (tp === "ConstantNode") {
-          const valor = parseFloat(String(node2.value));
+          const valor = parseFloat(String(node22.value));
           if (noPai === null) {
             coefficients[0] = valor;
             return;
@@ -110549,6 +111693,11 @@ var createFirstRadiation = /* @__PURE__ */ unitFactory(
   "3.7417718521927573e-16",
   "W m^2"
 );
+var createSpectralRadiance = /* @__PURE__ */ unitFactory(
+  "spectralRadiance",
+  "1.1910429723971881e-16",
+  "W m^2 sr^-1"
+);
 var createLoschmidt = /* @__PURE__ */ unitFactory(
   "loschmidt",
   "2.686780111798444e25",
@@ -111111,8 +112260,8 @@ var _parseScope = {
   RelationalNode: _RelationalNode,
   SymbolNode: _SymbolNode
 };
-var _parse2 = createParse(_parseScope);
-factoryScope.parse = _parse2;
+var _parse3 = createParse(_parseScope);
+factoryScope.parse = _parse3;
 factoryScope.pi = Math.PI;
 factoryScope.tau = 2 * Math.PI;
 factoryScope.i = new factoryScope.Complex(0, 1);
@@ -111368,6 +112517,9 @@ var stefanBoltzmann = createStefanBoltzmann(
   factoryScope
 );
 var firstRadiation = createFirstRadiation(
+  factoryScope
+);
+var spectralRadiance = createSpectralRadiance(
   factoryScope
 );
 var secondRadiation = createSecondRadiation(
@@ -112388,16 +113540,16 @@ function groebnerBasis(polys, vars) {
   return basis.map((b) => polyToString(b, vars));
 }
 function minimalPolynomial(expr, varName) {
-  const alpha = evaluate(expr);
-  if (!isFinite(alpha)) return null;
+  const alpha2 = evaluate(expr);
+  if (!isFinite(alpha2)) return null;
   for (let den = 1; den <= 100; den++) {
-    const num2 = Math.round(alpha * den);
-    if (Math.abs(alpha - num2 / den) < 1e-12) {
+    const num2 = Math.round(alpha2 * den);
+    if (Math.abs(alpha2 - num2 / den) < 1e-12) {
       if (den === 1) return `${varName} - ${num2}`;
       return `${den}*${varName} - ${num2}`;
     }
   }
-  const powers = [1, alpha, alpha * alpha, alpha * alpha * alpha, alpha ** 4];
+  const powers = [1, alpha2, alpha2 * alpha2, alpha2 * alpha2 * alpha2, alpha2 ** 4];
   for (let deg = 2; deg <= 6; deg++) {
     const maxCoeff = 20;
     const found = findIntegerRelation(powers.slice(0, deg + 1), maxCoeff);
@@ -112701,20 +113853,20 @@ function curl(exprs, vars, scope) {
   const dF1dy = partialDerivative(F1, y, scope);
   return [dF3dy - dF2dz, dF1dz - dF3dx, dF2dx - dF1dy];
 }
-function iltEvalAt(node, sVar, val) {
+function iltEvalAt(node2, sVar, val) {
   try {
-    const result = node.evaluate({ [sVar]: val });
+    const result = node2.evaluate({ [sVar]: val });
     if (typeof result === "number" && isFinite(result)) return result;
     return null;
   } catch {
     return null;
   }
 }
-function iltMatchPattern(node, sVar, pattern) {
+function iltMatchPattern(node2, sVar, pattern) {
   const checkNode = parse3(pattern.replace(/s/g, sVar));
   const testPoints = [2, 3, 5, 7, 11];
   for (const p of testPoints) {
-    const v1 = iltEvalAt(node, sVar, p);
+    const v1 = iltEvalAt(node2, sVar, p);
     const v2 = iltEvalAt(checkNode, sVar, p);
     if (v1 === null || v2 === null) return false;
     if (Math.abs(v1 - v2) > 1e-9) return false;
@@ -112751,10 +113903,10 @@ function iltFactorial(n) {
   for (let i2 = 2; i2 <= n; i2++) result *= i2;
   return result;
 }
-function iltMatchQuadratic(node, sVar, tVar) {
-  const v2 = iltEvalAt(node, sVar, 2);
-  const v3 = iltEvalAt(node, sVar, 3);
-  const v5 = iltEvalAt(node, sVar, 5);
+function iltMatchQuadratic(node2, sVar, tVar) {
+  const v2 = iltEvalAt(node2, sVar, 2);
+  const v3 = iltEvalAt(node2, sVar, 3);
+  const v5 = iltEvalAt(node2, sVar, 5);
   if (v2 === null || v3 === null || v5 === null) return null;
   if (Math.abs(v2) > 1e-12 && Math.abs(v3) > 1e-12) {
     const b2fromV2 = 2 / v2 - 4;
@@ -112812,13 +113964,13 @@ function iltMatchQuadratic(node, sVar, tVar) {
   }
   return null;
 }
-function iltMatchPower(node, sVar, tVar) {
-  const v2 = iltEvalAt(node, sVar, 2);
+function iltMatchPower(node2, sVar, tVar) {
+  const v2 = iltEvalAt(node2, sVar, 2);
   if (v2 === null || Math.abs(v2) < 1e-15) return null;
   for (let n = 1; n <= 10; n++) {
     const testVal = Math.pow(2, n) * v2;
-    const v3 = iltEvalAt(node, sVar, 3);
-    const v5 = iltEvalAt(node, sVar, 5);
+    const v3 = iltEvalAt(node2, sVar, 3);
+    const v5 = iltEvalAt(node2, sVar, 5);
     if (v3 === null || v5 === null) return null;
     const c3 = Math.pow(3, n) * v3;
     const c5 = Math.pow(5, n) * v5;
@@ -112842,10 +113994,10 @@ function iltMatchPower(node, sVar, tVar) {
   }
   return null;
 }
-function iltMatchExponential(node, sVar, tVar) {
-  const v3 = iltEvalAt(node, sVar, 3);
-  const v5 = iltEvalAt(node, sVar, 5);
-  const v7 = iltEvalAt(node, sVar, 7);
+function iltMatchExponential(node2, sVar, tVar) {
+  const v3 = iltEvalAt(node2, sVar, 3);
+  const v5 = iltEvalAt(node2, sVar, 5);
+  const v7 = iltEvalAt(node2, sVar, 7);
   if (v3 === null || v5 === null || v7 === null) return null;
   if (Math.abs(v3) < 1e-15) return null;
   const aFromV3 = 3 - 1 / v3;
@@ -112866,13 +114018,13 @@ function iltMatchExponential(node, sVar, tVar) {
   }
   return null;
 }
-function iltMatchScaledExponential(node, sVar, tVar) {
+function iltMatchScaledExponential(node2, sVar, tVar) {
   const s1 = 3;
   const s2 = 5;
   const s3 = 7;
-  const v1 = iltEvalAt(node, sVar, s1);
-  const v2 = iltEvalAt(node, sVar, s2);
-  const v3 = iltEvalAt(node, sVar, s3);
+  const v1 = iltEvalAt(node2, sVar, s1);
+  const v2 = iltEvalAt(node2, sVar, s2);
+  const v3 = iltEvalAt(node2, sVar, s3);
   if (v1 === null || v2 === null || v3 === null) return null;
   if (Math.abs(v2 - v1) < 1e-12) return null;
   const a = (s2 * v2 - s1 * v1) / (v2 - v1);
@@ -112899,28 +114051,28 @@ function iltMatchScaledExponential(node, sVar, tVar) {
   }
   return cStr + " * " + expPart;
 }
-function iltTableLookup(node, sVar, tVar) {
-  if (iltMatchPattern(node, sVar, "1/s")) return "1";
-  if (iltMatchPattern(node, sVar, "1/s^2")) return tVar;
-  const quadResult = iltMatchQuadratic(node, sVar, tVar);
+function iltTableLookup(node2, sVar, tVar) {
+  if (iltMatchPattern(node2, sVar, "1/s")) return "1";
+  if (iltMatchPattern(node2, sVar, "1/s^2")) return tVar;
+  const quadResult = iltMatchQuadratic(node2, sVar, tVar);
   if (quadResult !== null) return quadResult;
-  const powerResult = iltMatchPower(node, sVar, tVar);
+  const powerResult = iltMatchPower(node2, sVar, tVar);
   if (powerResult !== null) return powerResult;
-  const expResult = iltMatchExponential(node, sVar, tVar);
+  const expResult = iltMatchExponential(node2, sVar, tVar);
   if (expResult !== null) return expResult;
-  const scaledExpResult = iltMatchScaledExponential(node, sVar, tVar);
+  const scaledExpResult = iltMatchScaledExponential(node2, sVar, tVar);
   if (scaledExpResult !== null) return scaledExpResult;
   return null;
 }
-function iltSimplifyNode(node) {
-  return node;
+function iltSimplifyNode(node2) {
+  return node2;
 }
-function _inverseLaplaceNode(node, sVar, tVar) {
-  let simplified = node;
+function _inverseLaplaceNode(node2, sVar, tVar) {
+  let simplified;
   try {
-    simplified = iltSimplifyNode(node);
+    simplified = iltSimplifyNode(node2);
   } catch {
-    simplified = node;
+    simplified = node2;
   }
   const nodeAny = simplified;
   if (nodeAny.type === "OperatorNode" && nodeAny.op === "+") {
@@ -112941,13 +114093,13 @@ function _inverseLaplaceNode(node, sVar, tVar) {
   );
 }
 function inverseLaplaceTransform(expr, sVar = "s", tVar = "t") {
-  let node;
+  let node2;
   if (typeof expr === "string") {
-    node = parse3(expr);
+    node2 = parse3(expr);
   } else {
-    node = expr;
+    node2 = expr;
   }
-  return _inverseLaplaceNode(node, sVar, tVar);
+  return _inverseLaplaceNode(node2, sVar, tVar);
 }
 var CAS_BATCH_THRESHOLD = 16;
 function _casSimplifyOne(expr) {
@@ -113958,7 +115110,7 @@ function studentizedRangeQuantile(p, k, df) {
   }
   return (lo + hi) / 2;
 }
-function tukeyHSD(groups, alpha = 0.05) {
+function tukeyHSD(groups, alpha2 = 0.05) {
   const gs = groups.map(arr2);
   const k = gs.length;
   if (k < 2) throw new Error("tukeyHSD: need at least 2 groups");
@@ -113969,7 +115121,7 @@ function tukeyHSD(groups, alpha = 0.05) {
     throw new Error("tukeyHSD: residual df must be > 0 (groups must hold more observations than groups)");
   const sse = gs.reduce((s, g) => s + sampleVar(g) * (g.length - 1), 0);
   const mse = sse / dfErr;
-  const qCrit = studentizedRangeQuantile(1 - alpha, k, dfErr);
+  const qCrit = studentizedRangeQuantile(1 - alpha2, k, dfErr);
   const out = [];
   for (let i2 = 0; i2 < k; i2++) {
     for (let j = i2 + 1; j < k; j++) {
@@ -114245,7 +115397,7 @@ function fsolve(F, x0, opts = {}) {
       delta = linsolve(J, rhs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      throw new Error(`fsolve: singular Jacobian at iteration ${iter} (${msg})`);
+      throw new Error(`fsolve: singular Jacobian at iteration ${iter} (${msg})`, { cause: err });
     }
     const residualNorm2 = norm24(Fx);
     let xNext = x.map((xi, i2) => xi + delta[i2]);
@@ -114296,14 +115448,14 @@ function dot2(a, b) {
 function norm25(a) {
   return Math.sqrt(dot2(a, a));
 }
-function axpy(alpha, x, y) {
+function axpy(alpha2, x, y) {
   const n = x.length;
   const out = new Array(n);
-  for (let i2 = 0; i2 < n; i2++) out[i2] = alpha * x[i2] + y[i2];
+  for (let i2 = 0; i2 < n; i2++) out[i2] = alpha2 * x[i2] + y[i2];
   return out;
 }
-function scale2(alpha, x) {
-  return x.map((v) => alpha * v);
+function scale2(alpha2, x) {
+  return x.map((v) => alpha2 * v);
 }
 function subtract22(a, b) {
   return a.map((v, i2) => v - b[i2]);
@@ -114467,17 +115619,17 @@ function cg(a, b, opts) {
     const Ap = matvec2(p);
     const pAp = dot2(p, Ap);
     if (Math.abs(pAp) < 1e-300) break;
-    const alpha = rzOld / pAp;
-    x = axpy(alpha, p, x);
-    r = axpy(-alpha, Ap, r);
+    const alpha2 = rzOld / pAp;
+    x = axpy(alpha2, p, x);
+    r = axpy(-alpha2, Ap, r);
     residual = relativeResidualNorm(norm25(r), bNorm);
     if (residual < tol) {
       return { x, iterations, converged: true, residual };
     }
     z = applyM(r);
     const rzNew = dot2(r, z);
-    const beta2 = rzNew / rzOld;
-    p = add32(z, scale2(beta2, p));
+    const beta3 = rzNew / rzOld;
+    p = add32(z, scale2(beta3, p));
     rzOld = rzNew;
   }
   return { x, iterations, converged: residual < tol, residual };
@@ -114498,7 +115650,7 @@ function minres(a, b, opts) {
     return { x, iterations: 0, converged: residual0 < tol, residual: residual0 };
   }
   let oldb = 0;
-  let beta2 = beta1;
+  let beta3 = beta1;
   let dbar = 0;
   let epsln = 0;
   let phibar = beta1;
@@ -114510,31 +115662,31 @@ function minres(a, b, opts) {
   let iterations = 0;
   for (let iter = 1; iter <= maxIter; iter++) {
     iterations = iter;
-    const v = scale2(1 / beta2, y);
+    const v = scale2(1 / beta3, y);
     y = matvec2(v);
-    if (iter >= 2) y = axpy(-beta2 / oldb, r1, y);
+    if (iter >= 2) y = axpy(-beta3 / oldb, r1, y);
     const alfa = dot2(v, y);
-    y = axpy(-alfa / beta2, r2, y);
+    y = axpy(-alfa / beta3, r2, y);
     r1 = r2;
     r2 = y;
     y = applyM(r2);
-    oldb = beta2;
-    beta2 = Math.sqrt(Math.max(0, dot2(r2, y)));
+    oldb = beta3;
+    beta3 = Math.sqrt(Math.max(0, dot2(r2, y)));
     const oldeps = epsln;
     const delta = cs * dbar + sn * alfa;
     const gbar = sn * dbar - cs * alfa;
-    epsln = sn * beta2;
-    dbar = -cs * beta2;
-    const gamma2 = Math.max(Math.sqrt(gbar * gbar + beta2 * beta2), 1e-300);
+    epsln = sn * beta3;
+    dbar = -cs * beta3;
+    const gamma2 = Math.max(Math.sqrt(gbar * gbar + beta3 * beta3), 1e-300);
     cs = gbar / gamma2;
-    sn = beta2 / gamma2;
+    sn = beta3 / gamma2;
     const phi2 = cs * phibar;
     phibar = sn * phibar;
     const w1 = w2;
     w2 = w;
     w = scale2(1 / gamma2, subtract22(subtract22(v, scale2(oldeps, w1)), scale2(delta, w2)));
     for (let i2 = 0; i2 < n; i2++) x[i2] += phi2 * w[i2];
-    if (phibar / beta1 < tol || beta2 < 1e-300) break;
+    if (phibar / beta1 < tol || beta3 < 1e-300) break;
   }
   const residual = relativeResidual(matvec2, x, b, bNorm);
   return { x, iterations, converged: residual < tol, residual };
@@ -114555,15 +115707,15 @@ function gmres(a, b, opts) {
   }
   while (totalIterations < maxIter) {
     const r0 = applyM(subtract22(b, matvec2(x)));
-    const beta2 = norm25(r0);
-    if (beta2 < 1e-300) {
+    const beta3 = norm25(r0);
+    if (beta3 < 1e-300) {
       return { x, iterations: totalIterations, converged: residual < tol, residual };
     }
     const m = Math.min(restart, maxIter - totalIterations);
-    const V = [scale2(1 / beta2, r0)];
+    const V = [scale2(1 / beta3, r0)];
     const H = Array.from({ length: m + 1 }, () => new Array(m).fill(0));
     const g = new Array(m + 1).fill(0);
-    g[0] = beta2;
+    g[0] = beta3;
     const cs = new Array(m).fill(0);
     const sn = new Array(m).fill(0);
     let k = 0;
@@ -114631,7 +115783,7 @@ function bicgstab(a, b, opts) {
     return { x, iterations: 0, converged: true, residual };
   }
   let rho = 1;
-  let alpha = 1;
+  let alpha2 = 1;
   let omega = 1;
   let v = zeros22(n);
   let p = zeros22(n);
@@ -114643,19 +115795,19 @@ function bicgstab(a, b, opts) {
     if (iter === 1) {
       p = r.slice();
     } else {
-      const beta2 = rhoNew / rho * (alpha / omega);
-      p = add32(r, scale2(beta2, subtract22(p, scale2(omega, v))));
+      const beta3 = rhoNew / rho * (alpha2 / omega);
+      p = add32(r, scale2(beta3, subtract22(p, scale2(omega, v))));
     }
     rho = rhoNew;
     const pHat = applyM(p);
     v = matvec2(pHat);
     const rHatV = dot2(rHat0, v);
     if (Math.abs(rHatV) < 1e-300) break;
-    alpha = rho / rHatV;
-    const s = axpy(-alpha, v, r);
+    alpha2 = rho / rHatV;
+    const s = axpy(-alpha2, v, r);
     const sNorm = relativeResidualNorm(norm25(s), bNorm);
     if (sNorm < tol) {
-      x = axpy(alpha, pHat, x);
+      x = axpy(alpha2, pHat, x);
       residual = sNorm;
       return { x, iterations, converged: true, residual };
     }
@@ -114663,7 +115815,7 @@ function bicgstab(a, b, opts) {
     const t = matvec2(sHat);
     const tt = dot2(t, t);
     omega = tt > 1e-300 ? dot2(t, s) / tt : 0;
-    x = axpy(alpha, pHat, x);
+    x = axpy(alpha2, pHat, x);
     x = axpy(omega, sHat, x);
     r = axpy(-omega, t, s);
     residual = relativeResidualNorm(norm25(r), bNorm);
@@ -114704,13 +115856,13 @@ function dot3(a, b) {
 function norm26(a) {
   return Math.sqrt(dot3(a, a));
 }
-function axpy2(alpha, x, y) {
+function axpy2(alpha2, x, y) {
   const out = new Array(x.length);
-  for (let i2 = 0; i2 < x.length; i2++) out[i2] = alpha * x[i2] + y[i2];
+  for (let i2 = 0; i2 < x.length; i2++) out[i2] = alpha2 * x[i2] + y[i2];
   return out;
 }
-function scale22(alpha, x) {
-  return x.map((v) => alpha * v);
+function scale22(alpha2, x) {
+  return x.map((v) => alpha2 * v);
 }
 function startVector(n) {
   const v = new Array(n);
@@ -114726,19 +115878,19 @@ function lanczos(matvec2, n, m) {
     const vj = V[j];
     let w = matvec2(vj);
     if (j > 0) w = axpy2(-betas[j - 1], V[j - 1], w);
-    const alpha = dot3(w, vj);
-    alphas.push(alpha);
-    w = axpy2(-alpha, vj, w);
+    const alpha2 = dot3(w, vj);
+    alphas.push(alpha2);
+    w = axpy2(-alpha2, vj, w);
     for (let pass = 0; pass < 2; pass++) {
       for (let i2 = 0; i2 <= j; i2++) {
         const c = dot3(w, V[i2]);
         w = axpy2(-c, V[i2], w);
       }
     }
-    const beta2 = norm26(w);
-    if (j === m - 1 || beta2 < 1e-13) break;
-    betas.push(beta2);
-    V.push(scale22(1 / beta2, w));
+    const beta3 = norm26(w);
+    if (j === m - 1 || beta3 < 1e-13) break;
+    betas.push(beta3);
+    V.push(scale22(1 / beta3, w));
   }
   return { V, alphas, betas };
 }
@@ -115038,7 +116190,7 @@ function ldl(A) {
     for (let i2 = 0; i2 < n; i2++) [W[i2][a], W[i2][b]] = [W[i2][b], W[i2][a]];
     [L[a], L[b]] = [L[b], L[a]];
   };
-  const alpha = (1 + Math.sqrt(17)) / 8;
+  const alpha2 = (1 + Math.sqrt(17)) / 8;
   let k = 0;
   while (k < n) {
     if (k === n - 1) {
@@ -115059,13 +116211,13 @@ function ldl(A) {
     }
     let use1x1 = true;
     let swapWith = -1;
-    if (lambda !== 0 && w1 < alpha * lambda) {
+    if (lambda !== 0 && w1 < alpha2 * lambda) {
       let sigma = 0;
       for (let i2 = k; i2 < n; i2++) {
         if (i2 !== r) sigma = Math.max(sigma, Math.abs(W[i2][r]));
       }
-      if (w1 * sigma < alpha * lambda * lambda) {
-        if (Math.abs(W[r][r]) >= alpha * sigma) {
+      if (w1 * sigma < alpha2 * lambda * lambda) {
+        if (Math.abs(W[r][r]) >= alpha2 * sigma) {
           swapWith = r;
         } else {
           use1x1 = false;
@@ -115964,15 +117116,15 @@ function movingAverage(x, w) {
   }
   return out;
 }
-function ewma(x, alpha) {
+function ewma(x, alpha2) {
   const a = arr4(x);
-  if (alpha <= 0 || alpha > 1) throw new Error("ewma: alpha must be in (0, 1]");
+  if (alpha2 <= 0 || alpha2 > 1) throw new Error("ewma: alpha must be in (0, 1]");
   if (a.length === 0) throw new Error("ewma: input series is empty");
   const out = new Array(a.length);
   let prev = a[0];
   out[0] = prev;
   for (let i2 = 1; i2 < a.length; i2++) {
-    prev = alpha * a[i2] + (1 - alpha) * prev;
+    prev = alpha2 * a[i2] + (1 - alpha2) * prev;
     out[i2] = prev;
   }
   return out;
@@ -116160,8 +117312,8 @@ var MACKINNON_C = {
   10: { betaInf: -2.5671, beta1: -1.438, beta2: -4.48 }
 };
 function adfCriticalValue(pct, n) {
-  const { betaInf, beta1, beta2 } = MACKINNON_C[pct];
-  return betaInf + beta1 / n + beta2 / (n * n);
+  const { betaInf, beta1, beta2: beta22 } = MACKINNON_C[pct];
+  return betaInf + beta1 / n + beta22 / (n * n);
 }
 function adfPValue(statistic, n) {
   const cv1 = adfCriticalValue(1, n);
@@ -116284,9 +117436,9 @@ function softThreshold(a, lambda) {
   if (a < -lambda) return a + lambda;
   return 0;
 }
-function ridge(X, y, alpha, opts) {
+function ridge(X, y, alpha2, opts) {
   const { n, p } = validate2(X, y, "ridge");
-  if (alpha < 0) throw new Error("ridge: alpha must be non-negative");
+  if (alpha2 < 0) throw new Error("ridge: alpha must be non-negative");
   const useIntercept = opts?.intercept !== false;
   const { Xc, yc, xMean, yMean } = center(X, y, n, p, useIntercept);
   const XtX = Array.from({ length: p }, () => new Array(p).fill(0));
@@ -116298,7 +117450,7 @@ function ridge(X, y, alpha, opts) {
       XtX[j][k] = s;
       XtX[k][j] = s;
     }
-    XtX[j][j] += alpha;
+    XtX[j][j] += alpha2;
     for (let i2 = 0; i2 < n; i2++) Xty[j] += Xc[i2][j] * yc[i2];
   }
   const coefficients = linsolve(XtX, Xty);
@@ -116317,52 +117469,52 @@ function standardize(Xc, n, p) {
   return { Xs, scale: scale4 };
 }
 function coordinateDescent(Xs, yc, n, p, l1, l2, maxIter, tol) {
-  const beta2 = new Array(p).fill(0);
+  const beta3 = new Array(p).fill(0);
   const z = new Array(p).fill(n);
   const residual = [...yc];
   for (let iter = 0; iter < maxIter; iter++) {
     let maxChange = 0;
     for (let j = 0; j < p; j++) {
       const col = Xs.map((row22) => row22[j]);
-      const oldBeta = beta2[j];
+      const oldBeta = beta3[j];
       let rho = 0;
       for (let i2 = 0; i2 < n; i2++) rho += col[i2] * (residual[i2] + col[i2] * oldBeta);
       const newBeta = softThreshold(rho, l1) / (z[j] + l2);
       if (newBeta !== oldBeta) {
         const delta = newBeta - oldBeta;
         for (let i2 = 0; i2 < n; i2++) residual[i2] -= col[i2] * delta;
-        beta2[j] = newBeta;
+        beta3[j] = newBeta;
         maxChange = Math.max(maxChange, Math.abs(delta));
       }
     }
     if (maxChange < tol) break;
   }
-  return beta2;
+  return beta3;
 }
-function lasso(X, y, alpha, opts) {
+function lasso(X, y, alpha2, opts) {
   const { n, p } = validate2(X, y, "lasso");
-  if (alpha < 0) throw new Error("lasso: alpha must be non-negative");
+  if (alpha2 < 0) throw new Error("lasso: alpha must be non-negative");
   const useIntercept = opts?.intercept !== false;
   const maxIter = opts?.maxIter ?? 1e3;
   const tol = opts?.tol ?? 1e-7;
   const { Xc, yc, xMean, yMean } = center(X, y, n, p, useIntercept);
   const { Xs, scale: scale4 } = standardize(Xc, n, p);
-  const betaStd = coordinateDescent(Xs, yc, n, p, alpha, 0, maxIter, tol);
+  const betaStd = coordinateDescent(Xs, yc, n, p, alpha2, 0, maxIter, tol);
   const coefficients = betaStd.map((b, j) => b / scale4[j]);
   const intercept = useIntercept ? yMean - dot4(xMean, coefficients) : 0;
   return { coefficients, intercept };
 }
-function elasticNet(X, y, alpha, l1Ratio, opts) {
+function elasticNet(X, y, alpha2, l1Ratio, opts) {
   const { n, p } = validate2(X, y, "elasticNet");
-  if (alpha < 0) throw new Error("elasticNet: alpha must be non-negative");
+  if (alpha2 < 0) throw new Error("elasticNet: alpha must be non-negative");
   if (l1Ratio < 0 || l1Ratio > 1) throw new Error("elasticNet: l1Ratio must be in [0, 1]");
   const useIntercept = opts?.intercept !== false;
   const maxIter = opts?.maxIter ?? 1e3;
   const tol = opts?.tol ?? 1e-7;
   const { Xc, yc, xMean, yMean } = center(X, y, n, p, useIntercept);
   const { Xs, scale: scale4 } = standardize(Xc, n, p);
-  const l1 = alpha * l1Ratio;
-  const l2 = alpha * (1 - l1Ratio);
+  const l1 = alpha2 * l1Ratio;
+  const l2 = alpha2 * (1 - l1Ratio);
   const betaStd = coordinateDescent(Xs, yc, n, p, l1, l2, maxIter, tol);
   const coefficients = betaStd.map((b, j) => b / scale4[j]);
   const intercept = useIntercept ? yMean - dot4(xMean, coefficients) : 0;
@@ -116394,9 +117546,9 @@ function logisticRegression(X, y, opts) {
   const design = (rows) => useIntercept ? rows.map((row22) => [1, ...row22]) : rows.map((row22) => [...row22]);
   const D = design(X);
   const p = D[0].length;
-  let beta2 = new Array(p).fill(0);
+  let beta3 = new Array(p).fill(0);
   for (let iter = 0; iter < maxIter; iter++) {
-    const eta = D.map((row22) => row22.reduce((s, v, j) => s + v * beta2[j], 0));
+    const eta = D.map((row22) => row22.reduce((s, v, j) => s + v * beta3[j], 0));
     const probs = eta.map(sigmoid2);
     const weights = probs.map((pi2) => Math.max(pi2 * (1 - pi2), 1e-9));
     const XtWX = Array.from({ length: p }, () => new Array(p).fill(0));
@@ -116434,14 +117586,14 @@ function logisticRegression(X, y, opts) {
       delta = delta.map((d) => d * scale4);
       stepNorm = MAX_STEP_NORM;
     }
-    beta2 = beta2.map((b, j) => b + delta[j]);
+    beta3 = beta3.map((b, j) => b + delta[j]);
     if (stepNorm < tol) break;
   }
-  const intercept = useIntercept ? beta2[0] : 0;
-  const coefficients = useIntercept ? beta2.slice(1) : beta2.slice();
+  const intercept = useIntercept ? beta3[0] : 0;
+  const coefficients = useIntercept ? beta3.slice(1) : beta3.slice();
   const predictProba = (x) => {
     const Dx = design(x);
-    return Dx.map((row22) => sigmoid2(row22.reduce((s, v, j) => s + v * beta2[j], 0)));
+    return Dx.map((row22) => sigmoid2(row22.reduce((s, v, j) => s + v * beta3[j], 0)));
   };
   const predict = (x) => predictProba(x).map((pi2) => pi2 >= 0.5 ? 1 : 0);
   return { coefficients, intercept, predictProba, predict };
@@ -116450,7 +117602,7 @@ var _inv2 = inv;
 function nelderMead(f, x0, opts = {}) {
   const { maxIter = 2e3, tol = 1e-8, step = 0.05 } = opts;
   const n = x0.length;
-  const alpha = 1;
+  const alpha2 = 1;
   const gamma2 = 2;
   const rho = 0.5;
   const sigma = 0.5;
@@ -116475,7 +117627,7 @@ function nelderMead(f, x0, opts = {}) {
     fv = order.map((i2) => fv[i2]);
     if (Math.abs(fv[n] - fv[0]) <= tol * (Math.abs(fv[0]) + tol)) break;
     const c = centroid2(simplex.slice(0, n));
-    const xr = add52(c, sub4(c, simplex[n]), alpha);
+    const xr = add52(c, sub4(c, simplex[n]), alpha2);
     const fr = f(xr);
     if (fr < fv[0]) {
       const xe = add52(c, sub4(c, simplex[n]), gamma2);
@@ -116650,10 +117802,10 @@ function kmeans(data, k, opts = {}) {
       }
     }
     for (let c = 0; c < k; c++) {
-      const members = data.filter((_, i2) => labels[i2] === c);
-      if (members.length === 0) continue;
+      const members2 = data.filter((_, i2) => labels[i2] === c);
+      if (members2.length === 0) continue;
       for (let j = 0; j < d; j++)
-        centroids[c][j] = members.reduce((s, p) => s + p[j], 0) / members.length;
+        centroids[c][j] = members2.reduce((s, p) => s + p[j], 0) / members2.length;
     }
     if (!changed) {
       converged = true;
@@ -116965,17 +118117,17 @@ function bfgs(f, x0, opts = {}) {
     const gd = dot5(g, d);
     const dir = gd < 0 ? d : g.map((v) => -v);
     const dirSlope = gd < 0 ? gd : -dot5(g, g);
-    let alpha = 1;
+    let alpha2 = 1;
     let xNew = clipToBounds(
-      x.map((v, i2) => v + alpha * dir[i2]),
+      x.map((v, i2) => v + alpha2 * dir[i2]),
       bounds
     );
     let fNew = f(xNew);
     let halvings = 0;
-    while (fNew > fx + c1 * alpha * dirSlope && halvings < 50) {
-      alpha *= 0.5;
+    while (fNew > fx + c1 * alpha2 * dirSlope && halvings < 50) {
+      alpha2 *= 0.5;
       xNew = clipToBounds(
-        x.map((v, i2) => v + alpha * dir[i2]),
+        x.map((v, i2) => v + alpha2 * dir[i2]),
         bounds
       );
       fNew = f(xNew);
@@ -117072,15 +118224,15 @@ function nnls(A, b, opts = {}) {
     let innerIter = 0;
     while (Array.from(passive).some((j) => z[j] <= tol) && innerIter < maxIter) {
       innerIter++;
-      let alpha = Infinity;
+      let alpha2 = Infinity;
       for (const j of passive) {
         if (z[j] <= tol) {
           const denom = x[j] - z[j];
-          if (denom > 0) alpha = Math.min(alpha, x[j] / denom);
+          if (denom > 0) alpha2 = Math.min(alpha2, x[j] / denom);
         }
       }
-      if (!isFinite(alpha)) alpha = 0;
-      for (let j = 0; j < n; j++) x[j] = x[j] + alpha * (z[j] - x[j]);
+      if (!isFinite(alpha2)) alpha2 = 0;
+      for (let j = 0; j < n; j++) x[j] = x[j] + alpha2 * (z[j] - x[j]);
       for (const j of Array.from(passive)) {
         if (Math.abs(x[j]) < tol) passive.delete(j);
       }
@@ -117128,18 +118280,18 @@ function lsqBounded(A, b, lower, upper, opts = {}) {
     pgNorm = Math.sqrt(pgNorm);
     if (pgNorm < tol) break;
     const fx = objective(x);
-    let alpha = 1;
+    let alpha2 = 1;
     let xNext = clip(
-      x.map((xi, i2) => xi - alpha * g[i2]),
+      x.map((xi, i2) => xi - alpha2 * g[i2]),
       lower,
       upper
     );
     let fNext = objective(xNext);
     let backtrack = 0;
     while (fNext > fx && backtrack < 50) {
-      alpha /= 2;
+      alpha2 /= 2;
       xNext = clip(
-        x.map((xi, i2) => xi - alpha * g[i2]),
+        x.map((xi, i2) => xi - alpha2 * g[i2]),
         lower,
         upper
       );
@@ -117185,6 +118337,374 @@ function ratFromBigint(n) {
   return { num: n, den: 1n };
 }
 var RAT_ZERO = { num: 0n, den: 1n };
+function ratEq(a, b) {
+  return a.num === b.num && a.den === b.den;
+}
+function joinTerms(parts) {
+  if (parts.length === 0) return "0";
+  return parts.join(" + ").replace(/\+ -/g, "- ");
+}
+function renderCoeffTimes(r, rest) {
+  const neg2 = r.num < 0n;
+  const absNum = neg2 ? -r.num : r.num;
+  const sign32 = neg2 ? "-" : "";
+  if (absNum === r.den) return `${sign32}${rest}`;
+  const denPart = r.den === 1n ? "" : `/${r.den}`;
+  return `${sign32}${absNum}${denPart}*${rest}`;
+}
+function renderPoly(p, v) {
+  const t = trim(p);
+  if (t.length === 0) return "0";
+  const parts = [];
+  for (let i2 = t.length - 1; i2 >= 0; i2 -= 1) {
+    const c = t[i2];
+    if (c === 0n) continue;
+    const sign32 = c < 0n ? "-" : parts.length === 0 ? "" : "+";
+    const abs22 = c < 0n ? -c : c;
+    let term;
+    if (i2 === 0) term = `${abs22}`;
+    else if (i2 === 1) term = abs22 === 1n ? v : `${abs22}*${v}`;
+    else term = abs22 === 1n ? `${v}^${i2}` : `${abs22}*${v}^${i2}`;
+    parts.push(parts.length === 0 && sign32 === "" ? term : `${sign32} ${term}`);
+  }
+  return parts.join(" ").replace(/^\+ /, "");
+}
+function detZ(matrix22) {
+  const n = matrix22.length;
+  if (n === 0) return 1n;
+  const a = matrix22.map((row22) => row22.slice());
+  let sign32 = 1n;
+  let prev = 1n;
+  for (let k = 0; k < n; k += 1) {
+    let pivot = k;
+    while (pivot < n && a[pivot][k] === 0n) pivot += 1;
+    if (pivot === n) return 0n;
+    if (pivot !== k) {
+      [a[k], a[pivot]] = [a[pivot], a[k]];
+      sign32 = -sign32;
+    }
+    if (k === n - 1) break;
+    for (let i2 = k + 1; i2 < n; i2 += 1) {
+      for (let j = k + 1; j < n; j += 1) {
+        a[i2][j] = (a[i2][j] * a[k][k] - a[i2][k] * a[k][j]) / prev;
+      }
+    }
+    prev = a[k][k];
+  }
+  return sign32 * a[n - 1][n - 1];
+}
+function resultantZ(a, b) {
+  const ta = trim(a);
+  const tb = trim(b);
+  const m = ta.length - 1;
+  const n = tb.length - 1;
+  if (m < 0 || n < 0) return 0n;
+  if (m === 0 && n === 0) return 1n;
+  if (m === 0) return ta[0] ** BigInt(n);
+  if (n === 0) return tb[0] ** BigInt(m);
+  const dim2 = m + n;
+  const s = Array.from({ length: dim2 }, () => Array(dim2).fill(0n));
+  for (let i2 = 0; i2 < n; i2 += 1) {
+    for (let j = 0; j <= m; j += 1) s[i2][i2 + j] = ta[m - j];
+  }
+  for (let i2 = 0; i2 < m; i2 += 1) {
+    for (let j = 0; j <= n; j += 1) s[n + i2][i2 + j] = tb[n - j];
+  }
+  return detZ(s);
+}
+function rothsteinResultant(A, B2) {
+  const Bp = derivative(B2);
+  const n = Math.max(degree(B2), 0) + Math.max(degree(Bp), 0) + 2;
+  const samples = [];
+  for (let k = 0; k <= n; k += 1) {
+    const p = sub2(A, scalarMul(Bp, BigInt(k)));
+    samples.push(resultantZ(p, B2));
+  }
+  return interpolateAtIntegers(samples);
+}
+function interpolateAtIntegers(values) {
+  const n = values.length - 1;
+  const size22 = n + 1;
+  const matrix22 = [];
+  const rhs = [];
+  for (let k = 0; k < size22; k += 1) {
+    const row22 = [];
+    let pk = 1n;
+    for (let j = 0; j < size22; j += 1) {
+      row22.push(ratFromBigint(pk));
+      pk *= BigInt(k);
+    }
+    matrix22.push(row22);
+    rhs.push(ratFromBigint(values[k]));
+  }
+  const coeffs = solveLinearSystemRat(matrix22, rhs);
+  return trim(
+    coeffs.map((r) => {
+      if (r.den !== 1n) {
+        throw new Error("rothsteinResultant: non-integer interpolated coefficient");
+      }
+      return r.num;
+    })
+  );
+}
+function solveLinearSystemRat(matrix22, rhs) {
+  const n = rhs.length;
+  const a = matrix22.map((row22, i2) => [...row22, rhs[i2]]);
+  for (let col = 0; col < n; col += 1) {
+    let pivot = col;
+    while (pivot < n && a[pivot][col].num === 0n) pivot += 1;
+    if (pivot === n) throw new Error("singular Rat system");
+    if (pivot !== col) [a[col], a[pivot]] = [a[pivot], a[col]];
+    const pv = a[col][col];
+    for (let j = col; j <= n; j += 1) a[col][j] = ratDiv(a[col][j], pv);
+    for (let i2 = 0; i2 < n; i2 += 1) {
+      if (i2 === col) continue;
+      const f = a[i2][col];
+      if (f.num === 0n) continue;
+      for (let j = col; j <= n; j += 1) a[i2][j] = ratSub(a[i2][j], ratMul(f, a[col][j]));
+    }
+  }
+  return a.map((row22) => row22[n]);
+}
+function intToRatPoly(p) {
+  return trim(p).map(ratFromBigint);
+}
+function ratPolyToInt(p) {
+  if (p.length === 0) return { poly: [], den: 1n };
+  let lcm22 = 1n;
+  const gcd22 = (a, b) => {
+    let x = a < 0n ? -a : a;
+    let y = b < 0n ? -b : b;
+    while (y !== 0n) {
+      const t = x % y;
+      x = y;
+      y = t;
+    }
+    return x;
+  };
+  for (const r of p) {
+    const g = gcd22(lcm22, r.den);
+    lcm22 = lcm22 / g * r.den;
+  }
+  return { poly: trim(p.map((r) => r.num * lcm22 / r.den)), den: lcm22 };
+}
+function rpAdd(a, b) {
+  const n = Math.max(a.length, b.length);
+  const out = [];
+  for (let i2 = 0; i2 < n; i2 += 1) {
+    out.push(ratAdd(a[i2] ?? RAT_ZERO, b[i2] ?? RAT_ZERO));
+  }
+  let m = out.length;
+  while (m > 0 && out[m - 1].num === 0n) m -= 1;
+  return out.slice(0, m);
+}
+function rpScale(p, s) {
+  if (s.num === 0n) return [];
+  return p.map((c) => ratMul(c, s));
+}
+function rpMul(a, b) {
+  if (a.length === 0 || b.length === 0) return [];
+  const out = Array.from({ length: a.length + b.length - 1 }, () => RAT_ZERO);
+  for (let i2 = 0; i2 < a.length; i2 += 1) {
+    if (a[i2].num === 0n) continue;
+    for (let j = 0; j < b.length; j += 1) {
+      out[i2 + j] = ratAdd(out[i2 + j], ratMul(a[i2], b[j]));
+    }
+  }
+  let m = out.length;
+  while (m > 0 && out[m - 1].num === 0n) m -= 1;
+  return out.slice(0, m);
+}
+function rpDerivative(p) {
+  if (p.length <= 1) return [];
+  const out = [];
+  for (let i2 = 1; i2 < p.length; i2 += 1) {
+    out.push(ratMul(p[i2], ratFromBigint(BigInt(i2))));
+  }
+  return out;
+}
+function hermiteReduce(R, Q2, v) {
+  const Q1 = polyGcdZ(Q2, derivative(Q2));
+  if (degree(Q1) <= 0) {
+    return { rational: "0", squareFreeNumer: trim(R), squareFreeDenom: trim(Q2) };
+  }
+  const Q22 = exactDivide(Q2, Q1);
+  if (Q22 === null) {
+    throw new Error("hermiteReduce: Q1 does not divide Q");
+  }
+  const Q1p = derivative(Q1);
+  const Wnum = mul2(Q22, Q1p);
+  const Wdiv = exactDivide(Wnum, Q1);
+  let W;
+  if (Wdiv !== null) {
+    W = intToRatPoly(Wdiv);
+  } else {
+    W = ratPolyExactQuotient(intToRatPoly(Wnum), intToRatPoly(Q1));
+  }
+  const d1 = degree(Q1);
+  const d2 = degree(Q22);
+  const nP = Math.max(d1, 0);
+  const nS = Math.max(d2, 0);
+  const n = nP + nS;
+  const q2 = intToRatPoly(Q22);
+  const q1 = intToRatPoly(Q1);
+  const r = intToRatPoly(R);
+  const matrix22 = Array.from({ length: n }, () => Array(n).fill(RAT_ZERO));
+  const rhs = Array.from({ length: n }, () => RAT_ZERO);
+  for (let i2 = 0; i2 < r.length && i2 < n; i2 += 1) rhs[i2] = r[i2];
+  for (let k = 0; k < nP; k += 1) {
+    const Pk = Array.from({ length: k + 1 }, () => RAT_ZERO);
+    Pk[k] = { num: 1n, den: 1n };
+    const Pp = rpDerivative(Pk);
+    const term = rpAdd(rpMul(q2, Pp), rpScale(rpMul(W, Pk), ratFromBigint(-1n)));
+    for (let i2 = 0; i2 < term.length && i2 < n; i2 += 1) matrix22[i2][k] = term[i2];
+  }
+  for (let k = 0; k < nS; k += 1) {
+    const Sk = Array.from({ length: k + 1 }, () => RAT_ZERO);
+    Sk[k] = { num: 1n, den: 1n };
+    const term = rpMul(q1, Sk);
+    for (let i2 = 0; i2 < term.length && i2 < n; i2 += 1) matrix22[i2][nP + k] = term[i2];
+  }
+  const sol = solveLinearSystemRat(matrix22, rhs);
+  const P22 = sol.slice(0, nP);
+  const S = sol.slice(nP);
+  const Pint = ratPolyToInt(P22);
+  const Sint = ratPolyToInt(S);
+  const q1Scaled = Pint.den === 1n ? Q1 : scalarMul(Q1, Pint.den);
+  const rational = degree(Pint.poly) < 0 ? "0" : `(${renderPoly(Pint.poly, v)})/(${renderPoly(q1Scaled, v)})`;
+  const q2Scaled = Sint.den === 1n ? Q22 : scalarMul(Q22, Sint.den);
+  return { rational, squareFreeNumer: Sint.poly, squareFreeDenom: trim(q2Scaled) };
+}
+function ratPolyExactQuotient(a, b) {
+  const db = b.length - 1;
+  if (db < 0) throw new Error("ratPolyExactQuotient: zero divisor");
+  const lb = b[db];
+  let rem = a.slice();
+  const q = [];
+  while (rem.length - 1 >= db) {
+    const coeff = ratDiv(rem[rem.length - 1], lb);
+    const shift = rem.length - 1 - db;
+    while (q.length <= shift) q.push(RAT_ZERO);
+    q[shift] = coeff;
+    for (let i2 = 0; i2 <= db; i2 += 1) {
+      rem[shift + i2] = ratSub(rem[shift + i2] ?? RAT_ZERO, ratMul(coeff, b[i2]));
+    }
+    let m = rem.length;
+    while (m > 0 && rem[m - 1].num === 0n) m -= 1;
+    rem = rem.slice(0, m);
+  }
+  if (rem.some((c) => c.num !== 0n)) {
+    throw new Error("ratPolyExactQuotient: nonzero remainder");
+  }
+  return q;
+}
+function evalPolyC(p, re32, im32) {
+  let r = 0;
+  let i2 = 0;
+  for (let k = p.length - 1; k >= 0; k -= 1) {
+    const c = Number(p[k]);
+    const nr = r * re32 - i2 * im32 + c;
+    const ni = r * im32 + i2 * re32;
+    r = nr;
+    i2 = ni;
+  }
+  return { re: r, im: i2 };
+}
+function companionRoots(B2) {
+  const t = trim(B2);
+  const n = t.length - 1;
+  if (n <= 0) return [];
+  const lead = Number(t[n]);
+  if (n === 1) {
+    return [{ re: -Number(t[0]) / lead, im: 0 }];
+  }
+  const m = Array.from({ length: n }, () => Array(n).fill(0));
+  for (let i2 = 1; i2 < n; i2 += 1) m[i2][i2 - 1] = 1;
+  for (let j = 0; j < n; j += 1) m[0][j] = -Number(t[n - 1 - j]) / lead;
+  for (let i2 = 0; i2 < n; i2 += 1) m[i2].fill(0);
+  for (let i2 = 0; i2 < n - 1; i2 += 1) m[i2][i2 + 1] = 1;
+  for (let j = 0; j < n; j += 1) m[n - 1][j] = -Number(t[j]) / lead;
+  const { values } = eig(m, { computeVectors: false });
+  return values;
+}
+function residueIntegral(A, B2, v) {
+  const roots = companionRoots(B2);
+  const Bp = derivative(B2);
+  const used = new Array(roots.length).fill(false);
+  const parts = [];
+  const eps = 1e-10;
+  for (let i2 = 0; i2 < roots.length; i2 += 1) {
+    if (used[i2]) continue;
+    const r = roots[i2];
+    const Ar = evalPolyC(A, r.re, r.im);
+    const Bpr = evalPolyC(Bp, r.re, r.im);
+    const den = Bpr.re * Bpr.re + Bpr.im * Bpr.im;
+    if (den < 1e-30) continue;
+    const resRe = (Ar.re * Bpr.re + Ar.im * Bpr.im) / den;
+    const resIm = (Ar.im * Bpr.re - Ar.re * Bpr.im) / den;
+    if (Math.abs(r.im) < eps) {
+      used[i2] = true;
+      if (Math.abs(resRe) < eps) continue;
+      const rootStr = Math.abs(r.re) < eps ? v : `${v} - (${r.re})`;
+      parts.push(`(${resRe})*log(abs(${rootStr}))`);
+      continue;
+    }
+    let j = -1;
+    for (let k = i2 + 1; k < roots.length; k += 1) {
+      if (!used[k] && Math.abs(roots[k].re - r.re) < 1e-8 && Math.abs(roots[k].im + r.im) < 1e-8) {
+        j = k;
+        break;
+      }
+    }
+    used[i2] = true;
+    if (j >= 0) used[j] = true;
+    const a = r.re;
+    const b = r.im;
+    const quad2 = `(${v} - (${a}))^2 + (${b})^2`;
+    if (Math.abs(resRe) > eps) {
+      parts.push(`(${resRe})*log(${quad2})`);
+    }
+    if (Math.abs(resIm) > eps) {
+      parts.push(`(${-2 * resIm})*atan2(${-b}, ${v} - (${a}))`);
+    }
+  }
+  return joinTerms(parts);
+}
+function rothsteinTrager(A, B2, v) {
+  try {
+    const R = rothsteinResultant(A, B2);
+    if (degree(R) < 0) return "0";
+    const { factors } = factorUnivariateZ(R);
+    const allLinear = factors.every((f) => trim(f.poly).length - 1 === 1);
+    if (allLinear) {
+      const Bp = derivative(B2);
+      const parts = [];
+      for (const { poly } of factors) {
+        const q = trim(poly);
+        if (q.length !== 2) continue;
+        const c = ratDiv(ratFromBigint(-q[0]), ratFromBigint(q[1]));
+        if (ratEq(c, RAT_ZERO)) continue;
+        const scaled = sub2(scalarMul(A, c.den), scalarMul(Bp, c.num));
+        const g = polyGcdZ(scaled, B2);
+        if (degree(g) < 1) continue;
+        parts.push(renderCoeffTimes(c, `log(${renderPoly(g, v)})`));
+      }
+      return joinTerms(parts);
+    }
+  } catch {
+  }
+  return residueIntegral(A, B2, v);
+}
+function integrateLayer3(R, Q2, v) {
+  const { rational, squareFreeNumer, squareFreeDenom } = hermiteReduce(R, Q2, v);
+  const parts = [];
+  if (rational !== "0") parts.push(rational);
+  if (degree(squareFreeDenom) >= 1 && degree(squareFreeNumer) >= 0) {
+    const sf = rothsteinTrager(squareFreeNumer, squareFreeDenom, v);
+    if (sf !== "0") parts.push(sf);
+  }
+  return joinTerms(parts);
+}
 function surdFromRat(r) {
   return { a: r, b: RAT_ZERO };
 }
@@ -117406,7 +118926,7 @@ function shiftedColumn(poly, shift, size22) {
   }
   return col;
 }
-function solveLinearSystemRat(matrix22, rhs) {
+function solveLinearSystemRat2(matrix22, rhs) {
   const n = rhs.length;
   const rows = matrix22.map((row22, r) => [...row22, rhs[r]]);
   for (let col = 0; col < n; col += 1) {
@@ -117483,7 +119003,7 @@ function partialFractions(remainder, factors) {
     rows.push(columns.map((col) => col[r]));
   }
   const rhs = new Array(n).fill(RAT_ZERO).map((_, idx2) => ratFromBigint(idx2 < trimmedRemainder.length ? trimmedRemainder[idx2] : 0n));
-  const solution = n === 0 ? [] : solveLinearSystemRat(rows, rhs);
+  const solution = n === 0 ? [] : solveLinearSystemRat2(rows, rhs);
   const terms = [];
   let idx = 0;
   for (let fi = 0; fi < factors.length; fi += 1) {
@@ -117505,7 +119025,7 @@ function ratNeg(r) {
 function ratToStr(r) {
   return r.den === 1n ? `${r.num}` : `${r.num}/${r.den}`;
 }
-function renderCoeffTimes(r, rest) {
+function renderCoeffTimes2(r, rest) {
   const neg2 = r.num < 0n;
   const absNum = neg2 ? -r.num : r.num;
   const sign32 = neg2 ? "-" : "";
@@ -117539,7 +119059,7 @@ function renderTwoXPlusB(b, v) {
   }
   return s;
 }
-function joinTerms(parts) {
+function joinTerms2(parts) {
   if (parts.length === 0) {
     return "0";
   }
@@ -117555,10 +119075,10 @@ function integrateLinearTerm(factor2, k, numer, v) {
   }
   const xMinus = renderXMinus(a, v);
   if (k === 1) {
-    return renderCoeffTimes(A, `log(abs(${xMinus}))`);
+    return renderCoeffTimes2(A, `log(abs(${xMinus}))`);
   }
   const coeff = ratNeg(ratDiv(A, ratFromBigint(BigInt(k - 1))));
-  return renderCoeffTimes(coeff, `(${xMinus})^(${-(k - 1)})`);
+  return renderCoeffTimes2(coeff, `(${xMinus})^(${-(k - 1)})`);
 }
 function integrateInverseQuadraticPower(k, b, c) {
   if (k === 1) {
@@ -117590,10 +119110,10 @@ function integrateQuadraticTerm(factor2, k, numer, v) {
   if (D.num !== 0n) {
     const half = ratDiv(D, ratFromBigint(2n));
     if (k === 1) {
-      parts.push(renderCoeffTimes(half, `log(${qCore})`));
+      parts.push(renderCoeffTimes2(half, `log(${qCore})`));
     } else {
       const coeff = ratNeg(ratDiv(half, ratFromBigint(BigInt(k - 1))));
-      parts.push(renderCoeffTimes(coeff, `(${qCore})^(${-(k - 1)})`));
+      parts.push(renderCoeffTimes2(coeff, `(${qCore})^(${-(k - 1)})`));
     }
   }
   if (K.num !== 0n) {
@@ -117603,15 +119123,15 @@ function integrateQuadraticTerm(factor2, k, numer, v) {
       if (coeff.num === 0n) {
         continue;
       }
-      parts.push(renderCoeffTimes(coeff, `(${twoXb})/(${qCore})^(${t.power})`));
+      parts.push(renderCoeffTimes2(coeff, `(${twoXb})/(${qCore})^(${t.power})`));
     }
     const atanCoeff = ratMul(ratMul(K, ik.atanCoeff), ratFromBigint(2n));
     if (atanCoeff.num !== 0n) {
       const d2s = ratToStr(d2);
-      parts.push(renderCoeffTimes(atanCoeff, `atan((${twoXb})/sqrt(${d2s}))/sqrt(${d2s})`));
+      parts.push(renderCoeffTimes2(atanCoeff, `atan((${twoXb})/sqrt(${d2s}))/sqrt(${d2s})`));
     }
   }
-  return joinTerms(parts);
+  return joinTerms2(parts);
 }
 function integrateQuadraticPosTerm(factor2, numer, v) {
   const c = factor2[0];
@@ -117641,7 +119161,7 @@ function integrateQuadraticPosTerm(factor2, numer, v) {
   };
   emit(A, r1);
   emit(B2, r2);
-  return joinTerms(parts);
+  return joinTerms2(parts);
 }
 function integratePFTerm(term, v) {
   const factor2 = trim(term.factor);
@@ -117669,7 +119189,13 @@ function integrateRationalFunction(expr, v) {
     }
     const factors = factorDenominator(rf.denom);
     if (factors === null) {
-      return null;
+      const { quotient: quotient2, remainder: remainder2 } = polynomialPart(rf);
+      const parts2 = [];
+      const polyPart2 = integratePolynomial(quotient2, v);
+      if (polyPart2 !== "0") parts2.push(polyPart2);
+      const l3 = integrateLayer3(remainder2, rf.denom, v);
+      if (l3 !== "0") parts2.push(l3);
+      return joinTerms2(parts2);
     }
     const { quotient, remainder } = polynomialPart(rf);
     const terms = partialFractions(remainder, factors);
@@ -117695,8 +119221,11 @@ function integrateRationalFunction(expr, v) {
         parts.push(s);
       }
     }
-    return joinTerms(parts);
-  } catch {
+    return joinTerms2(parts);
+  } catch (err) {
+    if (typeof process !== "undefined" && process.env.MATHTS_DEBUG_L3) {
+      console.error("integrateRationalFunction declined:", err);
+    }
     return null;
   }
 }
@@ -117716,10 +119245,10 @@ function evalConst(s) {
 }
 var unwrap = (n) => n.type === "ParenthesisNode" && n.content ? unwrap(n.content) : n;
 function isConst(n, x) {
-  const node = unwrap(n);
-  if (node.type === "SymbolNode") return node.name !== x;
-  if (node.type === "ConstantNode") return true;
-  return [...node.args ?? [], ...node.content ? [node.content] : []].every(
+  const node2 = unwrap(n);
+  if (node2.type === "SymbolNode") return node2.name !== x;
+  if (node2.type === "ConstantNode") return true;
+  return [...node2.args ?? [], ...node2.content ? [node2.content] : []].every(
     (a) => isConst(a, x)
   );
 }
@@ -117738,19 +119267,19 @@ function linearSlope(u, x) {
   }
 }
 function integrateNode(raw, x) {
-  const node = unwrap(raw);
-  if (isConst(node, x)) return `${node.toString()} * ${x}`;
-  switch (node.type) {
+  const node2 = unwrap(raw);
+  if (isConst(node2, x)) return `${node2.toString()} * ${x}`;
+  switch (node2.type) {
     case "SymbolNode":
       return `${x}^2 / 2`;
     // node is x
     case "OperatorNode": {
-      const args = (node.args ?? []).map(unwrap);
-      if (node.op === "+") return args.map((a) => integrateNode(a, x)).join(" + ");
-      if (node.op === "-" && args.length === 2)
+      const args = (node2.args ?? []).map(unwrap);
+      if (node2.op === "+") return args.map((a) => integrateNode(a, x)).join(" + ");
+      if (node2.op === "-" && args.length === 2)
         return `${integrateNode(args[0], x)} - (${integrateNode(args[1], x)})`;
-      if (node.op === "-" && args.length === 1) return `-(${integrateNode(args[0], x)})`;
-      if (node.op === "*") {
+      if (node2.op === "-" && args.length === 1) return `-(${integrateNode(args[0], x)})`;
+      if (node2.op === "*") {
         const consts = args.filter((a) => isConst(a, x));
         const varying = args.filter((a) => !isConst(a, x));
         if (varying.length === 1) {
@@ -117760,7 +119289,7 @@ function integrateNode(raw, x) {
         }
         throw new NotIntegrable("product of x-dependent factors");
       }
-      if (node.op === "/") {
+      if (node2.op === "/") {
         if (isConst(args[1], x)) return `(${integrateNode(args[0], x)}) / (${args[1].toString()})`;
         if (isConst(args[0], x)) {
           const a = linearSlope(args[1].toString(), x);
@@ -117768,10 +119297,22 @@ function integrateNode(raw, x) {
             const k = evalConst(args[0].toString()) / a;
             return `${num(k)} * log(abs(${args[1].toString()}))`;
           }
+          const den = unwrap(args[1]);
+          if (den.type === "OperatorNode" && den.op === "*") {
+            const df = (den.args ?? []).map(unwrap);
+            const hasX = df.some((f) => f.type === "SymbolNode" && f.name === x);
+            const logF = df.find(
+              (f) => f.type === "FunctionNode" && (f.fn?.name === "log" || f.fn?.name === "ln") && unwrap((f.args ?? [])[0] ?? f).type === "SymbolNode" && unwrap((f.args ?? [])[0] ?? f).name === x
+            );
+            if (hasX && logF && df.length === 2) {
+              const k = evalConst(args[0].toString());
+              return k === 1 ? `log(log(${x}))` : `${num(k)} * log(log(${x}))`;
+            }
+          }
         }
         throw new NotIntegrable("general quotient");
       }
-      if (node.op === "^") {
+      if (node2.op === "^") {
         const base = args[0];
         const exp22 = args[1];
         if (!isConst(exp22, x)) throw new NotIntegrable("variable exponent");
@@ -117783,11 +119324,11 @@ function integrateNode(raw, x) {
         const denom = a * (n + 1);
         return denom === 1 ? `${b}^${num(n + 1)}` : `${b}^${num(n + 1)} / ${num(denom)}`;
       }
-      throw new NotIntegrable(`operator ${node.op}`);
+      throw new NotIntegrable(`operator ${node2.op}`);
     }
     case "FunctionNode": {
-      const fn = node.fn?.name ?? node.name ?? "";
-      const u = (node.args ?? [])[0];
+      const fn = node2.fn?.name ?? node2.name ?? "";
+      const u = (node2.args ?? [])[0];
       if (!u) throw new NotIntegrable(fn);
       const us = u.toString();
       if (fn === "log" || fn === "ln") {
@@ -117814,7 +119355,7 @@ function integrateNode(raw, x) {
       }
     }
     default:
-      throw new NotIntegrable(node.type);
+      throw new NotIntegrable(node2.type);
   }
 }
 var stripWs = (s) => s.replace(/\s+/g, "");
@@ -118607,7 +120148,7 @@ function fminbound(f, x1, x2) {
   let x = xf;
   let fx = f(x);
   let num2 = 1;
-  let fu = Infinity;
+  let fu;
   let ffulc = fx;
   let fnfc = fx;
   let xm = 0.5 * (a + b);
@@ -118863,7 +120404,7 @@ function wate(freq, fx, wtx, lband, jtype) {
   if (fx[lband] >= 1e-4) return wtx[lband] / freq;
   return wtx[lband];
 }
-function remezCore(des, grid, edge, wt, ngrid, nbands, iext, alpha, nfcns, itrmax) {
+function remezCore(des, grid, edge, wt, ngrid, nbands, iext, alpha2, nfcns, itrmax) {
   const size22 = ngrid + 2 * nfcns + 8;
   const a = new Array(size22).fill(0);
   const p = new Array(size22).fill(0);
@@ -119187,7 +120728,7 @@ function remezCore(des, grid, edge, wt, ngrid, nbands, iext, alpha, nfcns, itrma
       xt = (xt - bb) / aa;
       ft = Math.acos(xt) / TWOPI;
     }
-    let assigned = false;
+    let assigned;
     for (; ; ) {
       const xe = x[l];
       if (xt > xe) {
@@ -119218,14 +120759,14 @@ function remezCore(des, grid, edge, wt, ngrid, nbands, iext, alpha, nfcns, itrma
     if (nm1 >= 1) {
       for (let k = 1; k <= nm1; k++) dtemp += a[k + 1] * Math.cos(dnum * k);
     }
-    alpha[j] = 2 * dtemp + a[1];
+    alpha2[j] = 2 * dtemp + a[1];
   }
-  for (j = 2; j <= nfcns; j++) alpha[j] *= 2 / cn;
-  alpha[1] /= cn;
+  for (j = 2; j <= nfcns; j++) alpha2[j] *= 2 / cn;
+  alpha2[1] /= cn;
   if (kkk !== 1) {
-    p[1] = 2 * alpha[nfcns] * bb + alpha[nm1];
-    p[2] = 2 * aa * alpha[nfcns];
-    q[1] = alpha[nfcns - 2] - alpha[nfcns];
+    p[1] = 2 * alpha2[nfcns] * bb + alpha2[nm1];
+    p[2] = 2 * aa * alpha2[nfcns];
+    q[1] = alpha2[nfcns - 2] - alpha2[nfcns];
     for (j = 2; j <= nm1; j++) {
       if (j >= nm1) {
         aa *= 0.5;
@@ -119243,14 +120784,14 @@ function remezCore(des, grid, edge, wt, ngrid, nbands, iext, alpha, nfcns, itrma
       for (let k = 3; k <= jp1; k++) p[k] += aa * a[k - 1];
       if (j !== nm1) {
         for (let k = 1; k <= j; k++) q[k] = -a[k];
-        q[1] += alpha[nfcns - 1 - j];
+        q[1] += alpha2[nfcns - 1 - j];
       }
     }
-    for (j = 1; j <= nfcns; j++) alpha[j] = p[j];
+    for (j = 1; j <= nfcns; j++) alpha2[j] = p[j];
   }
   if (nfcns <= 3) {
-    alpha[nfcns + 1] = 0;
-    alpha[nfcns + 2] = 0;
+    alpha2[nfcns + 1] = 0;
+    alpha2[nfcns + 2] = 0;
   }
   return { status: 0, dev, niter };
 }
@@ -119284,7 +120825,7 @@ function remezExchange(numtaps, bands, desired, weight, type = "bandpass", maxit
   const des = new Array(wrksize + 2).fill(0);
   const grid = new Array(wrksize + 2).fill(0);
   const wt = new Array(wrksize + 2).fill(0);
-  const alpha = new Array(dimsize + 3).fill(0);
+  const alpha2 = new Array(dimsize + 3).fill(0);
   const iext = new Array(dimsize + 3).fill(0);
   let delf = gridDensity * nfcns;
   delf = 0.5 / delf;
@@ -119341,31 +120882,31 @@ function remezExchange(numtaps, bands, desired, weight, type = "bandpass", maxit
   const temp = (ngrid - 1) / nfcns;
   for (j = 1; j <= nfcns; j++) iext[j] = Math.floor((j - 1) * temp) + 1;
   iext[nfcns + 1] = ngrid;
-  const res = remezCore(des, grid, edge, wt, ngrid, numbands, iext, alpha, nfcns, maxiter);
+  const res = remezCore(des, grid, edge, wt, ngrid, numbands, iext, alpha2, nfcns, maxiter);
   if (res.status < 0) throw new Error("remez: Remez exchange failed to converge");
   const h = new Array(numtaps + 1).fill(0);
   const nz = nfcns + 1;
   const nm1 = nfcns - 1;
   if (neg2 <= 0) {
     if (nodd !== 0) {
-      for (j = 1; j <= nm1; j++) h[j] = 0.5 * alpha[nz - j];
-      h[nfcns] = alpha[1];
+      for (j = 1; j <= nm1; j++) h[j] = 0.5 * alpha2[nz - j];
+      h[nfcns] = alpha2[1];
     } else {
-      h[1] = 0.25 * alpha[nfcns];
-      for (j = 2; j <= nm1; j++) h[j] = 0.25 * (alpha[nz - j] + alpha[nfcns + 2 - j]);
-      h[nfcns] = 0.5 * alpha[1] + 0.25 * alpha[2];
+      h[1] = 0.25 * alpha2[nfcns];
+      for (j = 2; j <= nm1; j++) h[j] = 0.25 * (alpha2[nz - j] + alpha2[nfcns + 2 - j]);
+      h[nfcns] = 0.5 * alpha2[1] + 0.25 * alpha2[2];
     }
   } else {
     if (nodd !== 0) {
-      h[1] = 0.25 * alpha[nfcns];
-      h[2] = 0.25 * alpha[nm1];
-      for (j = 3; j <= nm1; j++) h[j] = 0.25 * (alpha[nz - j] - alpha[nfcns + 3 - j]);
-      h[nfcns] = 0.5 * alpha[1] - 0.25 * alpha[3];
+      h[1] = 0.25 * alpha2[nfcns];
+      h[2] = 0.25 * alpha2[nm1];
+      for (j = 3; j <= nm1; j++) h[j] = 0.25 * (alpha2[nz - j] - alpha2[nfcns + 3 - j]);
+      h[nfcns] = 0.5 * alpha2[1] - 0.25 * alpha2[3];
       h[nz] = 0;
     } else {
-      h[1] = 0.25 * alpha[nfcns];
-      for (j = 2; j <= nm1; j++) h[j] = 0.25 * (alpha[nz - j] - alpha[nfcns + 2 - j]);
-      h[nfcns] = 0.5 * alpha[1] - 0.25 * alpha[2];
+      h[1] = 0.25 * alpha2[nfcns];
+      for (j = 2; j <= nm1; j++) h[j] = 0.25 * (alpha2[nz - j] - alpha2[nfcns + 2 - j]);
+      h[nfcns] = 0.5 * alpha2[1] - 0.25 * alpha2[2];
     }
   }
   for (j = 1; j <= nfcns; j++) {
@@ -119593,7 +121134,7 @@ function idwt(approx, detail, wavelet = "haar") {
   try {
     return idwtPeriodization(approx, detail, wavelet);
   } catch (err) {
-    throw new Error(`idwt: ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(`idwt: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
   }
 }
 function wavedec(x, wavelet = "haar", level = 1) {
@@ -120306,10 +121847,10 @@ function circumradius(a, b, c) {
   const uy = (a2 * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / d;
   return Math.hypot(a[0] - ux, a[1] - uy);
 }
-function alphaShape(points, alpha) {
-  if (!(alpha > 0)) throw new Error("alphaShape: alpha must be positive");
+function alphaShape(points, alpha2) {
+  if (!(alpha2 > 0)) throw new Error("alphaShape: alpha must be positive");
   const { simplices: tris } = delaunay(points);
-  const threshold = 1 / alpha;
+  const threshold = 1 / alpha2;
   const triangles = [];
   const edgeCount = /* @__PURE__ */ new Map();
   for (const t of tris) {
@@ -120788,34 +122329,34 @@ function polygamma(n, x) {
 function trigamma(x) {
   return polygamma(1, x);
 }
-function jacobiP(n, alpha, beta2, x) {
+function jacobiP(n, alpha2, beta3, x) {
   if (!Number.isInteger(n) || n < 0) {
     throw new Error("jacobiP: n must be a nonnegative integer");
   }
   if (n === 0) return 1;
   let pPrev = 1;
-  let pCurr = alpha + 1 + (alpha + beta2 + 2) * (x - 1) / 2;
+  let pCurr = alpha2 + 1 + (alpha2 + beta3 + 2) * (x - 1) / 2;
   if (n === 1) return pCurr;
   for (let k = 2; k <= n; k++) {
-    const a1 = 2 * k * (k + alpha + beta2) * (2 * k + alpha + beta2 - 2);
-    const a2 = (2 * k + alpha + beta2 - 1) * ((2 * k + alpha + beta2) * (2 * k + alpha + beta2 - 2) * x + alpha * alpha - beta2 * beta2);
-    const a3 = 2 * (k + alpha - 1) * (k + beta2 - 1) * (2 * k + alpha + beta2);
+    const a1 = 2 * k * (k + alpha2 + beta3) * (2 * k + alpha2 + beta3 - 2);
+    const a2 = (2 * k + alpha2 + beta3 - 1) * ((2 * k + alpha2 + beta3) * (2 * k + alpha2 + beta3 - 2) * x + alpha2 * alpha2 - beta3 * beta3);
+    const a3 = 2 * (k + alpha2 - 1) * (k + beta3 - 1) * (2 * k + alpha2 + beta3);
     const pNext = (a2 * pCurr - a3 * pPrev) / a1;
     pPrev = pCurr;
     pCurr = pNext;
   }
   return pCurr;
 }
-function gegenbauerC(n, alpha, x) {
+function gegenbauerC(n, alpha2, x) {
   if (!Number.isInteger(n) || n < 0) {
     throw new Error("gegenbauerC: n must be a nonnegative integer");
   }
   if (n === 0) return 1;
   let cPrev = 1;
-  let cCurr = 2 * alpha * x;
+  let cCurr = 2 * alpha2 * x;
   if (n === 1) return cCurr;
   for (let k = 2; k <= n; k++) {
-    const cNext = (2 * x * (k + alpha - 1) * cCurr - (k + 2 * alpha - 2) * cPrev) / k;
+    const cNext = (2 * x * (k + alpha2 - 1) * cCurr - (k + 2 * alpha2 - 2) * cPrev) / k;
     cPrev = cCurr;
     cCurr = cNext;
   }
@@ -120842,7 +122383,7 @@ function rootsLegendre(n) {
   const weights = [];
   for (let i2 = 0; i2 < n; i2++) {
     let x = Math.cos(Math.PI * (i2 + 0.75) / (n + 0.5));
-    let pn = 0;
+    let pn;
     let dpn = 0;
     for (let iter = 0; iter < NEWTON_MAX_ITERATIONS; iter++) {
       const [pCurr, pPrev] = legendrePair(n, x);
@@ -121290,6 +122831,181 @@ function mathieuSe(n, q, x) {
   const m = Math.floor((n - (n % 2 === 0 ? 2 : 1)) / 2);
   return evalSeries(solveClass(cls, q)[m], x, Math.sin);
 }
+var KMAX = 48;
+function checkMN(m, n, name254) {
+  if (!Number.isInteger(m) || m < 0) {
+    throw new Error(`${name254}: m must be a nonnegative integer`);
+  }
+  if (!Number.isInteger(n) || n < m) {
+    throw new Error(`${name254}: n must be an integer \u2265 m`);
+  }
+}
+function ferrersP(n, m, x) {
+  if (m < 0 || n < m) return 0;
+  const s = Math.max(0, 1 - x * x);
+  const somx2 = Math.sqrt(s);
+  let pmm = 1;
+  if (m > 0) {
+    let fact = 1;
+    for (let i2 = 1; i2 <= m; i2 += 1) {
+      pmm *= -fact * somx2;
+      fact += 2;
+    }
+  }
+  if (n === m) return pmm;
+  let pmmp1 = x * (2 * m + 1) * pmm;
+  if (n === m + 1) return pmmp1;
+  let pnn = pmmp1;
+  for (let nn = m + 2; nn <= n; nn += 1) {
+    pnn = ((2 * nn - 1) * x * pmmp1 - (nn + m - 1) * pmm) / (nn - m);
+    pmm = pmmp1;
+    pmmp1 = pnn;
+  }
+  return pnn;
+}
+function alpha(m, r, c2) {
+  const ell = m + r;
+  if (ell === 0 && m === 0) {
+    return c2 / 3;
+  }
+  const den = (2 * ell - 1) * (2 * ell + 3);
+  const extra = den === 0 ? 0 : c2 * (2 * ell * (ell + 1) - 2 * m * m - 1) / den;
+  return ell * (ell + 1) + extra;
+}
+function beta2(m, r, c2) {
+  const ell = m + r;
+  const den = (2 * ell + 3) * (2 * ell + 5);
+  if (den === 0) return 0;
+  return c2 * (ell + m + 1) * (ell + m + 2) / den;
+}
+function gammaCoeff(m, r, c2) {
+  const ell = m + r;
+  const den = (2 * ell - 3) * (2 * ell - 1);
+  if (den === 0) return 0;
+  return c2 * (ell - m) * (ell - m - 1) / den;
+}
+function solveParity(m, r0, c) {
+  const c2 = c * c;
+  const rs = [];
+  for (let r = r0; r < KMAX; r += 2) rs.push(r);
+  const N2 = rs.length;
+  const diag22 = new Float64Array(N2);
+  const off = new Float64Array(N2 - 1);
+  for (let i2 = 0; i2 < N2; i2 += 1) {
+    diag22[i2] = alpha(m, rs[i2], c2);
+    if (i2 < N2 - 1) {
+      const b = beta2(m, rs[i2], c2);
+      const g = gammaCoeff(m, rs[i2 + 1], c2);
+      off[i2] = Math.sign(b) * Math.sqrt(Math.abs(b * g));
+    }
+  }
+  const mat = Array.from({ length: N2 }, () => Array(N2).fill(0));
+  for (let i2 = 0; i2 < N2; i2 += 1) {
+    mat[i2][i2] = diag22[i2];
+    if (i2 < N2 - 1) {
+      mat[i2][i2 + 1] = off[i2];
+      mat[i2 + 1][i2] = off[i2];
+    }
+  }
+  const { values, vectors } = eig(mat);
+  const order = values.map((v, i2) => ({ lam: v.re, i: i2 })).sort((a, b) => a.lam - b.lam);
+  return order.map(({ lam, i: i2 }) => {
+    const coeffs = new Float64Array(N2);
+    let nrm = 0;
+    for (let k = 0; k < N2; k += 1) {
+      coeffs[k] = vectors[k][i2];
+      nrm += coeffs[k] * coeffs[k];
+    }
+    const s = Math.sqrt(nrm) || 1;
+    const sign32 = coeffs[0] < 0 ? -1 : 1;
+    for (let k = 0; k < N2; k += 1) coeffs[k] = sign32 * coeffs[k] / s;
+    return { lambda: lam, coeffs, r0 };
+  });
+}
+function modeFor(m, n, c) {
+  const N2 = n - m;
+  const r0 = N2 % 2;
+  const idx = Math.floor(N2 / 2);
+  const modes = solveParity(m, r0, c);
+  if (idx >= modes.length) {
+    throw new Error(`spheroidal: expansion too short for n=${n}, m=${m}`);
+  }
+  return modes[idx];
+}
+function spheroidalLambda(m, n, c) {
+  checkMN(m, n, "spheroidalLambda");
+  if (c === 0) return n * (n + 1);
+  return modeFor(m, n, c).lambda;
+}
+var spheroidalCharacteristic = spheroidalLambda;
+function spheroidalAngular(m, n, c, eta) {
+  checkMN(m, n, "spheroidalAngular");
+  if (!Number.isFinite(eta) || eta < -1 || eta > 1) {
+    throw new Error("spheroidalAngular: eta must lie in [-1, 1]");
+  }
+  if (c === 0) return ferrersP(n, m, eta);
+  const mode2 = modeFor(m, n, c);
+  let s = 0;
+  for (let i2 = 0; i2 < mode2.coeffs.length; i2 += 1) {
+    const r = mode2.r0 + 2 * i2;
+    s += mode2.coeffs[i2] * ferrersP(m + r, m, eta);
+  }
+  const ref = m === 0 ? 0 : 0.5;
+  const pref = ferrersP(n, m, ref);
+  let sref = 0;
+  for (let i2 = 0; i2 < mode2.coeffs.length; i2 += 1) {
+    const r = mode2.r0 + 2 * i2;
+    sref += mode2.coeffs[i2] * ferrersP(m + r, m, ref);
+  }
+  if (Math.abs(sref) < 1e-18 || Math.abs(pref) < 1e-18) return s;
+  return s * (pref / sref);
+}
+function spheroidalRadial(m, n, c, xi) {
+  checkMN(m, n, "spheroidalRadial");
+  if (!Number.isFinite(xi) || xi < 1) {
+    throw new Error("spheroidalRadial: xi must be \u2265 1");
+  }
+  return spheroidalAngularContinued(m, n, c, xi);
+}
+function ferrersPContinued(n, m, x) {
+  const somx2 = x * x >= 1 ? Math.sqrt(x * x - 1) : Math.sqrt(1 - x * x);
+  let pmm = 1;
+  if (m > 0) {
+    let fact = 1;
+    for (let i2 = 1; i2 <= m; i2 += 1) {
+      pmm *= fact * somx2;
+      fact += 2;
+    }
+  }
+  if (n === m) return pmm;
+  let pmmp1 = x * (2 * m + 1) * pmm;
+  if (n === m + 1) return pmmp1;
+  let pnn = pmmp1;
+  for (let nn = m + 2; nn <= n; nn += 1) {
+    pnn = ((2 * nn - 1) * x * pmmp1 - (nn + m - 1) * pmm) / (nn - m);
+    pmm = pmmp1;
+    pmmp1 = pnn;
+  }
+  return pnn;
+}
+function spheroidalAngularContinued(m, n, c, x) {
+  if (c === 0) return ferrersPContinued(n, m, x);
+  const mode2 = modeFor(m, n, c);
+  let s = 0;
+  for (let i2 = 0; i2 < mode2.coeffs.length; i2 += 1) {
+    const r = mode2.r0 + 2 * i2;
+    s += mode2.coeffs[i2] * ferrersPContinued(m + r, m, x);
+  }
+  const ref = 1.2;
+  const pref = ferrersPContinued(n, m, ref);
+  let sref = 0;
+  for (let i2 = 0; i2 < mode2.coeffs.length; i2 += 1) {
+    const r = mode2.r0 + 2 * i2;
+    sref += mode2.coeffs[i2] * ferrersPContinued(m + r, m, ref);
+  }
+  if (Math.abs(sref) < 1e-18 || Math.abs(pref) < 1e-18) return s;
+  return s * (pref / sref);
+}
 function bfs(adj, start) {
   const n = adj.length;
   if (start < 0 || start >= n) {
@@ -121510,7 +123226,10 @@ function minCut(capacity, source, sink) {
 }
 function astar(adj, start, goal, heuristic) {
   const n = adj.length;
-  if (start < 0 || start >= n || goal < 0 || goal >= n) {
+  if (!Array.isArray(adj) || !Number.isInteger(n) || n < 0) {
+    throw new Error("astar: adjacency must be a square number[][]");
+  }
+  if (!Number.isInteger(start) || !Number.isInteger(goal) || start < 0 || start >= n || goal < 0 || goal >= n) {
     throw new Error("astar: start or goal out of bounds");
   }
   if (start === goal) {
@@ -121520,14 +123239,14 @@ function astar(adj, start, goal, heuristic) {
   gScore[start] = 0;
   const cameFrom = new Array(n).fill(-1);
   const closed = new Array(n).fill(false);
-  const open = [{ node: start, fScore: heuristic(start) }];
-  while (open.length > 0) {
+  const open2 = [{ node: start, fScore: heuristic(start) }];
+  while (open2.length > 0) {
     let bestIdx = 0;
-    for (let i2 = 1; i2 < open.length; i2++) {
-      if (open[i2].fScore < open[bestIdx].fScore) bestIdx = i2;
+    for (let i2 = 1; i2 < open2.length; i2++) {
+      if (open2[i2].fScore < open2[bestIdx].fScore) bestIdx = i2;
     }
-    const { node: u } = open[bestIdx];
-    open.splice(bestIdx, 1);
+    const { node: u } = open2[bestIdx];
+    open2.splice(bestIdx, 1);
     if (closed[u]) continue;
     closed[u] = true;
     if (u === goal) break;
@@ -121537,7 +123256,7 @@ function astar(adj, start, goal, heuristic) {
       if (tentative < gScore[v]) {
         gScore[v] = tentative;
         cameFrom[v] = u;
-        open.push({ node: v, fScore: tentative + heuristic(v) });
+        open2.push({ node: v, fScore: tentative + heuristic(v) });
       }
     }
   }
@@ -121545,7 +123264,8 @@ function astar(adj, start, goal, heuristic) {
     return { path: [], cost: Infinity };
   }
   const path = [];
-  for (let v = goal; v !== -1; v = cameFrom[v]) {
+  for (let v = goal, guard = 0; v !== -1 && guard <= n; v = cameFrom[v], guard += 1) {
+    if (!Number.isInteger(v) || v < 0 || v >= n) break;
     path.unshift(v);
     if (v === start) break;
   }
@@ -121941,14 +123661,14 @@ function _solveLinearSystem(A, b) {
   }
   return M.map((row22) => row22[n]);
 }
-function katzCentrality(adj, alpha, beta2 = 1) {
+function katzCentrality(adj, alpha2, beta3 = 1) {
   const n = adj.length;
   if (n === 0) return [];
   const M = Array.from(
     { length: n },
-    (_, i2) => Array.from({ length: n }, (_2, j) => (i2 === j ? 1 : 0) - alpha * adj[j][i2])
+    (_, i2) => Array.from({ length: n }, (_2, j) => (i2 === j ? 1 : 0) - alpha2 * adj[j][i2])
   );
-  const b = new Array(n).fill(beta2);
+  const b = new Array(n).fill(beta3);
   const x = _solveLinearSystem(M, b);
   let sum32 = 0;
   let sumSq = 0;
@@ -122078,7 +123798,7 @@ function glm(X, y, opts) {
   const tol = opts.tol ?? 1e-10;
   const maxIter = opts.maxIter ?? 100;
   let eta = family.mustart(y).map((mu2) => linkFns.linkFn(mu2));
-  let beta2 = new Array(p).fill(0);
+  let beta3 = new Array(p).fill(0);
   let iterations = 0;
   for (let iter = 0; iter < maxIter; iter++) {
     iterations = iter + 1;
@@ -122115,7 +123835,7 @@ function glm(X, y, opts) {
     const newEta = design.map((row22) => row22.reduce((s, v, j) => s + v * newBeta[j], 0));
     let maxDiff = 0;
     for (let i2 = 0; i2 < n; i2++) maxDiff = Math.max(maxDiff, Math.abs(newEta[i2] - eta[i2]));
-    beta2 = newBeta;
+    beta3 = newBeta;
     eta = newEta;
     if (maxDiff < tol) break;
   }
@@ -122123,9 +123843,9 @@ function glm(X, y, opts) {
   const deviance = y.reduce((sum32, yi, i2) => sum32 + family.deviance(yi, mu[i2]), 0);
   const predict = (x) => {
     const Dx = useIntercept ? x.map((row22) => [1, ...row22]) : x.map((row22) => [...row22]);
-    return Dx.map((row22) => linkFns.linkInv(row22.reduce((s, v, j) => s + v * beta2[j], 0)));
+    return Dx.map((row22) => linkFns.linkInv(row22.reduce((s, v, j) => s + v * beta3[j], 0)));
   };
-  return { coefficients: beta2, fittedValues: mu, deviance, iterations, predict };
+  return { coefficients: beta3, fittedValues: mu, deviance, iterations, predict };
 }
 function normalizeMvnInputs(mean72, cov2) {
   if (typeof mean72 === "number") {
@@ -122186,22 +123906,22 @@ function mvnSample(mean72, cov2, n, opts) {
   }
   return samples;
 }
-function powerAt(effectSize, nobs, alpha, alt) {
+function powerAt(effectSize, nobs, alpha2, alt) {
   const df = 2 * (nobs - 1);
   const nc = effectSize * Math.sqrt(nobs / 2);
   if (alt === "larger") {
-    const tCrit2 = studentTQuantile(1 - alpha, df);
+    const tCrit2 = studentTQuantile(1 - alpha2, df);
     return 1 - noncentralTCDF(tCrit2, df, nc);
   }
   if (alt === "smaller") {
-    const tCrit2 = studentTQuantile(alpha, df);
+    const tCrit2 = studentTQuantile(alpha2, df);
     return noncentralTCDF(tCrit2, df, nc);
   }
-  const tCrit = studentTQuantile(1 - alpha / 2, df);
+  const tCrit = studentTQuantile(1 - alpha2 / 2, df);
   return 1 - noncentralTCDF(tCrit, df, nc) + noncentralTCDF(-tCrit, df, nc);
 }
-function tTestPower(effectSize, nobsOrPower, alpha, opts = {}) {
-  if (!(alpha > 0 && alpha < 1)) throw new Error("tTestPower: alpha must be in (0, 1)");
+function tTestPower(effectSize, nobsOrPower, alpha2, opts = {}) {
+  if (!(alpha2 > 0 && alpha2 < 1)) throw new Error("tTestPower: alpha must be in (0, 1)");
   const alt = opts.alternative ?? "two-sided";
   if (opts.solveFor === "nobs") {
     const targetPower = nobsOrPower;
@@ -122211,19 +123931,19 @@ function tTestPower(effectSize, nobsOrPower, alpha, opts = {}) {
     if (effectSize === 0) throw new Error("tTestPower: cannot solve for nobs when effectSize is 0");
     let lo = 2 + 1e-9;
     let hi = 1e7;
-    if (powerAt(effectSize, hi, alpha, alt) < targetPower) {
+    if (powerAt(effectSize, hi, alpha2, alt) < targetPower) {
       throw new Error("tTestPower: target power unreachable even at nobs = 1e7");
     }
     for (let it = 0; it < 200; it++) {
       const mid = (lo + hi) / 2;
-      if (powerAt(effectSize, mid, alpha, alt) < targetPower) lo = mid;
+      if (powerAt(effectSize, mid, alpha2, alt) < targetPower) lo = mid;
       else hi = mid;
     }
     return (lo + hi) / 2;
   }
   const nobs = nobsOrPower;
   if (!(nobs > 1)) throw new Error("tTestPower: nobs must be greater than 1");
-  return powerAt(effectSize, nobs, alpha, alt);
+  return powerAt(effectSize, nobs, alpha2, alt);
 }
 var SQRT3 = Math.sqrt(3);
 var SQRT5 = Math.sqrt(5);
@@ -122355,29 +124075,29 @@ function gaussianProcessRegression(X, y, options = {}) {
   };
 }
 var gpRegression = gaussianProcessRegression;
-function validateAlpha(alpha, fn) {
-  if (!Array.isArray(alpha) || alpha.length < 2) {
+function validateAlpha(alpha2, fn) {
+  if (!Array.isArray(alpha2) || alpha2.length < 2) {
     throw new Error(`${fn}: alpha must be an array of at least 2 concentration parameters`);
   }
-  for (const a of alpha) {
+  for (const a of alpha2) {
     if (!(a > 0) || !Number.isFinite(a)) {
       throw new Error(`${fn}: all concentration parameters must be positive and finite`);
     }
   }
 }
-function dirichletSample(alpha, n = 1, opts) {
-  validateAlpha(alpha, "dirichletSample");
+function dirichletSample(alpha2, n = 1, opts) {
+  validateAlpha(alpha2, "dirichletSample");
   if (!Number.isInteger(n) || n < 1) {
     throw new Error("dirichletSample: n must be a positive integer");
   }
-  const k = alpha.length;
+  const k = alpha2.length;
   const rng = createRng(opts?.seed ?? null);
   const samples = new Array(n);
   for (let s = 0; s < n; s++) {
     const g = new Array(k);
     let total = 0;
     for (let i2 = 0; i2 < k; i2++) {
-      const gi = gammaSampleRng(alpha[i2], rng);
+      const gi = gammaSampleRng(alpha2[i2], rng);
       g[i2] = gi;
       total += gi;
     }
@@ -122387,10 +124107,10 @@ function dirichletSample(alpha, n = 1, opts) {
   }
   return samples;
 }
-function dirichletPdf(x, alpha) {
-  validateAlpha(alpha, "dirichletPdf");
-  if (x.length !== alpha.length) {
-    throw new Error(`dirichletPdf: x length ${x.length} must match alpha length ${alpha.length}`);
+function dirichletPdf(x, alpha2) {
+  validateAlpha(alpha2, "dirichletPdf");
+  if (x.length !== alpha2.length) {
+    throw new Error(`dirichletPdf: x length ${x.length} must match alpha length ${alpha2.length}`);
   }
   let sum32 = 0;
   for (const xi of x) {
@@ -122404,7 +124124,7 @@ function dirichletPdf(x, alpha) {
   }
   let a0 = 0;
   let logB = 0;
-  for (const a of alpha) {
+  for (const a of alpha2) {
     logB += lgammaNumber(a);
     a0 += a;
   }
@@ -122412,7 +124132,7 @@ function dirichletPdf(x, alpha) {
   let logpdf = -logB;
   for (let i2 = 0; i2 < x.length; i2++) {
     const xi = x[i2];
-    const p = alpha[i2] - 1;
+    const p = alpha2[i2] - 1;
     if (p !== 0) {
       logpdf += p * Math.log(xi);
     }
@@ -123416,9 +125136,9 @@ function safeEvaluate(expression, scope) {
   const compiled = getCachedExpression(
     expression,
     () => {
-      const node = math_engine_default.parse(expression);
-      validateNode(node);
-      return node.compile();
+      const node2 = math_engine_default.parse(expression);
+      validateNode(node2);
+      return node2.compile();
     },
     scope
   );
@@ -123488,10 +125208,10 @@ function fmtRoot(r) {
   if (reZero) return `${r.im < 0 ? "-" : ""}${imMag}i`;
   return `${fmtReal(r.re)} ${r.im < 0 ? "-" : "+"} ${imMag}i`;
 }
-function isLowDegreePolynomial(node, varName) {
+function isLowDegreePolynomial(node2, varName) {
   const at = (x) => {
     try {
-      const v = node.evaluate({ [varName]: x });
+      const v = node2.evaluate({ [varName]: x });
       return typeof v === "number" ? v : NaN;
     } catch {
       return NaN;
@@ -123514,9 +125234,9 @@ async function handleSolve(args) {
         throw new ValidationError("Equation must contain exactly one '=' sign");
       }
       const expr = `${parts[0].trim()} - (${parts[1].trim()})`;
-      const node = math_engine_default.parse(expr);
-      validateNode(node);
-      getCachedExpression(expr, () => node.compile());
+      const node2 = math_engine_default.parse(expr);
+      validateNode(node2);
+      getCachedExpression(expr, () => node2.compile());
       const standardForm = () => {
         try {
           return `${math_engine_default.simplify(expr).toString()} = 0`;
@@ -123526,7 +125246,7 @@ async function handleSolve(args) {
       };
       const probe = (x) => {
         try {
-          const v = node.evaluate({ [varName]: x });
+          const v = node2.evaluate({ [varName]: x });
           return { ok: typeof v === "number" && Number.isFinite(v), undefinedSymbol: false };
         } catch (e2) {
           const msg2 = e2 instanceof Error ? e2.message : String(e2);
@@ -123550,7 +125270,7 @@ async function handleSolve(args) {
       const roots = math_engine_default.solve(expr, varName);
       if (roots.length === 0) {
         const samples = [0.37, 1.51, -0.91, 2.73].map(
-          (x) => node.evaluate({ [varName]: x })
+          (x) => node2.evaluate({ [varName]: x })
         );
         const allZero = samples.every((v) => Math.abs(v) < 1e-9);
         return successResponse(
@@ -123558,7 +125278,7 @@ async function handleSolve(args) {
         );
       }
       const label = roots.length === 1 ? "Solution" : "Solutions";
-      if (isLowDegreePolynomial(node, varName)) {
+      if (isLowDegreePolynomial(node2, varName)) {
         return successResponse(
           `${label}: ${roots.map((r) => `${varName} = ${fmtRoot(r)}`).join(", ")}`
         );

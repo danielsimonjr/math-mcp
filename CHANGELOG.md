@@ -5,7 +5,49 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
-## [Unreleased]
+## [4.3.0] - 2026-09-17
+
+### Changed
+
+- **The plugin now lives in `plugin/`.** The marketplace entry installed the whole
+  repository root. The root carries `package.json` and `bun.lock`, so Claude Code's
+  installer ran `bun install --frozen-lockfile --ignore-scripts` on every install, and
+  the cached plugin held **172.6 MB** of `node_modules` (180.3 MB total) - typescript,
+  vitest, eslint, esbuild and the MathTS build chain, none of which the shipped server
+  runs. The installer has no omit-dev option, so the only fix is to install a directory
+  that has no lockfile.
+
+  `plugin/` now holds `.claude-plugin/plugin.json`, `.mcp.json`, `bundle/` (with
+  `bundle/wasm/`) and `skills/` and NOTHING else - no `package.json`, no lockfile. The
+  repository root keeps its own `package.json` and `bun.lock` for development.
+  `scripts/bundle.mjs` writes to `plugin/bundle/index.mjs` and stages the WASM binary to
+  `plugin/bundle/wasm/`, which keeps the depth-0 candidate that the MathTS loader tests
+  first. `.gitignore` gains `!plugin/.mcp.json`, because the root rule ignores
+  `.mcp.json`. The marketplace entry must become `git-subdir` with `path: "plugin"`.
+
+  `bundle/index.mjs` is fully self-contained: it has **zero runtime externals**. Verified
+  by copying `plugin/` alone into an empty directory (no `node_modules` and no
+  `package.json` anywhere above it) and driving the real server over stdio - `initialize`
+  and `tools/list` succeed and return **7 tools**, an `evaluate` call returns `2+2*3 = 8`,
+  and no WASM fallback warning is logged. Repeated with every non-builtin `import` and
+  `require` denied by a loader hook: same result, zero denials. The guard is
+  failure-capable - a control server doing `require("typescript")` fails under it with
+  `DENIED_EXTERNAL_REQUIRE: typescript`.
+
+### Fixed
+
+- **The server reported itself as `2.0.1`** - two majors stale. `getPackageVersion()` read
+  `../package.json` at runtime, which worked only because the installed plugin WAS the
+  repository root. Moving the plugin into `plugin/` removes that file, so the read failed
+  and the function returned its hardcoded `2.0.1` fallback while logging a WARN nobody
+  read. `serverInfo.version` is the signal used to prove a deploy landed, so a stale
+  deploy and a healthy one looked identical.
+
+  The version is now **injected at bundle time** (`esbuild` `define: __PKG_VERSION__`),
+  the same way gmail-mcp does it, so the artifact no longer depends on a neighbouring
+  file. The runtime read stays as the non-bundled `dist/` development path, and both
+  fallbacks become `0.0.0-dev` - a value that cannot be mistaken for a real release.
+  Confirmed by the isolated run above: `serverInfo` now reports `4.3.0`.
 
 ### Changed
 

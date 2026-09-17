@@ -1,6 +1,8 @@
 import { build } from "esbuild";
-import { copyFileSync, mkdirSync, existsSync } from "node:fs";
+import { copyFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+
+const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
 // ESM banner shim: bundled CJS deps need require/__filename/__dirname.
 const banner =
@@ -20,10 +22,13 @@ await build({
   target: "node20",
   format: "esm",
   banner: { js: banner },
-  outfile: "bundle/index.mjs",
+  outfile: "plugin/bundle/index.mjs",
+  // The version the server reports is INJECTED. The bundle no longer sits beside a
+  // package.json, so reading one at runtime is not an option.
+  define: { __PKG_VERSION__: JSON.stringify(pkg.version) },
   logLevel: "warning",
 });
-console.log("bundled -> bundle/index.mjs");
+console.log(`bundled -> plugin/bundle/index.mjs (version ${pkg.version})`);
 
 // The WASM binary is a DATA FILE, so esbuild does not follow it and bundling silently
 // breaks how MathTS finds it.
@@ -47,7 +52,7 @@ console.log("bundled -> bundle/index.mjs");
 const WASM_SRC = join(
   "node_modules", "@danielsimonjr", "mathts-functions", "dist", "wasm",
 );
-const WASM_OUT = join("bundle", "wasm");
+const WASM_OUT = join("plugin", "bundle", "wasm");
 const WASM_FILES = ["mathts-as.wasm", "wasm-manifest.json"];
 
 const missing = WASM_FILES.filter((f) => !existsSync(join(WASM_SRC, f)));

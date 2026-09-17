@@ -225,20 +225,30 @@ export const perfTracker = new PerformanceTracker();
  * // Returns: "2.1.0"
  * ```
  */
+declare const __PKG_VERSION__: string;
+
 export async function getPackageVersion(): Promise<string> {
+  // The version is INJECTED at bundle time (scripts/bundle.mjs, esbuild `define`).
+  // It used to be read from `../package.json` at runtime, which worked only because the
+  // installed plugin WAS the repository root. The plugin now installs `plugin/` alone and
+  // has no package.json, so that read failed and the server reported the hardcoded
+  // fallback `2.0.1` - two major versions stale - while logging a WARN nobody read.
+  // serverInfo.version is the signal used to prove a deploy landed, so a stale deploy and
+  // a healthy one looked identical.
+  if (typeof __PKG_VERSION__ === 'string') return __PKG_VERSION__;
+
+  // Non-bundled path (dist/ during development): package.json is one level up.
   try {
-    // In production (dist/), package.json is one level up
-    // In development (src/), package.json is one level up
     const packageJsonPath = new URL('../package.json', import.meta.url);
     const packageJson = await import(packageJsonPath.href, {
       with: { type: 'json' },
     });
-    return packageJson.default.version || '2.0.1';
+    return packageJson.default.version || '0.0.0-dev';
   } catch (error) {
     logger.warn('Failed to read package.json version', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return '2.0.1'; // Fallback version
+    return '0.0.0-dev';
   }
 }
 
