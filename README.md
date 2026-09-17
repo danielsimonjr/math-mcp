@@ -26,7 +26,7 @@ sandboxing, rate limiting, and Prometheus/health observability on top of it.
 The plugin also ships a `math` skill (`math-mcp:math`, `/math`) — a playbook
 that steers Claude to offload computation to these tools instead of doing
 mental math, with composed workflows for solving, calculus, matrices,
-statistics, and units. See [skills/math/SKILL.md](skills/math/SKILL.md).
+statistics, and units. See [plugin/skills/math/SKILL.md](plugin/skills/math/SKILL.md).
 
 ## ✨ Features
 
@@ -223,7 +223,7 @@ math-mcp/
 │   ├── unit/               # Vitest unit tests
 │   └── security/           # Security tests (injection, DoS, fuzzing, bounds)
 ├── dist/                   # Compiled JavaScript (dist/index.js is the entry)
-├── skills/math/            # Companion `math` skill (math-mcp:math, /math)
+├── plugin/skills/math/            # Companion `math` skill (math-mcp:math, /math)
 ├── docs/                   # Documentation
 ├── CHANGELOG.md · CONTRIBUTING.md · SECURITY.md · LICENSE · package.json
 ```
@@ -289,7 +289,7 @@ environment-configurable): max matrix dimension 1000×1000, max array length
 - **[CHANGELOG.md](CHANGELOG.md)** — version history
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — contribution guidelines
 - **[SECURITY.md](SECURITY.md)** — security policy
-- **[skills/math/SKILL.md](skills/math/SKILL.md)** — the `math` companion skill playbook
+- **[plugin/skills/math/SKILL.md](plugin/skills/math/SKILL.md)** — the `math` companion skill playbook
 
 ## 🤝 Contributing
 

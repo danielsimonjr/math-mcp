@@ -30,6 +30,8 @@ test/coverage/
 # Claude Code
 .claude/
 .mcp.json
+# The plugin launch config IS committed: the marketplace installs plugin/ only.
+!plugin/.mcp.json
 *.swp
 *.swo
 *~
