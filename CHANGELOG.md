@@ -9,12 +9,19 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
-- Rebuild `plugin/bundle/index.mjs` from current `master`. The bundle committed with the
-  `plugin/` move was built from a branch that was 4 commits behind `master`, so the shipped
-  artifact did not match `src/`. A handshake cannot detect this, because a stale bundle still
-  starts and still answers `tools/list`; only a rebuild-and-compare can. Two consecutive builds
-  are now byte-identical, and the isolated copy reports version 4.3.0 with 7 tools and
-  evaluates `2+2*3 = 8`.
+- Record two pre-existing test failures in `TODO.md`: a health-check assertion that waits a real
+  5,000 ms, and an LRU-ordering test. Both fail identically at `fa45fbe`, before the `plugin/`
+  move, so neither is a regression from it.
+
+### Notes
+
+- The `plugin/bundle/index.mjs` shipped by the `plugin/` move DOES match current `master`:
+  the committed blob and a fresh rebuild are both `a9674fd2`, and two consecutive builds are
+  byte-identical. An earlier claim in this file that the bundle was stale was WRONG and is
+  retracted. Its cause is worth keeping: the check hashed the WORKING COPY, which Git had
+  converted from LF to CRLF on checkout, so it could never match the committed blob. Compare
+  `git show <rev>:<path>` against a rebuild, never a worktree file, when auditing a committed
+  artifact on Windows.
 
 ## [4.3.0] - 2026-09-17
 
