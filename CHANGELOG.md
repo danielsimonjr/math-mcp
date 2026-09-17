@@ -5,6 +5,17 @@ Documentation in reverse chronological order (latest first).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- Rebuild `plugin/bundle/index.mjs` from current `master`. The bundle committed with the
+  `plugin/` move was built from a branch that was 4 commits behind `master`, so the shipped
+  artifact did not match `src/`. A handshake cannot detect this, because a stale bundle still
+  starts and still answers `tools/list`; only a rebuild-and-compare can. Two consecutive builds
+  are now byte-identical, and the isolated copy reports version 4.3.0 with 7 tools and
+  evaluates `2+2*3 = 8`.
+
 ## [4.3.0] - 2026-09-17
 
 ### Changed
