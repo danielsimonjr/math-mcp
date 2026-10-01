@@ -9,6 +9,18 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **Removed the dead root `npm` Dependabot entry.** No dependency-update ecosystem works on a
+  Bun-managed root right now: `bun` fails with "Unsupported bun.lock 'lockfileVersion' 2" and `npm`
+  aborts during file fetching with "npm_and_yarn ecosystem cannot update bun.lock". Each error
+  recommends the other. Measured fleet-wide 2026-10-01: 19 dead updater jobs. The entry was failing
+  weekly and proposing nothing, so it was removed and the reason recorded in `dependabot.yml`.
+  Security alerts are unaffected; automated remediation is what stops. `github-actions` updates
+  continue.
+- **Added a `github-actions` Dependabot entry, which this repo never had.** Removing the npm entry
+  would otherwise have left `updates:` empty, which Dependabot rejects. The repo uses seven action
+  references - three SHA-pinned, the rest on floating major tags - and had no automated updates for
+  any of them.
+
 - Record two pre-existing test failures in `TODO.md`: a health-check assertion that waits a real
   5,000 ms, and an LRU-ordering test. Both fail identically at `fa45fbe`, before the `plugin/`
   move, so neither is a regression from it.
