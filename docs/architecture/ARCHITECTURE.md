@@ -20,11 +20,11 @@ Each file imports only files in a lower layer. The graph has no circular depende
 ## Data flow
 
 1. An MCP host sends a tool call over stdio. `serveStdio` calls `createMathMcpServer` for each connection. The function calls `registerMathTools`.
-2. `callTool` in `register-tools.ts` runs `withRateLimit(globalRateLimiter, () => withErrorHandling(handler, args))`. The rate limiter rejects a call with a `RateLimitError` before the handler runs.
+2. `callTool` in `register-tools.ts` runs `withRateLimit(globalRateLimiter, () => withErrorHandling(handler, args))`. The rate limiter throws a `RateLimitError` before the handler runs. The error is outside `withErrorHandling`, so the error leaves the tool callback and the MCP SDK handles the error.
 3. The handler in `tool-handlers.ts` validates the input with `validation.ts`. The size limits are the `LIMITS` constants in that file.
-4. `handleEvaluate`, `handleSimplify`, `handleDerivative` and `handleUnitConversion` call the engine under `withTimeout`. `handleEvaluate` and `handleSolve` compile an expression through `expression-cache.ts`.
-5. `math-engine.ts` supplies the MathTS engine that performs the operation.
-6. `withErrorHandling` turns a thrown error into an MCP error response. A successful result returns through `successResponse` in `handler-utils.ts`.
+4. `handleEvaluate` and `handleSolve` compile an expression through `expression-cache.ts`.
+5. `math-engine.ts` supplies the MathTS engine that performs the operation. The engine call is synchronous. `handleEvaluate`, `handleSimplify`, `handleDerivative` and `handleUnitConversion` pass the finished result to `withTimeout`. The engine call ends before `withTimeout` starts, so the timeout does not bound the call.
+6. `withErrorHandling` turns an error that a handler throws into an MCP response with `isError: true`. A successful result returns through `successResponse` in `handler-utils.ts`.
 
 ## Key design decisions
 
@@ -32,13 +32,13 @@ Each file imports only files in a lower layer. The graph has no circular depende
 
 **Decision:** `register-tools.ts` applies the rate limit and the error wrapper. `tool-handlers.ts` does neither.
 **Rationale:** One call site covers all seven tools.
-**Trade-offs:** The limiter is global. All clients of one process share one budget.
+**Trade-offs:** The limiter is global. All clients of one process share one budget. A `RateLimitError` does not pass through `withErrorHandling`.
 
 ### Size limits guard large inputs
 
 **Decision:** `validation.ts` limits the size of matrices, arrays and expressions.
-**Rationale:** Synchronous JavaScript cannot stop in the middle of a calculation. `withTimeout` frees the caller but the calculation continues to run. A size limit stops the work before the work starts.
-**Trade-offs:** A valid input above a limit fails.
+**Rationale:** Synchronous JavaScript cannot stop in the middle of a calculation. No timer fires while an engine call runs, so `withTimeout` does not bound the four handlers that use it. A size limit stops the work before the work starts.
+**Trade-offs:** A valid input above a limit fails. An input below the limits can still run for a long time.
 
 ### Opt-in telemetry
 

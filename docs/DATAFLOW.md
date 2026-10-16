@@ -75,11 +75,11 @@ Complete lifecycle of an MCP request from client to response:
 | Stage | Component | Action |
 |-------|-----------|--------|
 | 1 | MCP SDK | Receive tool call over stdio |
-| 2 | rate-limiter.ts | Check token bucket, concurrent limits |
-| 3 | index.ts | Parse tool name and arguments |
+| 2 | register-tools.ts, rate-limiter.ts | `withRateLimit` checks the token bucket and the concurrency limit |
+| 3 | MCP SDK, register-tools.ts | Parse the tool name and arguments; call the handler |
 | 4 | validation.ts | Validate input types, sizes, content |
 | 5 | math-engine.ts (MathTS) | Execute the mathematical operation |
-| 6 | tool-handlers.ts | Format result for MCP response |
+| 6 | tool-handlers.ts, handler-utils.ts | Format result for MCP response |
 | 7 | MCP SDK | Send response over stdio |
 
 There is no acceleration/tier-routing stage — MathTS performs the computation directly, and large-input protection is enforced entirely by the size limits checked at stage 4 (`src/validation.ts`), not by timeouts or a fallback chain (synchronous JS can't be interrupted mid-operation).

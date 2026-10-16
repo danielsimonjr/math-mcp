@@ -85,7 +85,7 @@ bun run test:correctness
 # Unit tests (Vitest)
 bun run test:unit
 
-# Security tests (121 tests)
+# Security tests (122 tests)
 bun run test:security
 
 # Test coverage

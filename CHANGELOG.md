@@ -23,8 +23,13 @@ Documentation in reverse chronological order (latest first).
   `repo-tools map` writes.
 - **`scripts/publish-version-guard.mjs` has summary lines** on `versionFromTag` and
   `assertTagMatchesPackageVersion`. A code-docs scan of the whole repository now reports 0 MUST
-  issues, down from 7. `CLAUDE.md` lists `src/register-tools.ts`. `CLAUDE.md` no longer describes
-  `src/types.ts` as a module of error types.
+  issues, down from 7.
+- **The README, `CLAUDE.md`, `docs/COMPONENTS.md` and `docs/DATAFLOW.md` name the module that
+  registers the tools.** `src/register-tools.ts` registers the seven tools and applies the rate
+  limit and the error wrapper. The four files placed both tasks in `src/index.ts` or in
+  `src/rate-limiter.ts`. The README and `CLAUDE.md` also state that `src/types.ts` is an empty
+  module, not a module of shared types. The README and `docs/COMPONENTS.md` state that the rate
+  limiter rejects a call over the limits and never queues the call.
 
 - **Five exported symbols now have doc comments.** `logger.error`, `logger.warn`, `logger.info`,
   `logger.debug` and `getPackageVersion` had none, so `repo-tools docs check src` failed with
@@ -59,6 +64,13 @@ Documentation in reverse chronological order (latest first).
   move, so neither is a regression from it.
 
 ### Notes
+
+- **`withTimeout` does not bound the engine call in four handlers.** `handleEvaluate`,
+  `handleSimplify`, `handleDerivative` and `handleUnitConversion` run the engine call first and
+  pass the finished result to `withTimeout`. The engine call is synchronous, so no timer fires
+  while the call runs. With `OPERATION_TIMEOUT=20`, a 400-by-400 matrix product through `evaluate`
+  ran 156 ms and returned the result. The size limits in `src/validation.ts` are the only guard.
+  `docs/architecture/ARCHITECTURE.md` records the behavior. A code fix is a separate change.
 
 - The `plugin/bundle/index.mjs` shipped by the `plugin/` move DOES match current `master`:
   the committed blob and a fresh rebuild are both `a9674fd2`, and two consecutive builds are
