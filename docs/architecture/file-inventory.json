@@ -1,57 +1,52 @@
 {
-  "generated": "2026-08-05",
-  "totalFiles": 38,
+  "totalFiles": 39,
   "byDisposition": {
-    "reachable": 13,
+    "reachable": 14,
     "build-entry": 1,
     "test-only": 0,
-    "orphan": 7,
+    "orphan": 4,
     "test": 15,
-    "tool": 1,
-    "config": 1,
+    "tool": 5,
+    "config": 0,
     "bench": 0,
     "example": 0
   },
   "byArea": {
-    "src": 21,
-    "config": 1,
-    "tests": 15,
-    "tools": 1
+    "tools": 5,
+    "src": 19,
+    "tests": 15
+  },
+  "byPackage": {
+    "(root)": 23,
+    "@danielsimonjr/math-mcp": 16
   },
   "files": [
     {
-      "file": "bundle/index.mjs",
-      "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
-      "loc": 118477
-    },
-    {
-      "file": "eslint.config.js",
-      "package": "(root)",
-      "area": "config",
-      "disposition": "config",
-      "loc": 83
-    },
-    {
       "file": "scripts/bundle.mjs",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
-      "loc": 24
+      "area": "tools",
+      "disposition": "tool",
+      "loc": 70
     },
     {
       "file": "scripts/check-dependencies.js",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
+      "area": "tools",
+      "disposition": "tool",
       "loc": 223
+    },
+    {
+      "file": "scripts/publish-version-guard.mjs",
+      "package": "(root)",
+      "area": "tools",
+      "disposition": "tool",
+      "loc": 73
     },
     {
       "file": "scripts/verify-mathts-coverage.mjs",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
+      "area": "tools",
+      "disposition": "tool",
       "loc": 38
     },
     {
@@ -73,7 +68,7 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 86
+      "loc": 84
     },
     {
       "file": "src/health.ts",
@@ -87,7 +82,7 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "build-entry",
-      "loc": 417
+      "loc": 131
     },
     {
       "file": "src/math-engine.ts",
@@ -104,6 +99,13 @@
       "loc": 352
     },
     {
+      "file": "src/register-tools.ts",
+      "package": "@danielsimonjr/math-mcp",
+      "area": "src",
+      "disposition": "reachable",
+      "loc": 154
+    },
+    {
       "file": "src/shared/constants.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
@@ -115,7 +117,7 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 124
+      "loc": 128
     },
     {
       "file": "src/telemetry/metrics.ts",
@@ -150,7 +152,7 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 282
+      "loc": 293
     },
     {
       "file": "src/validation.ts",
@@ -172,6 +174,13 @@
       "area": "src",
       "disposition": "orphan",
       "loc": 94
+    },
+    {
+      "file": "test/mcp-protocol-test.js",
+      "package": "(root)",
+      "area": "src",
+      "disposition": "orphan",
+      "loc": 115
     },
     {
       "file": "test/security/bounds.test.ts",
@@ -286,5 +295,6 @@
       "loc": 440
     }
   ],
+  "skippedLinks": [],
   "warnings": []
 }

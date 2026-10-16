@@ -138,7 +138,8 @@ by **size limits** in `src/validation.ts`, not by timeouts or a fallback chain.
 
 ### Key Source Files
 
-- `src/index.ts` - Main entry point: MCP server setup + the 7 tool definitions (→ `dist/index.js`, also the `bin`)
+- `src/index.ts` - Main entry point: MCP server factory, stdio transport, telemetry start and stop (→ `dist/index.js`, also the `bin`)
+- `src/register-tools.ts` - Registers the 7 tools (zod schemas). Wraps each call in the rate limiter and `withErrorHandling`
 - `src/math-engine.ts` - Builds the MathTS instance (`create(all)`); every module imports its default export
 - `src/tool-handlers.ts` - Business logic for all 7 mathematical tools
 - `src/handler-utils.ts` / `src/utils.ts` - Shared helpers for the handlers
@@ -146,7 +147,7 @@ by **size limits** in `src/validation.ts`, not by timeouts or a fallback chain.
 - `src/rate-limiter.ts` - Token bucket rate limiting
 - `src/expression-cache.ts` - Cache for parsed/evaluated expressions
 - `src/health.ts` - Health check system (Kubernetes-compatible probes)
-- `src/errors.ts` / `src/types.ts` - Error types and shared TypeScript types
+- `src/errors.ts` - Error types. (`src/types.ts` is an empty module that no file imports.)
 - `src/shared/` - `constants.ts`, `logger.ts` (LOG_LEVEL-driven)
 
 ### Telemetry (`src/telemetry/`)

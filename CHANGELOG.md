@@ -13,6 +13,19 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **The architecture documents describe the current code.** `OVERVIEW.md` and `ARCHITECTURE.md`
+  in `docs/architecture/` named the retired `repo_map.py` tool and the old bundle path. Their
+  counts came from before the `plugin/` move, so `repo-tools check` failed 7 claims. Both
+  documents are rewritten from the dependency graph. They now cover `register-tools.ts`, the
+  layer order, the four runtime packages, the data flow, the design decisions and the files that
+  have no importer. Each Verification block records the figures that `repo-tools check` verifies,
+  and the check exits 0. `docs/architecture/` now holds the full set of reports that
+  `repo-tools map` writes.
+- **`scripts/publish-version-guard.mjs` has summary lines** on `versionFromTag` and
+  `assertTagMatchesPackageVersion`. A code-docs scan of the whole repository now reports 0 MUST
+  issues, down from 7. `CLAUDE.md` lists `src/register-tools.ts`. `CLAUDE.md` no longer describes
+  `src/types.ts` as a module of error types.
+
 - **Five exported symbols now have doc comments.** `logger.error`, `logger.warn`, `logger.info`,
   `logger.debug` and `getPackageVersion` had none, so `repo-tools docs check src` failed with
   5 MUST issues. In `src/utils.ts`, the line `declare const __PKG_VERSION__` sat between the
