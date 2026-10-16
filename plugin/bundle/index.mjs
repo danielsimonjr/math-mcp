@@ -37363,21 +37363,25 @@ function formatLogMessage(level, message, metadata) {
   return `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
 }
 var logger = {
+  /** Logs `message` at ERROR level, with optional `metadata`. */
   error(message, metadata) {
     if (shouldLog("error" /* ERROR */)) {
       console.error(formatLogMessage("error" /* ERROR */, message, metadata));
     }
   },
+  /** Logs `message` at WARN level, with optional `metadata`. */
   warn(message, metadata) {
     if (shouldLog("warn" /* WARN */)) {
       console.error(formatLogMessage("warn" /* WARN */, message, metadata));
     }
   },
+  /** Logs `message` at INFO level, with optional `metadata`. */
   info(message, metadata) {
     if (shouldLog("info" /* INFO */)) {
       console.error(formatLogMessage("info" /* INFO */, message, metadata));
     }
   },
+  /** Logs `message` at DEBUG level, with optional `metadata`. */
   debug(message, metadata) {
     if (shouldLog("debug" /* DEBUG */)) {
       console.error(formatLogMessage("debug" /* DEBUG */, message, metadata));

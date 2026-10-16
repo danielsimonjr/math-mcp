@@ -13,6 +13,16 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **Five exported symbols now have doc comments.** `logger.error`, `logger.warn`, `logger.info`,
+  `logger.debug` and `getPackageVersion` had none, so `repo-tools docs check src` failed with
+  5 MUST issues. In `src/utils.ts`, the line `declare const __PKG_VERSION__` sat between the
+  `getPackageVersion` comment and the function. The line now sits above the comment, and the
+  comment describes the version that the bundle build injects. The header of
+  `src/rate-limiter.ts` now names `src/register-tools.ts` as the caller of `withRateLimit`.
+  No code changed. `plugin/bundle/index.mjs` gains the four logger comment lines, because esbuild
+  keeps a comment that precedes an object-literal property. A stdio smoke test of the bundle,
+  before and after, returns the same server info, tool list and result.
+
 - **The Dependabot bun.lock workflow no longer leaves a PR BLOCKED.** GitHub holds the
   `pull_request` runs that the workflow's lockfile push triggers at `action_required`, and a
   `workflow_dispatch` run never reaches the PR's required checks. The workflow now approves the
