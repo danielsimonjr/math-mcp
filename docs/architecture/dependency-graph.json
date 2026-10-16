@@ -1,30 +1,22 @@
 {
   "metadata": {
     "name": "math-mcp",
-    "schemaVersion": "1.0.0",
-    "totalFiles": 38,
-    "totalModules": 4,
-    "totalExports": 86
+    "schemaVersion": "2.0.0",
+    "language": "typescript",
+    "totalFiles": 39,
+    "totalModules": 3,
+    "totalExports": 89
   },
   "modules": {
-    "src": {
-      "bundle/index.mjs": {
-        "externalDependencies": [],
-        "nodeDependencies": [
-          "http",
-          "node:module",
-          "node:path",
-          "node:process",
-          "node:url"
-        ],
-        "internalDependencies": [],
-        "exports": []
-      },
+    "tools": {
       "scripts/bundle.mjs": {
         "externalDependencies": [
           "esbuild"
         ],
-        "nodeDependencies": [],
+        "nodeDependencies": [
+          "node:fs",
+          "node:path"
+        ],
         "internalDependencies": [],
         "exports": []
       },
@@ -38,6 +30,18 @@
         "internalDependencies": [],
         "exports": []
       },
+      "scripts/publish-version-guard.mjs": {
+        "externalDependencies": [],
+        "nodeDependencies": [
+          "node:fs",
+          "node:url"
+        ],
+        "internalDependencies": [],
+        "exports": [
+          "versionFromTag",
+          "assertTagMatchesPackageVersion"
+        ]
+      },
       "scripts/verify-mathts-coverage.mjs": {
         "externalDependencies": [
           "@danielsimonjr/mathts-compat"
@@ -46,6 +50,20 @@
         "internalDependencies": [],
         "exports": []
       },
+      "tools/generate-dependency-graph.ts": {
+        "externalDependencies": [
+          "@babel/core"
+        ],
+        "nodeDependencies": [
+          "fs",
+          "path",
+          "url"
+        ],
+        "internalDependencies": [],
+        "exports": []
+      }
+    },
+    "src": {
       "src/errors.ts": {
         "externalDependencies": [],
         "nodeDependencies": [],
@@ -80,7 +98,9 @@
         ]
       },
       "src/handler-utils.ts": {
-        "externalDependencies": [],
+        "externalDependencies": [
+          "@modelcontextprotocol/server"
+        ],
         "nodeDependencies": [],
         "internalDependencies": [
           {
@@ -139,9 +159,8 @@
       },
       "src/index.ts": {
         "externalDependencies": [
-          "@modelcontextprotocol/sdk/server/index.js",
-          "@modelcontextprotocol/sdk/server/stdio.js",
-          "@modelcontextprotocol/sdk/types.js"
+          "@modelcontextprotocol/server",
+          "@modelcontextprotocol/server/stdio"
         ],
         "nodeDependencies": [],
         "internalDependencies": [
@@ -154,16 +173,9 @@
             "typeOnly": false
           },
           {
-            "file": "src/tool-handlers.ts",
+            "file": "src/register-tools.ts",
             "imports": [
-              "handleEvaluate",
-              "handleSimplify",
-              "handleDerivative",
-              "handleSolve",
-              "handleMatrixOperations",
-              "handleStatistics",
-              "handleUnitConversion",
-              "withErrorHandling"
+              "registerMathTools"
             ],
             "typeOnly": false
           },
@@ -173,21 +185,6 @@
               "logger",
               "getPackageVersion",
               "perfTracker"
-            ],
-            "typeOnly": false
-          },
-          {
-            "file": "src/errors.ts",
-            "imports": [
-              "MathMCPError"
-            ],
-            "typeOnly": false
-          },
-          {
-            "file": "src/rate-limiter.ts",
-            "imports": [
-              "globalRateLimiter",
-              "withRateLimit"
             ],
             "typeOnly": false
           }
@@ -226,6 +223,40 @@
           "RateLimiter",
           "withRateLimit",
           "globalRateLimiter"
+        ]
+      },
+      "src/register-tools.ts": {
+        "externalDependencies": [
+          "@modelcontextprotocol/server",
+          "zod/v4"
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "src/rate-limiter.ts",
+            "imports": [
+              "globalRateLimiter",
+              "withRateLimit"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/tool-handlers.ts",
+            "imports": [
+              "handleEvaluate",
+              "handleSimplify",
+              "handleDerivative",
+              "handleSolve",
+              "handleMatrixOperations",
+              "handleStatistics",
+              "handleUnitConversion",
+              "withErrorHandling"
+            ],
+            "typeOnly": false
+          }
+        ],
+        "exports": [
+          "registerMathTools"
         ]
       },
       "src/shared/constants.ts": {
@@ -498,19 +529,13 @@
         "nodeDependencies": [],
         "internalDependencies": [],
         "exports": []
-      }
-    },
-    "config": {
-      "eslint.config.js": {
-        "externalDependencies": [
-          "@eslint/js",
-          "@typescript-eslint/eslint-plugin",
-          "@typescript-eslint/parser",
-          "eslint-config-prettier",
-          "eslint-plugin-jsdoc",
-          "globals"
+      },
+      "test/mcp-protocol-test.js": {
+        "externalDependencies": [],
+        "nodeDependencies": [
+          "node:child_process",
+          "node:events"
         ],
-        "nodeDependencies": [],
         "internalDependencies": [],
         "exports": []
       }
@@ -564,7 +589,15 @@
           {
             "file": "src/errors.ts",
             "imports": [
-              "RateLimitError"
+              "RateLimitError",
+              "*"
+            ],
+            "typeOnly": false
+          },
+          {
+            "file": "src/utils.ts",
+            "imports": [
+              "*"
             ],
             "typeOnly": false
           }
@@ -865,53 +898,48 @@
         ],
         "exports": []
       }
-    },
-    "tools": {
-      "tools/generate-dependency-graph.ts": {
-        "externalDependencies": [
-          "@babel/core"
-        ],
-        "nodeDependencies": [
-          "fs",
-          "path",
-          "url"
-        ],
-        "internalDependencies": [],
-        "exports": []
-      }
     }
   },
   "statistics": {
-    "totalTypeScriptFiles": 38,
-    "totalModules": 4,
-    "totalLinesOfCode": 129302,
-    "totalExports": 86,
+    "totalTypeScriptFiles": 39,
+    "totalSourceFiles": 39,
+    "totalModules": 3,
+    "totalLinesOfCode": 10857,
+    "totalExports": 89,
     "entryRoots": 1,
-    "reachableFiles": 14,
-    "dormantFiles": 7,
-    "orphanedFiles": 7,
+    "reachableFiles": 15,
+    "dormantFiles": 4,
+    "orphanedFiles": 4,
     "testOnlyFiles": 0,
     "runtimeCircularDeps": 0,
     "typeOnlyCircularDeps": 0,
     "totalTypeOnlyImports": 0,
-    "noImporterFileCount": 7,
+    "noImporterFileCount": 4,
     "unusedExportsCount": 14,
-    "circularDepsTruncated": false
+    "circularDepsTruncated": false,
+    "runtimeCyclicComponents": 0,
+    "typeOnlyCyclicComponents": 0,
+    "runtimeFilesInCycles": 0,
+    "typeOnlyFilesInCycles": 0,
+    "totalClasses": 9,
+    "totalInterfaces": 5,
+    "totalFunctions": 47,
+    "totalTypeGuards": 1,
+    "totalEnums": 1,
+    "totalConstants": 20,
+    "totalReExports": 4
   },
   "reachability": {
     "roots": [
       "src/index.ts"
     ],
-    "reachableCount": 14,
-    "dormantCount": 7,
+    "reachableCount": 15,
+    "dormantCount": 4,
     "orphaned": [
-      "bundle/index.mjs",
-      "scripts/bundle.mjs",
-      "scripts/check-dependencies.js",
-      "scripts/verify-mathts-coverage.mjs",
       "src/types.ts",
       "test/correctness-tests.js",
-      "test/integration-test.js"
+      "test/integration-test.js",
+      "test/mcp-protocol-test.js"
     ],
     "testOnly": []
   },

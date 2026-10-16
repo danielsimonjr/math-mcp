@@ -6,7 +6,7 @@
  * - Token bucket rate limiting (requests per time window) -- ENFORCED
  * - Concurrent request limits (max in-flight requests)    -- ENFORCED
  *
- * Both are enforced through {@link withRateLimit}, which `src/index.ts` wraps
+ * Both are enforced through {@link withRateLimit}, which `src/register-tools.ts` wraps
  * around every tool invocation.
  *
  * NOT enforced: request queueing. `allowQueue()`, `queueRequest()` and

@@ -13,6 +13,34 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **The architecture documents describe the current code.** `OVERVIEW.md` and `ARCHITECTURE.md`
+  in `docs/architecture/` named the retired `repo_map.py` tool and the old bundle path. Their
+  counts came from before the `plugin/` move, so `repo-tools check` failed 7 claims. Both
+  documents are rewritten from the dependency graph. They now cover `register-tools.ts`, the
+  layer order, the four runtime packages, the data flow, the design decisions and the files that
+  have no importer. Each Verification block records the figures that `repo-tools check` verifies,
+  and the check exits 0. `docs/architecture/` now holds the full set of reports that
+  `repo-tools map` writes.
+- **`scripts/publish-version-guard.mjs` has summary lines** on `versionFromTag` and
+  `assertTagMatchesPackageVersion`. A code-docs scan of the whole repository now reports 0 MUST
+  issues, down from 7.
+- **The README, `CLAUDE.md`, `docs/COMPONENTS.md` and `docs/DATAFLOW.md` name the module that
+  registers the tools.** `src/register-tools.ts` registers the seven tools and applies the rate
+  limit and the error wrapper. The four files placed both tasks in `src/index.ts` or in
+  `src/rate-limiter.ts`. The README and `CLAUDE.md` also state that `src/types.ts` is an empty
+  module, not a module of shared types. The README and `docs/COMPONENTS.md` state that the rate
+  limiter rejects a call over the limits and never queues the call.
+
+- **Five exported symbols now have doc comments.** `logger.error`, `logger.warn`, `logger.info`,
+  `logger.debug` and `getPackageVersion` had none, so `repo-tools docs check src` failed with
+  5 MUST issues. In `src/utils.ts`, the line `declare const __PKG_VERSION__` sat between the
+  `getPackageVersion` comment and the function. The line now sits above the comment, and the
+  comment describes the version that the bundle build injects. The header of
+  `src/rate-limiter.ts` now names `src/register-tools.ts` as the caller of `withRateLimit`.
+  No code changed. `plugin/bundle/index.mjs` gains the four logger comment lines, because esbuild
+  keeps a comment that precedes an object-literal property. A stdio smoke test of the bundle,
+  before and after, returns the same server info, tool list and result.
+
 - **The Dependabot bun.lock workflow no longer leaves a PR BLOCKED.** GitHub holds the
   `pull_request` runs that the workflow's lockfile push triggers at `action_required`, and a
   `workflow_dispatch` run never reaches the PR's required checks. The workflow now approves the
@@ -36,6 +64,13 @@ Documentation in reverse chronological order (latest first).
   move, so neither is a regression from it.
 
 ### Notes
+
+- **`withTimeout` does not bound the engine call in four handlers.** `handleEvaluate`,
+  `handleSimplify`, `handleDerivative` and `handleUnitConversion` run the engine call first and
+  pass the finished result to `withTimeout`. The engine call is synchronous, so no timer fires
+  while the call runs. With `OPERATION_TIMEOUT=20`, a 400-by-400 matrix product through `evaluate`
+  ran 156 ms and returned the result. The size limits in `src/validation.ts` are the only guard.
+  `docs/architecture/ARCHITECTURE.md` records the behavior. A code fix is a separate change.
 
 - The `plugin/bundle/index.mjs` shipped by the `plugin/` move DOES match current `master`:
   the committed blob and a fresh rebuild are both `a9674fd2`, and two consecutive builds are

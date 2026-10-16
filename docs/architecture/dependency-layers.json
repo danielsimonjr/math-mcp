@@ -1,0 +1,751 @@
+{
+  "metadata": {
+    "name": "@danielsimonjr/math-mcp",
+    "version": "4.3.0",
+    "schemaVersion": "2.0.0",
+    "language": "typescript"
+  },
+  "entryPoints": [
+    {
+      "file": "src/index.ts",
+      "type": "main",
+      "description": "This is the main entry point for the Math MCP Server (entry `src/index.ts`,"
+    }
+  ],
+  "modules": {
+    "root": {
+      "src/errors.ts": {
+        "description": "This module defines specialized error classes to categorize different types",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": [
+          "MathMCPError",
+          "ValidationError",
+          "TimeoutError",
+          "SizeLimitError",
+          "ComplexityError",
+          "RateLimitError"
+        ],
+        "classes": [
+          "MathMCPError",
+          "ValidationError",
+          "TimeoutError",
+          "SizeLimitError",
+          "ComplexityError",
+          "RateLimitError"
+        ]
+      },
+      "src/expression-cache.ts": {
+        "description": "Caches compiled expressions to avoid repeated parsing overhead.",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./utils.js",
+            "imports": [
+              "logger"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "LRUCache",
+          "expressionCache",
+          "generateCacheKey",
+          "getCachedExpression",
+          "getCacheStats"
+        ],
+        "classes": [
+          "LRUCache"
+        ],
+        "functions": [
+          "generateCacheKey",
+          "getCachedExpression",
+          "getCacheStats"
+        ],
+        "constants": [
+          "expressionCache"
+        ]
+      },
+      "src/handler-utils.ts": {
+        "description": "handler-utils module",
+        "externalDependencies": [
+          {
+            "package": "@modelcontextprotocol/server",
+            "imports": [
+              "CallToolResult"
+            ]
+          }
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./utils.js",
+            "imports": [
+              "logger",
+              "perfTracker"
+            ]
+          },
+          {
+            "file": "./errors.js",
+            "imports": [
+              "MathMCPError"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "successResponse",
+          "errorResponse",
+          "executeHandler",
+          "withErrorHandling"
+        ],
+        "interfaces": [
+          "HandlerOptions"
+        ],
+        "functions": [
+          "successResponse",
+          "errorResponse",
+          "executeHandler",
+          "withErrorHandling"
+        ]
+      },
+      "src/health.ts": {
+        "description": "Provides:",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./utils.js",
+            "imports": [
+              "logger"
+            ]
+          },
+          {
+            "file": "./rate-limiter.js",
+            "imports": [
+              "globalRateLimiter"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "getHealthStatus",
+          "getLiveness",
+          "getReadiness"
+        ],
+        "interfaces": [
+          "HealthCheck",
+          "HealthResponse"
+        ],
+        "functions": [
+          "getHealthStatus",
+          "getLiveness",
+          "getReadiness"
+        ]
+      },
+      "src/math-engine.ts": {
+        "description": "`@danielsimonjr/mathts-compat` exposes `create(all)` to build a",
+        "externalDependencies": [
+          {
+            "package": "@danielsimonjr/mathts-compat",
+            "imports": [
+              "create",
+              "all",
+              "MathInstance"
+            ]
+          }
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": []
+      },
+      "src/rate-limiter.ts": {
+        "description": "Implements protection against DoS attacks:",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./utils.js",
+            "imports": [
+              "logger"
+            ]
+          },
+          {
+            "file": "./errors.js",
+            "imports": [
+              "RateLimitError"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "RateLimiter",
+          "withRateLimit",
+          "globalRateLimiter"
+        ],
+        "classes": [
+          "RateLimiter"
+        ],
+        "interfaces": [
+          "RateLimiterConfig"
+        ],
+        "functions": [
+          "withRateLimit"
+        ],
+        "constants": [
+          "globalRateLimiter"
+        ]
+      },
+      "src/register-tools.ts": {
+        "description": "register-tools module",
+        "externalDependencies": [
+          {
+            "package": "@modelcontextprotocol/server",
+            "imports": [
+              "CallToolResult",
+              "McpServer"
+            ]
+          },
+          {
+            "package": "zod/v4",
+            "imports": [
+              "*"
+            ]
+          }
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./rate-limiter.js",
+            "imports": [
+              "globalRateLimiter",
+              "withRateLimit"
+            ]
+          },
+          {
+            "file": "./tool-handlers.js",
+            "imports": [
+              "handleEvaluate",
+              "handleSimplify",
+              "handleDerivative",
+              "handleSolve",
+              "handleMatrixOperations",
+              "handleStatistics",
+              "handleUnitConversion",
+              "withErrorHandling"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "registerMathTools"
+        ],
+        "functions": [
+          "registerMathTools"
+        ]
+      },
+      "src/tool-handlers.ts": {
+        "description": "Each handler validates inputs, executes with timeout protection,",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./math-engine.js",
+            "imports": [
+              "default"
+            ]
+          },
+          {
+            "file": "./validation.js",
+            "imports": [
+              "validateExpression",
+              "validateScope",
+              "validateVariableName",
+              "validateMatrix",
+              "validateSquareMatrix",
+              "validateMatrixSize",
+              "validateMatrixCompatibility",
+              "validateNumberArray",
+              "validateArrayLength",
+              "validateEnum",
+              "safeJsonParse"
+            ]
+          },
+          {
+            "file": "./errors.js",
+            "imports": [
+              "ValidationError"
+            ]
+          },
+          {
+            "file": "./utils.js",
+            "imports": [
+              "withTimeout",
+              "DEFAULT_OPERATION_TIMEOUT"
+            ]
+          },
+          {
+            "file": "./expression-cache.js",
+            "imports": [
+              "getCachedExpression"
+            ]
+          },
+          {
+            "file": "./handler-utils.js",
+            "imports": [
+              "executeHandler",
+              "successResponse",
+              "ToolResponse"
+            ]
+          },
+          {
+            "file": "./handler-utils.js",
+            "imports": [
+              "ToolResponse",
+              "withErrorHandling"
+            ],
+            "reExport": true
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "ToolResponse",
+          "withErrorHandling",
+          "handleEvaluate",
+          "handleSimplify",
+          "handleDerivative",
+          "handleSolve",
+          "handleMatrixOperations",
+          "handleStatistics",
+          "handleUnitConversion"
+        ],
+        "reExported": [
+          "ToolResponse",
+          "withErrorHandling"
+        ],
+        "functions": [
+          "handleEvaluate",
+          "handleSimplify",
+          "handleDerivative",
+          "handleSolve",
+          "handleMatrixOperations",
+          "handleStatistics",
+          "handleUnitConversion"
+        ]
+      },
+      "src/types.ts": {
+        "description": "Holds interfaces that need to be referenced from multiple layers",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": []
+      },
+      "src/utils.ts": {
+        "description": "This module provides common utility functions including:",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./errors.js",
+            "imports": [
+              "TimeoutError"
+            ]
+          },
+          {
+            "file": "./shared/logger.js",
+            "imports": [
+              "logger"
+            ]
+          },
+          {
+            "file": "./shared/constants.js",
+            "imports": [
+              "DEFAULT_OPERATION_TIMEOUT"
+            ]
+          },
+          {
+            "file": "./shared/logger.js",
+            "imports": [
+              "logger"
+            ],
+            "reExport": true
+          },
+          {
+            "file": "./shared/logger.js",
+            "imports": [
+              "LogLevel"
+            ],
+            "reExport": true
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "logger",
+          "LogLevel",
+          "DEFAULT_OPERATION_TIMEOUT",
+          "withTimeout",
+          "perfTracker",
+          "getPackageVersion",
+          "formatNumber",
+          "isPlainObject"
+        ],
+        "reExported": [
+          "logger",
+          "LogLevel"
+        ],
+        "functions": [
+          "withTimeout",
+          "getPackageVersion",
+          "formatNumber",
+          "isPlainObject"
+        ],
+        "constants": [
+          "DEFAULT_OPERATION_TIMEOUT",
+          "perfTracker"
+        ]
+      },
+      "src/validation.ts": {
+        "description": "This module provides comprehensive validation functions to ensure all user inputs",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./errors.js",
+            "imports": [
+              "ValidationError",
+              "SizeLimitError",
+              "ComplexityError"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "LIMITS",
+          "safeJsonParse",
+          "validateMatrix",
+          "validateSquareMatrix",
+          "validateMatrixSize",
+          "validateMatrixCompatibility",
+          "validateNumberArray",
+          "validateArrayLength",
+          "validateExpression",
+          "validateVariableName",
+          "validateScope",
+          "validateEnum"
+        ],
+        "functions": [
+          "safeJsonParse",
+          "validateMatrix",
+          "validateSquareMatrix",
+          "validateMatrixSize",
+          "validateMatrixCompatibility",
+          "validateNumberArray",
+          "validateArrayLength",
+          "validateExpression",
+          "validateVariableName",
+          "validateScope",
+          "validateEnum"
+        ],
+        "constants": [
+          "LIMITS"
+        ]
+      }
+    },
+    "entry": {
+      "src/index.ts": {
+        "description": "This is the main entry point for the Math MCP Server (entry `src/index.ts`,",
+        "externalDependencies": [
+          {
+            "package": "@modelcontextprotocol/server",
+            "imports": [
+              "McpServer"
+            ]
+          },
+          {
+            "package": "@modelcontextprotocol/server/stdio",
+            "imports": [
+              "serveStdio"
+            ]
+          }
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "./telemetry/server.js",
+            "imports": [
+              "startTelemetryServer",
+              "stopTelemetryServer"
+            ]
+          },
+          {
+            "file": "./register-tools.js",
+            "imports": [
+              "registerMathTools"
+            ]
+          },
+          {
+            "file": "./utils.js",
+            "imports": [
+              "logger",
+              "getPackageVersion",
+              "perfTracker"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": []
+      }
+    },
+    "shared": {
+      "src/shared/constants.ts": {
+        "description": "No dependencies)",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": [
+          "DEFAULT_OPERATION_TIMEOUT",
+          "PERF_TRACKING_ENABLED",
+          "PERF_LOGGING_ENABLED"
+        ],
+        "constants": [
+          "DEFAULT_OPERATION_TIMEOUT",
+          "PERF_TRACKING_ENABLED",
+          "PERF_LOGGING_ENABLED"
+        ]
+      },
+      "src/shared/logger.ts": {
+        "description": "No dependencies)",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": [
+          "LogLevel",
+          "logger"
+        ],
+        "enums": [
+          "LogLevel"
+        ],
+        "constants": [
+          "logger"
+        ]
+      }
+    },
+    "telemetry": {
+      "src/telemetry/metrics.ts": {
+        "description": "Provides:",
+        "externalDependencies": [
+          {
+            "package": "prom-client",
+            "imports": [
+              "*"
+            ]
+          }
+        ],
+        "nodeDependencies": [],
+        "internalDependencies": [
+          {
+            "file": "../utils.js",
+            "imports": [
+              "logger"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "register",
+          "operationDuration",
+          "operationCount",
+          "rateLimitHits",
+          "rateLimitQueue",
+          "cacheOperations",
+          "cacheSize",
+          "errorCount",
+          "inputSize",
+          "activeConnections",
+          "mcpRequests",
+          "recordOperation",
+          "recordError",
+          "recordCacheOperation",
+          "recordRateLimitHit",
+          "recordInputSize",
+          "getMetrics",
+          "getMetricsJSON",
+          "resetMetrics"
+        ],
+        "functions": [
+          "recordOperation",
+          "recordError",
+          "recordCacheOperation",
+          "recordRateLimitHit",
+          "recordInputSize",
+          "getMetrics",
+          "getMetricsJSON",
+          "resetMetrics"
+        ],
+        "constants": [
+          "register",
+          "operationDuration",
+          "operationCount",
+          "rateLimitHits",
+          "rateLimitQueue",
+          "cacheOperations",
+          "cacheSize",
+          "errorCount",
+          "inputSize",
+          "activeConnections",
+          "mcpRequests"
+        ]
+      },
+      "src/telemetry/server.ts": {
+        "description": "Provides:",
+        "externalDependencies": [],
+        "nodeDependencies": [
+          {
+            "module": "http",
+            "imports": [
+              "createServer",
+              "IncomingMessage",
+              "ServerResponse"
+            ]
+          }
+        ],
+        "internalDependencies": [
+          {
+            "file": "../utils.js",
+            "imports": [
+              "logger"
+            ]
+          },
+          {
+            "file": "./metrics.js",
+            "imports": [
+              "getMetrics"
+            ]
+          },
+          {
+            "file": "../health.js",
+            "imports": [
+              "getHealthStatus",
+              "getLiveness",
+              "getReadiness"
+            ]
+          }
+        ],
+        "workspaceDependencies": [],
+        "exports": [
+          "TelemetryServer",
+          "startTelemetryServer",
+          "stopTelemetryServer",
+          "getTelemetryServer"
+        ],
+        "classes": [
+          "TelemetryServer"
+        ],
+        "interfaces": [
+          "TelemetryServerConfig"
+        ],
+        "functions": [
+          "startTelemetryServer",
+          "stopTelemetryServer",
+          "getTelemetryServer"
+        ]
+      }
+    },
+    "test": {
+      "test/correctness-tests.js": {
+        "description": "This test suite verifies that WASM-accelerated operations produce",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": []
+      },
+      "test/integration-test.js": {
+        "description": "Verifies each operation the MCP tools expose produces correct results across",
+        "externalDependencies": [],
+        "nodeDependencies": [],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": []
+      },
+      "test/mcp-protocol-test.js": {
+        "description": "mcp-protocol-test.js module",
+        "externalDependencies": [],
+        "nodeDependencies": [
+          {
+            "module": "child_process",
+            "imports": [
+              "spawn"
+            ]
+          },
+          {
+            "module": "events",
+            "imports": [
+              "once"
+            ]
+          }
+        ],
+        "internalDependencies": [],
+        "workspaceDependencies": [],
+        "exports": []
+      }
+    }
+  },
+  "cyclicComponents": {
+    "runtime": [],
+    "typeOnly": []
+  },
+  "layers": [
+    {
+      "name": "Root",
+      "files": [
+        "src/errors.ts",
+        "src/expression-cache.ts",
+        "src/handler-utils.ts",
+        "src/health.ts",
+        "src/math-engine.ts",
+        "src/rate-limiter.ts",
+        "src/register-tools.ts",
+        "src/tool-handlers.ts",
+        "src/types.ts",
+        "src/utils.ts",
+        "src/validation.ts"
+      ]
+    },
+    {
+      "name": "Entry",
+      "files": [
+        "src/index.ts"
+      ]
+    },
+    {
+      "name": "Shared",
+      "files": [
+        "src/shared/constants.ts",
+        "src/shared/logger.ts"
+      ]
+    },
+    {
+      "name": "Telemetry",
+      "files": [
+        "src/telemetry/metrics.ts",
+        "src/telemetry/server.ts"
+      ]
+    },
+    {
+      "name": "Test",
+      "files": [
+        "test/correctness-tests.js",
+        "test/integration-test.js",
+        "test/mcp-protocol-test.js"
+      ]
+    }
+  ]
+}

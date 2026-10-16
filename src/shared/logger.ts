@@ -98,24 +98,28 @@ function formatLogMessage(
  * @type {Object}
  */
 export const logger = {
+  /** Logs `message` at ERROR level, with optional `metadata`. */
   error(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.ERROR)) {
       console.error(formatLogMessage(LogLevel.ERROR, message, metadata));
     }
   },
 
+  /** Logs `message` at WARN level, with optional `metadata`. */
   warn(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.WARN)) {
       console.error(formatLogMessage(LogLevel.WARN, message, metadata));
     }
   },
 
+  /** Logs `message` at INFO level, with optional `metadata`. */
   info(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.INFO)) {
       console.error(formatLogMessage(LogLevel.INFO, message, metadata));
     }
   },
 
+  /** Logs `message` at DEBUG level, with optional `metadata`. */
   debug(message: string, metadata?: Record<string, unknown>): void {
     if (shouldLog(LogLevel.DEBUG)) {
       console.error(formatLogMessage(LogLevel.DEBUG, message, metadata));

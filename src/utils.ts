@@ -213,11 +213,14 @@ class PerformanceTracker {
  */
 export const perfTracker = new PerformanceTracker();
 
+declare const __PKG_VERSION__: string;
+
 /**
- * Reads version from package.json dynamically.
- * Ensures version consistency across the application.
+ * Returns the server version.
+ * The bundle build injects the version as `__PKG_VERSION__`. A run from `dist/`
+ * reads `package.json` one level up instead.
  *
- * @returns {Promise<string>} The version string from package.json
+ * @returns {Promise<string>} The version string
  *
  * @example
  * ```typescript
@@ -225,8 +228,6 @@ export const perfTracker = new PerformanceTracker();
  * // Returns: "2.1.0"
  * ```
  */
-declare const __PKG_VERSION__: string;
-
 export async function getPackageVersion(): Promise<string> {
   // The version is INJECTED at bundle time (scripts/bundle.mjs, esbuild `define`).
   // It used to be read from `../package.json` at runtime, which worked only because the

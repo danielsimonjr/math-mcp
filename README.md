@@ -42,7 +42,7 @@ statistics, and units. See [plugin/skills/math/SKILL.md](plugin/skills/math/SKIL
 ### Security
 - **Expression sandboxing:** AST validation blocks code injection, dangerous functions, and assignments (`src/validation.ts`).
 - **Input & size limits:** length, nesting-depth, matrix-dimension, and array-length caps prevent resource exhaustion. Oversized inputs are rejected up front (synchronous JS can't be interrupted, so protection is by **size limit**, not timeout).
-- **Rate limiting:** token-bucket limiter with configurable per-window, concurrency, and queue limits (`src/rate-limiter.ts`).
+- **Rate limiting:** token-bucket (per-window) and concurrency limits, applied to every tool call (`src/rate-limiter.ts`, `src/register-tools.ts`). A call over the limits is rejected, not queued.
 
 ### Performance & reliability
 - **Expression cache:** LRU cache for parsed/evaluated expressions (`src/expression-cache.ts`).
@@ -191,7 +191,9 @@ unit_conversion("50 mi/h", "km/h")            // "80.47 km/h"
 ```
 MCP client (stdio)
       ↓
-src/index.ts — MCP server + 7 tool definitions  (→ dist/index.js, the bin)
+src/index.ts — MCP server factory + stdio transport  (→ dist/index.js, the bin)
+      ↓
+src/register-tools.ts — the 7 tool definitions; rate limit + error wrapper per call
       ↓
 src/tool-handlers.ts — validate → compute → format, per tool
       ↓
@@ -206,7 +208,8 @@ src/math-engine.ts — MathTS instance (create(all), mathjs-compatible)
 ```
 math-mcp/
 ├── src/
-│   ├── index.ts            # MCP server + 7 tool definitions (→ dist/index.js, bin)
+│   ├── index.ts            # MCP server factory, stdio transport (→ dist/index.js, bin)
+│   ├── register-tools.ts   # The 7 tool definitions; rate limit + error wrapper per call
 │   ├── math-engine.ts      # Builds the MathTS instance (create(all))
 │   ├── tool-handlers.ts    # Business logic for the 7 tools
 │   ├── handler-utils.ts    # Shared handler helpers
@@ -214,12 +217,14 @@ math-mcp/
 │   ├── rate-limiter.ts     # Token-bucket rate limiting
 │   ├── expression-cache.ts # LRU cache for parsed/evaluated expressions
 │   ├── health.ts           # Health-check system
-│   ├── errors.ts / types.ts
+│   ├── errors.ts           # Error classes
+│   ├── types.ts            # Empty module (no importers)
 │   ├── shared/             # constants.ts, logger.ts
 │   └── telemetry/          # metrics.ts (Prometheus), server.ts (HTTP :9090)
 ├── test/
 │   ├── integration-test.js # Integration tests
 │   ├── correctness-tests.js
+│   ├── mcp-protocol-test.js
 │   ├── unit/               # Vitest unit tests
 │   └── security/           # Security tests (injection, DoS, fuzzing, bounds)
 ├── dist/                   # Compiled JavaScript (dist/index.js is the entry)

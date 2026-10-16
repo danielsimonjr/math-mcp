@@ -19,7 +19,7 @@ Comprehensive documentation of all components and modules in the Math MCP Server
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │                          Entry Point                                │
-│  index.ts (MCP server + 7 tool definitions → dist/index.js)        │
+│  index.ts · register-tools.ts (server + tools → dist/index.js)     │
 └───────────────────────────────────┬────────────────────────────────┘
                                     │
 ┌───────────────────────────────────▼────────────────────────────────┐
@@ -55,20 +55,20 @@ The server's one and only entry point.
 | Property | Value |
 |----------|-------|
 | **Location** | `src/index.ts` |
-| **Purpose** | MCP server setup + the 7 tool definitions |
+| **Purpose** | MCP server factory, stdio transport, telemetry start and stop |
 | **Output** | `dist/index.js` (also the package `bin`, run via `npm start` / `node dist/index.js`) |
-| **Dependencies** | MCP SDK, tool-handlers.ts, rate-limiter.ts, telemetry/server.ts |
+| **Dependencies** | MCP SDK, register-tools.ts, telemetry/server.ts, utils.ts |
 
 **Key Functions:**
 ```typescript
-async function createServer(): Promise<Server>
-function registerHandlers(server: Server): void
+function createMathMcpServer(version: string): McpServer
+function logPerformanceStats(): void
 async function main(): Promise<void>
 ```
 
 **Startup:** After the MCP transport connects, `startTelemetryServer()` is called (no-op unless `ENABLE_TELEMETRY=true`). SIGINT/SIGTERM handlers call `stopTelemetryServer()` to release the port cleanly on shutdown.
 
-**Tool Definitions:**
+**Tool Definitions** (`registerMathTools` in `src/register-tools.ts` registers them):
 | Tool | Description |
 |------|-------------|
 | `evaluate` | Evaluate expressions |
@@ -79,7 +79,21 @@ async function main(): Promise<void>
 | `statistics` | Statistical calculations |
 | `unit_conversion` | Unit conversion |
 
-Every tool call is routed through `withRateLimit(globalRateLimiter, …)` (`rate-limiter.ts`) before dispatch to its handler in `tool-handlers.ts`. There is no acceleration/tier layer — MathTS handles all computation directly.
+In `register-tools.ts`, `callTool` routes every tool call through `withRateLimit(globalRateLimiter, …)` (`rate-limiter.ts`) and `withErrorHandling`, then dispatches to its handler in `tool-handlers.ts`. There is no acceleration/tier layer — MathTS handles all computation directly.
+
+### `register-tools.ts`
+
+Registers the 7 tools on the MCP server.
+
+| Property | Value |
+|----------|-------|
+| **Location** | `src/register-tools.ts` |
+| **Purpose** | Tool schemas (zod). Applies the rate limit and the error wrapper to each call. |
+| **Dependencies** | MCP SDK, zod, rate-limiter.ts, tool-handlers.ts |
+
+```typescript
+function registerMathTools(server: McpServer): void
+```
 
 ---
 
@@ -251,9 +265,9 @@ class RateLimiter {
 async function withRateLimit<T>(limiter: RateLimiter, fn: () => Promise<T>): Promise<T>
 ```
 
-**Default Configuration:** 100 requests / 60s window, max 10 concurrent, max 50 queued. Overridable via `MAX_REQUESTS_PER_WINDOW`, `RATE_LIMIT_WINDOW_MS`, `MAX_CONCURRENT_REQUESTS`, `MAX_QUEUE_SIZE`.
+**Default Configuration:** 100 requests / 60s window, max 10 concurrent, max 50 queued. Overridable via `MAX_REQUESTS_PER_WINDOW`, `RATE_LIMIT_WINDOW_MS`, `MAX_CONCURRENT_REQUESTS`, `MAX_QUEUE_SIZE`. Nothing in `src/` calls the queue methods, so a call over the limits is rejected and never queued.
 
-The exported `globalRateLimiter` instance wraps every tool call from `index.ts`.
+The exported `globalRateLimiter` instance wraps every tool call from `register-tools.ts`.
 
 ---
 

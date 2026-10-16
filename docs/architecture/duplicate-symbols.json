@@ -1,9 +1,46 @@
 {
-  "generated": "2026-08-05",
-  "note": "Groups names OWN-exported by >=2 'src' files, by name only. Unlike CDG's create-dependency-graph.ts, this does NOT classify entries (TRUE_DUPLICATE / ALIAS_DELEGATION / ALLOWLISTED) or attach a category/public flag -- that needs AST body comparison this stage's flat export-name list does not carry. Every name below is a candidate for human triage, not a pre-sorted verdict.",
+  "note": "`duplicates` groups the names OWN-exported by >=2 'src' files, by name only, with no classification. `runtime` and `types` hold depgraph's classified lists of the same kind of names (see classificationNote); only TRUE_DUPLICATE entries there are merge targets.",
+  "classificationNote": "This report groups names by OWN definition, not by call graph, then classifies each flagged name (see DupEntryTag): TRUE_DUPLICATE (the actionable merge targets), DISPATCH_VARIANT (>=2 mathTyped(...) registrations of the same public name \u2014 distinct dispatch surfaces, Bucket C delegation candidates, not copy-paste bodies), ALIAS_DELEGATION (a const-alias forward to an imported symbol, not an independent body \u2014 excluded once fewer than 2 real bodies remain), and ALLOWLISTED (matches duplicate-allowlist.json: hot-path is* guards, AssemblyScript mirrors, per-package VERSION strings). NOT detected: same-file typed-dispatch overload polymorphism for different argument shapes within one registration \u2014 a human still triages TRUE_DUPLICATE entries using the defining files + public flags before merging anything.",
   "summary": {
     "duplicateCount": 0,
-    "totalSymbols": 81
+    "totalSymbols": 82,
+    "runtimeDuplicates": 0,
+    "typeDuplicates": 0,
+    "runtimeByTag": {
+      "TRUE_DUPLICATE": 0,
+      "DISPATCH_VARIANT": 0,
+      "ALIAS_DELEGATION": 1,
+      "ALLOWLISTED": 0
+    },
+    "typeByTag": {
+      "TRUE_DUPLICATE": 0,
+      "DISPATCH_VARIANT": 0,
+      "ALIAS_DELEGATION": 0,
+      "ALLOWLISTED": 0
+    }
   },
-  "duplicates": {}
+  "duplicates": {},
+  "runtime": [
+    {
+      "name": "DEFAULT_OPERATION_TIMEOUT",
+      "category": "constant",
+      "definers": [
+        {
+          "file": "src/shared/constants.ts",
+          "package": "unknown",
+          "public": false,
+          "tag": "PLAIN"
+        },
+        {
+          "file": "src/utils.ts",
+          "package": "unknown",
+          "public": false,
+          "tag": "ALIAS_DELEGATION"
+        }
+      ],
+      "canonicalHint": "internal-only",
+      "tag": "ALIAS_DELEGATION"
+    }
+  ],
+  "types": []
 }

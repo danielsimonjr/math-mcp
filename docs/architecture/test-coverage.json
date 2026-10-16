@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "totalSourceFiles": 19,
+    "totalTestFiles": 15,
+    "testedCount": 11,
+    "untestedCount": 8,
+    "coveragePercent": "57.9",
+    "effectiveCoverage": {
+      "policyLoaded": false,
+      "activeFiles": 19,
+      "testedActive": 11,
+      "activeUntested": 8,
+      "excludedTotal": 0,
+      "percent": "57.9",
+      "breakdown": {
+        "active_untested": 8
+      }
+    }
+  },
+  "untestedFiles": [
+    "src/index.ts",
+    "src/math-engine.ts",
+    "src/register-tools.ts",
+    "src/telemetry/server.ts",
+    "src/types.ts",
+    "test/correctness-tests.js",
+    "test/integration-test.js",
+    "test/mcp-protocol-test.js"
+  ],
+  "testedFiles": [
+    "src/errors.ts",
+    "src/expression-cache.ts",
+    "src/handler-utils.ts",
+    "src/health.ts",
+    "src/rate-limiter.ts",
+    "src/shared/constants.ts",
+    "src/shared/logger.ts",
+    "src/telemetry/metrics.ts",
+    "src/tool-handlers.ts",
+    "src/utils.ts",
+    "src/validation.ts"
+  ],
+  "coverageMap": {
+    "src/errors.ts": [
+      "test/security/dos.test.ts",
+      "test/unit/errors.test.ts",
+      "test/unit/handler-utils.test.ts",
+      "test/unit/rate-limiter.test.ts",
+      "test/unit/utils.test.ts",
+      "test/unit/validation.test.ts"
+    ],
+    "src/expression-cache.ts": [
+      "test/unit/expression-cache.test.ts"
+    ],
+    "src/handler-utils.ts": [
+      "test/security/bounds.test.ts",
+      "test/security/dos.test.ts",
+      "test/security/fuzzing.test.ts",
+      "test/security/injection.test.ts",
+      "test/unit/handler-utils.test.ts",
+      "test/unit/solver.test.ts"
+    ],
+    "src/health.ts": [
+      "test/unit/health.test.ts"
+    ],
+    "src/index.ts": [],
+    "src/math-engine.ts": [],
+    "src/rate-limiter.ts": [
+      "test/security/dos.test.ts",
+      "test/unit/rate-limiter.test.ts"
+    ],
+    "src/register-tools.ts": [],
+    "src/shared/constants.ts": [
+      "test/unit/shared/constants.test.ts"
+    ],
+    "src/shared/logger.ts": [
+      "test/security/dos.test.ts",
+      "test/unit/shared/logger.test.ts",
+      "test/unit/utils.test.ts"
+    ],
+    "src/telemetry/metrics.ts": [
+      "test/unit/telemetry/metrics.test.ts"
+    ],
+    "src/telemetry/server.ts": [],
+    "src/tool-handlers.ts": [
+      "test/security/bounds.test.ts",
+      "test/security/dos.test.ts",
+      "test/security/fuzzing.test.ts",
+      "test/security/injection.test.ts",
+      "test/unit/solver.test.ts"
+    ],
+    "src/types.ts": [],
+    "src/utils.ts": [
+      "test/security/dos.test.ts",
+      "test/unit/utils.test.ts"
+    ],
+    "src/validation.ts": [
+      "test/unit/validation.test.ts"
+    ],
+    "test/correctness-tests.js": [],
+    "test/integration-test.js": [],
+    "test/mcp-protocol-test.js": []
+  },
+  "testToSourceMap": {
+    "test/security/bounds.test.ts": [
+      "src/tool-handlers.ts",
+      "src/handler-utils.ts"
+    ],
+    "test/security/dos.test.ts": [
+      "src/tool-handlers.ts",
+      "src/handler-utils.ts",
+      "src/rate-limiter.ts",
+      "src/errors.ts",
+      "src/utils.ts",
+      "src/shared/logger.ts"
+    ],
+    "test/security/fuzzing.test.ts": [
+      "src/tool-handlers.ts",
+      "src/handler-utils.ts"
+    ],
+    "test/security/injection.test.ts": [
+      "src/tool-handlers.ts",
+      "src/handler-utils.ts"
+    ],
+    "test/unit/errors.test.ts": [
+      "src/errors.ts"
+    ],
+    "test/unit/expression-cache.test.ts": [
+      "src/expression-cache.ts"
+    ],
+    "test/unit/handler-utils.test.ts": [
+      "src/handler-utils.ts",
+      "src/errors.ts"
+    ],
+    "test/unit/health.test.ts": [
+      "src/health.ts"
+    ],
+    "test/unit/rate-limiter.test.ts": [
+      "src/rate-limiter.ts",
+      "src/errors.ts"
+    ],
+    "test/unit/shared/constants.test.ts": [
+      "src/shared/constants.ts"
+    ],
+    "test/unit/shared/logger.test.ts": [
+      "src/shared/logger.ts"
+    ],
+    "test/unit/solver.test.ts": [
+      "src/tool-handlers.ts",
+      "src/handler-utils.ts"
+    ],
+    "test/unit/telemetry/metrics.test.ts": [
+      "src/telemetry/metrics.ts"
+    ],
+    "test/unit/utils.test.ts": [
+      "src/utils.ts",
+      "src/shared/logger.ts",
+      "src/errors.ts"
+    ],
+    "test/unit/validation.test.ts": [
+      "src/validation.ts",
+      "src/errors.ts"
+    ]
+  },
+  "classifiedUntested": [
+    {
+      "file": "src/index.ts",
+      "category": null
+    },
+    {
+      "file": "src/math-engine.ts",
+      "category": null
+    },
+    {
+      "file": "src/register-tools.ts",
+      "category": null
+    },
+    {
+      "file": "src/telemetry/server.ts",
+      "category": null
+    },
+    {
+      "file": "src/types.ts",
+      "category": null
+    },
+    {
+      "file": "test/correctness-tests.js",
+      "category": null
+    },
+    {
+      "file": "test/integration-test.js",
+      "category": null
+    },
+    {
+      "file": "test/mcp-protocol-test.js",
+      "category": null
+    }
+  ]
+}
