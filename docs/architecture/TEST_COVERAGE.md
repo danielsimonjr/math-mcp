@@ -8,30 +8,27 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Source Files | 19 |
+| Total Source Files | 16 |
 | Total Test Files | 15 |
 | Source Files with Tests | 11 |
-| Source Files without Tests | 8 |
-| Coverage (raw, direct-import) | **57.9%** |
+| Source Files without Tests | 5 |
+| Coverage (raw, direct-import) | **68.8%** |
 ---
 
 ## Source Files Without Test Coverage
 
-The following 8 source files are not directly imported by any test file:
+The following 5 source files are not directly imported by any test file:
 
 ### root/
 
-- `src/index.ts` → Expected test: `tests/unit/root/index.test.ts`
-- `src/math-engine.ts` → Expected test: `tests/unit/root/math-engine.test.ts`
-- `src/register-tools.ts` → Expected test: `tests/unit/root/register-tools.test.ts`
-- `src/types.ts` → Expected test: `tests/unit/root/types.test.ts`
-- `test/correctness-tests.js` → Expected test: `tests/unit/root/correctness-tests.js.test.ts`
-- `test/integration-test.js` → Expected test: `tests/unit/root/integration-test.js.test.ts`
-- `test/mcp-protocol-test.js` → Expected test: `tests/unit/root/mcp-protocol-test.js.test.ts`
+- `src/index.ts`
+- `src/math-engine.ts`
+- `src/register-tools.ts`
+- `src/types.ts`
 
 ### telemetry/
 
-- `src/telemetry/server.ts` → Expected test: `tests/unit/telemetry/server.test.ts`
+- `src/telemetry/server.ts`
 
 ---
 

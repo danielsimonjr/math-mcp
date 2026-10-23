@@ -657,45 +657,6 @@
           "getTelemetryServer"
         ]
       }
-    },
-    "test": {
-      "test/correctness-tests.js": {
-        "description": "This test suite verifies that WASM-accelerated operations produce",
-        "externalDependencies": [],
-        "nodeDependencies": [],
-        "internalDependencies": [],
-        "workspaceDependencies": [],
-        "exports": []
-      },
-      "test/integration-test.js": {
-        "description": "Verifies each operation the MCP tools expose produces correct results across",
-        "externalDependencies": [],
-        "nodeDependencies": [],
-        "internalDependencies": [],
-        "workspaceDependencies": [],
-        "exports": []
-      },
-      "test/mcp-protocol-test.js": {
-        "description": "mcp-protocol-test.js module",
-        "externalDependencies": [],
-        "nodeDependencies": [
-          {
-            "module": "child_process",
-            "imports": [
-              "spawn"
-            ]
-          },
-          {
-            "module": "events",
-            "imports": [
-              "once"
-            ]
-          }
-        ],
-        "internalDependencies": [],
-        "workspaceDependencies": [],
-        "exports": []
-      }
     }
   },
   "cyclicComponents": {
@@ -737,14 +698,6 @@
       "files": [
         "src/telemetry/metrics.ts",
         "src/telemetry/server.ts"
-      ]
-    },
-    {
-      "name": "Test",
-      "files": [
-        "test/correctness-tests.js",
-        "test/integration-test.js",
-        "test/mcp-protocol-test.js"
       ]
     }
   ]

@@ -369,6 +369,7 @@ modules:
         - validateVariableName
         - validateScope
         - validateEnum
+  tests:
     test/correctness-tests.js:
       externalDependencies: []
       nodeDependencies: []
@@ -386,7 +387,6 @@ modules:
         - node:events
       internalDependencies: []
       exports: []
-  tests:
     test/security/bounds.test.ts:
       externalDependencies:
         - vitest
@@ -640,13 +640,13 @@ statistics:
   totalExports: 89
   entryRoots: 1
   reachableFiles: 15
-  dormantFiles: 4
-  orphanedFiles: 4
+  dormantFiles: 1
+  orphanedFiles: 1
   testOnlyFiles: 0
   runtimeCircularDeps: 0
   typeOnlyCircularDeps: 0
   totalTypeOnlyImports: 0
-  noImporterFileCount: 4
+  noImporterFileCount: 1
   unusedExportsCount: 14
   circularDepsTruncated: false
   runtimeCyclicComponents: 0
@@ -664,11 +664,8 @@ reachability:
   roots:
     - src/index.ts
   reachableCount: 15
-  dormantCount: 4
+  dormantCount: 1
   orphaned:
     - src/types.ts
-    - test/correctness-tests.js
-    - test/integration-test.js
-    - test/mcp-protocol-test.js
   testOnly: []
 warnings: []

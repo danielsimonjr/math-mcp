@@ -13,6 +13,15 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **The orphan counts in `docs/architecture/` are 1, and the reports are regenerated.** On this tree,
+  `repo-tools check` passes with version 2.2.6 and earlier and fails with 2.2.7 and later: `OVERVIEW.md`
+  claimed 4 orphans and 4 files with no importer, and the tool reports 1. Version 2.2.7 reads a folder
+  named `test/` as tests, as version 1.x did. The three drivers in `test/` (`correctness-tests.js`,
+  `integration-test.js` and `mcp-protocol-test.js`) counted as source files and as orphans before.
+  Only `src/types.ts` is an orphan now. The claims in `OVERVIEW.md` are 1 and 1, the two sentences that
+  said "four files" now say one, and the generated reports in `docs/architecture/` are regenerated with
+  version 2.3.0 (`Total Source Files` 19 to 16, `Coverage (raw, direct-import)` 57.9% to 68.8%).
+  The claims now need repo-tools 2.2.7 or later; with 2.2.6 or earlier the check reports 1 against 4.
 - **The architecture documents describe the current code.** `OVERVIEW.md` and `ARCHITECTURE.md`
   in `docs/architecture/` named the retired `repo_map.py` tool and the old bundle path. Their
   counts came from before the `plugin/` move, so `repo-tools check` failed 7 claims. Both
