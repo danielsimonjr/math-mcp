@@ -51,11 +51,11 @@ Each file imports only files in a lower layer. The graph has no circular depende
 - **Four exported telemetry symbols have no use.** Each symbol occurs once in the repository, at its own declaration. A search of the whole repository confirms the result. The symbols are `activeConnections`, `mcpRequests` and `rateLimitQueue` in `telemetry/metrics.ts`, and `getTelemetryServer` in `telemetry/server.ts`. The three metrics are declared. No code increments or reads them. The `prom-client` constructors register each metric with the registry. A scrape of `/metrics` therefore shows the metrics as series that stay at zero. To remove the series, delete the declarations. Deleting only the `export` keyword leaves the series.
 - **`src/types.ts` is an empty module** with no importer (see OVERVIEW.md).
 - **The repository has no duplicate symbol.** `duplicate-symbols.json` lists none.
-- **Four files are orphans.** `src/types.ts` is unused. The three drivers in `test/` run by direct execution.
+- **One file is an orphan.** `src/types.ts` is unused. The three drivers in `test/` run by direct execution, and `repo-tools map` reads them as tests.
 
 ## Verification
 
-Generated 2026-10-16 by `repo-tools map`.
+Generated 2026-10-23 by `repo-tools map`.
 Regenerate: `repo-tools map . --out=docs/architecture` · Check: `repo-tools check . --docs=docs/architecture`
 
 | Claim | Value | Source |

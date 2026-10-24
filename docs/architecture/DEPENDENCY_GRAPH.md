@@ -18,11 +18,10 @@ This document provides a comprehensive dependency graph of all files, components
 4. [Entry Dependencies](#entry-dependencies)
 5. [Shared Dependencies](#shared-dependencies)
 6. [Telemetry Dependencies](#telemetry-dependencies)
-7. [Test Dependencies](#test-dependencies)
-8. [Dependency Matrix](#dependency-matrix)
-9. [Circular Dependency Analysis](#circular-dependency-analysis)
-10. [Visual Dependency Graph](#visual-dependency-graph)
-11. [Summary Statistics](#summary-statistics)
+7. [Dependency Matrix](#dependency-matrix)
+8. [Circular Dependency Analysis](#circular-dependency-analysis)
+9. [Visual Dependency Graph](#visual-dependency-graph)
+10. [Summary Statistics](#summary-statistics)
 
 ---
 
@@ -35,7 +34,6 @@ The codebase is organized into the following modules:
 - **entry**: 1 file
 - **shared**: 2 files
 - **telemetry**: 2 files
-- **test**: 3 files
 
 ---
 
@@ -296,28 +294,6 @@ The codebase is organized into the following modules:
 
 ---
 
-<a id="test-dependencies"></a>
-
-## Test Dependencies
-
-### `test/correctness-tests.js` - This test suite verifies that WASM-accelerated operations produce
-
----
-
-### `test/integration-test.js` - Verifies each operation the MCP tools expose produces correct results across
-
----
-
-### `test/mcp-protocol-test.js` - mcp-protocol-test.js module
-
-**Node.js Built-in Dependencies:**
-| Module | Import |
-|--------|--------|
-| `child_process` | `spawn` |
-| `events` | `once` |
-
----
-
 <a id="dependency-matrix"></a>
 ## Dependency Matrix
 
@@ -341,9 +317,6 @@ The codebase is organized into the following modules:
 | `src/shared/constants` | 0 files | 1 file |
 | `src/shared/logger` | 0 files | 1 file |
 | `src/types` | 0 files | 0 files |
-| `test/correctness-tests.js` | 0 files | 0 files |
-| `test/integration-test.js` | 0 files | 0 files |
-| `test/mcp-protocol-test.js` | 0 files | 0 files |
 
 ---
 
@@ -386,12 +359,6 @@ graph TD
         N15[server]
     end
 
-    subgraph Test
-        N16[correctness-tests.js]
-        N17[integration-test.js]
-        N18[mcp-protocol-test.js]
-    end
-
     N1 --> N9
     N2 --> N9
     N2 --> N0
@@ -426,7 +393,7 @@ graph TD
 | Category | Count |
 |----------|-------|
 | Total Source Files | 39 |
-| Subsystems | 5 |
+| Subsystems | 4 |
 | Total Lines of Code | 10857 |
 | Total Exports | 89 |
 | Total Re-exports | 4 |

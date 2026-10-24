@@ -51,16 +51,16 @@ The 16 files under `src/` hold 3,658 lines. The count comes from `file-inventory
 
 The files in this directory that `repo-tools map` writes are generated. Do not edit them by hand. Regenerate them.
 
-Four files have no importer. A search of the repository confirms each result.
+One file has no importer. A search of the repository confirms the result.
 
 - **`src/types.ts` has no importer and no export.** The module is empty. The docstring says the file holds shared interfaces. The file holds none. A person can delete the file, or can move shared interfaces into the file.
-- **The three drivers in `test/` run by direct execution.** The npm scripts `test`, `test:correctness` and `test:mcp` start them. A static import analysis cannot see a script entry.
+- **The three drivers in `test/` run by direct execution.** The npm scripts `test`, `test:correctness` and `test:mcp` start them. A static import analysis cannot see a script entry. `repo-tools map` reads the `test/` folder as tests and does not list the drivers as orphans.
 
-`repo-tools map` reports the four files as orphans and as files with no importer. The other 35 files have an importer or a known role.
+`repo-tools map` reports `src/types.ts` as an orphan and as a file with no importer. The other 38 files have an importer or a known role.
 
 ## Verification
 
-Generated 2026-10-16 by `repo-tools map`.
+Generated 2026-10-23 by `repo-tools map`.
 Regenerate: `repo-tools map . --out=docs/architecture` · Check: `repo-tools check . --docs=docs/architecture`
 
 | Claim | Value | Source |
@@ -69,5 +69,5 @@ Regenerate: `repo-tools map . --out=docs/architecture` · Check: `repo-tools che
 | totalTypeScriptFiles | 39 | dependency-graph.json |
 | totalLinesOfCode | 10857 | dependency-graph.json |
 | entryRoots | 1 | dependency-graph.json |
-| orphanedFiles | 4 | dependency-graph.json |
-| noImporterFileCount | 4 | unused-analysis.json |
+| orphanedFiles | 1 | dependency-graph.json |
+| noImporterFileCount | 1 | unused-analysis.json |

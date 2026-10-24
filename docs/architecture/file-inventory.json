@@ -4,8 +4,8 @@
     "reachable": 14,
     "build-entry": 1,
     "test-only": 0,
-    "orphan": 4,
-    "test": 15,
+    "orphan": 1,
+    "test": 18,
     "tool": 5,
     "config": 0,
     "bench": 0,
@@ -13,8 +13,8 @@
   },
   "byArea": {
     "tools": 5,
-    "src": 19,
-    "tests": 15
+    "src": 16,
+    "tests": 18
   },
   "byPackage": {
     "(root)": 23,
@@ -164,22 +164,22 @@
     {
       "file": "test/correctness-tests.js",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
+      "area": "tests",
+      "disposition": "test",
       "loc": 635
     },
     {
       "file": "test/integration-test.js",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
+      "area": "tests",
+      "disposition": "test",
       "loc": 94
     },
     {
       "file": "test/mcp-protocol-test.js",
       "package": "(root)",
-      "area": "src",
-      "disposition": "orphan",
+      "area": "tests",
+      "disposition": "test",
       "loc": 115
     },
     {

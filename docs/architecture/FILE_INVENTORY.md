@@ -17,8 +17,8 @@ This report lists each source file that the map census finds, with a disposition
 | `reachable` | 14 | A `src`-area file that an entry root reaches. |
 | `build-entry` | 1 | A `src`-area file that is an entry root. |
 | `test-only` | 0 | A `src`-area file that only a test reaches. |
-| `orphan` | 4 | A `src`-area file that nothing reaches. Delete it, or wire it to a root. |
-| `test` | 15 | A file in a `tests/` folder, or a `*.test.ts` or `*.spec.ts` file. |
+| `orphan` | 1 | A `src`-area file that nothing reaches. Delete it, or wire it to a root. |
+| `test` | 18 | A file in a `test/` or `tests/` folder, or a `*.test.ts` or `*.spec.ts` file. |
 | `tool` | 5 | A file in a `tools/` or `scripts/` folder outside `src/`. |
 | `config` | 0 | A `*.config.*` file of TypeScript or JavaScript. |
 | `example` | 0 | A file in `examples/` or `docs/`. |
@@ -29,8 +29,8 @@ This report lists each source file that the map census finds, with a disposition
 
 | Area | Files |
 | --- | --: |
-| `src` | 19 |
-| `tests` | 15 |
+| `src` | 16 |
+| `tests` | 18 |
 | `tools` | 5 |
 
 ## Per-package counts
@@ -64,9 +64,9 @@ This report lists each source file that the map census finds, with a disposition
 | `src/types.ts` | @danielsimonjr/math-mcp | src | orphan | 11 |
 | `src/utils.ts` | @danielsimonjr/math-mcp | src | reachable | 293 |
 | `src/validation.ts` | @danielsimonjr/math-mcp | src | reachable | 588 |
-| `test/correctness-tests.js` | (root) | src | orphan | 635 |
-| `test/integration-test.js` | (root) | src | orphan | 94 |
-| `test/mcp-protocol-test.js` | (root) | src | orphan | 115 |
+| `test/correctness-tests.js` | (root) | tests | test | 635 |
+| `test/integration-test.js` | (root) | tests | test | 94 |
+| `test/mcp-protocol-test.js` | (root) | tests | test | 115 |
 | `test/security/bounds.test.ts` | (root) | tests | test | 580 |
 | `test/security/dos.test.ts` | (root) | tests | test | 490 |
 | `test/security/fuzzing.test.ts` | (root) | tests | test | 442 |
