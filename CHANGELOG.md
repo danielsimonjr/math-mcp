@@ -7,6 +7,34 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+## [4.3.1] - 2026-10-24
+
+### Security
+
+- **The server bundle carries the fixed MCP server SDK and zod.** `bun audit` reported 11 advisories on this tree
+  (5 high, 5 moderate, 1 low) and reports none after this change. `bun.lock` moves `@modelcontextprotocol/server`
+  and its dependency `@modelcontextprotocol/core` from 2.0.0 to 2.3.0 and `zod` from 4.5.4 to 4.6.6. Both are runtime
+  dependencies, so the new `plugin/bundle/index.mjs` contains them. `source-map-js` (1.2.1 to 1.2.2) and `vite`
+  (8.2.2 to 8.2.4, with its `launch-editor`) are development dependencies, so no shipped file contains them. The
+  declared ranges (`^2.0.0` and `^4.2.0`) already admitted the fixed versions, so `package.json` changes only in
+  its version.
+  - Server SDK, fixed in 2.3.0 (affected `>=2.0.0 <2.3.0`): GHSA-jm63-cq47-j5jp (high), GHSA-46jr-4wx8-v453
+    (high) and GHSA-rvq5-wwqv-78pq (moderate). Their titles name HTTP clients, HTTP requests and bearer
+    authentication. This server serves over stdio only (`serveStdio`), so the bundle held no path that those
+    titles describe; the dependency moves anyway.
+  - `zod`, fixed in 4.6.6: GHSA-mrhx-c7xc-m3w5 (high), memory exhaustion while validating oversized constrained
+    collections.
+  - Development dependencies: GHSA-68fv-2mgg-jv7q (high, `source-map-js`) and, in `vite` and `launch-editor`,
+    GHSA-587h-7wmj-h5pm (high), GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-rq7h-c2jc-7f22 and
+    GHSA-vfpm-58rq-9qcg (moderate), and GHSA-9jrq-w75r-8gcw (low).
+  - Measured on the rebuilt bundle over stdio: the server reports `4.3.1`, lists the same 7 tools as the
+    previous bundle, and `evaluate` returns 14 for `2+3*4`. The build, `test`, `test:mcp`, `test:correctness`
+    and `lint` pass, and `vitest` runs 15 files with 475 tests, as before the change. The previous bundle
+    rebuilds byte for byte from the previous lock, so the new bundle differs only by the two packages above,
+    the version string and the identifier renames that `esbuild` makes when a module gains a name.
+  - The plugin reaches this fix through its own version: `plugin/.claude-plugin/plugin.json` moves to 4.3.1,
+    which is the version the bundle reports as `serverInfo.version`.
+
 ### Added
 
 - **A new CI job runs `repo-tools check` on the architecture documents, with the version pinned.** No other job read
