@@ -9,6 +9,13 @@ Documentation in reverse chronological order (latest first).
 
 ### Added
 
+- **A new CI job runs `repo-tools check` on the architecture documents, with the version pinned.** No other job read
+  `docs/architecture/`, so a claim that no longer matched the source turned no check red, and a release of `repo-tools`
+  moved the claims without any run. The job `architecture-docs claims (non-required)` in `ci.yml` installs
+  `@danielsimonjr/repo-tools@2.3.0` and runs `repo-tools check . --docs=docs/architecture` on a bare checkout, on every
+  trigger of the workflow. It is not a required check and it does not change branch protection. The pin moves only in a
+  pull request that also re-measures the documents. A planted `totalTypeScriptFiles` claim of 40 against 39 makes the
+  same command exit 1, and the unchanged tree exits 0.
 - **Publish to npm on a release tag.** The new workflow `.github/workflows/publish.yml` runs when a `v*` tag is pushed. It refuses a tag that is not exactly the `package.json` version (`scripts/publish-version-guard.mjs`). It skips the publish when that version is already on npm, so a re-run is harmless. It then installs, builds, tests, and runs `npm publish --provenance --access public`. The job needs the repository secret `NPM`. If the secret is empty, the first step fails with a clear message and nothing publishes.
 
 ### Fixed
