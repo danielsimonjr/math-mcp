@@ -20,6 +20,7 @@ Documentation in reverse chronological order (latest first).
 
 ### Fixed
 
+- **Vitest 5.0.5 stops the temp folder leak.** `vitest` and `@vitest/coverage-v8` move from 5.0.0 to 5.0.5 in `bun.lock`, and their ranges in `package.json` rise to `^5.0.5`. Vitest 5.0.0, 5.0.1 and 5.0.2 never remove the root temp folder of a run: each run left one folder, with the transformed modules in its `ssr/` subfolder, in the system temp directory. Measured with a fresh install of each version: two runs of one test file leave two new folders with 5.0.0, 5.0.1 and 5.0.2, and none with 5.0.3, 5.0.4 and 5.0.5. Dev tooling only. The 475 unit tests, the coverage run, the build and the integration tests pass with 5.0.5.
 - **The orphan counts in `docs/architecture/` are 1, and the reports are regenerated.** On this tree,
   `repo-tools check` passes with version 2.2.6 and earlier and fails with 2.2.7 and later: `OVERVIEW.md`
   claimed 4 orphans and 4 files with no importer, and the tool reports 1. Version 2.2.7 reads a folder
