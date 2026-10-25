@@ -14,7 +14,8 @@ Documentation in reverse chronological order (latest first).
   moves line breaks and nothing else: a bundle built from the formatted tree and the committed bundle have the
   same tokens (the sha256 of each, with all whitespace removed, is equal). `tsc --noEmit` is clean and the 475 unit tests pass.
   The committed `plugin/bundle/index.mjs` is not rebuilt, because the behaviour is the same. The job `Lint` has a
-  new step, `bun run format:check`.
+  new step, `bun run format:check`. The new line breaks change the line count of the sources from 10857 to 10848,
+  so the generated reports in `docs/architecture` are regenerated with `repo-tools` 2.3.0 and `OVERVIEW.md` states 10848.
 
 ### Security
 

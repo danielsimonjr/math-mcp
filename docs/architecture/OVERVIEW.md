@@ -67,7 +67,7 @@ Regenerate: `repo-tools map . --out=docs/architecture` · Check: `repo-tools che
 |---|---|---|
 | totalFiles | 39 | file-inventory.json |
 | totalTypeScriptFiles | 39 | dependency-graph.json |
-| totalLinesOfCode | 10857 | dependency-graph.json |
+| totalLinesOfCode | 10848 | dependency-graph.json |
 | entryRoots | 1 | dependency-graph.json |
 | orphanedFiles | 1 | dependency-graph.json |
 | noImporterFileCount | 1 | unused-analysis.json |
