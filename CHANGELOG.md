@@ -7,6 +7,14 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Security
+
+- **The last five GitHub Actions references that used a tag are pinned to a commit.** The workflow `ci.yml` named
+  `actions/checkout@v7`, `actions/setup-node@v7.1.0` and `actions/upload-artifact@v7`. It now names the commits of
+  `actions/checkout` v7.0.1, `actions/setup-node` v7.1.0 and `actions/upload-artifact` v7.0.2, each with its version
+  in a comment. Every `uses:` line in `.github/workflows` now names a 40-character commit. Dependabot keeps the
+  pins current.
+
 ## [4.3.1] - 2026-10-24
 
 ### Security
