@@ -7,6 +7,16 @@ Documentation in reverse chronological order (latest first).
 
 ## [Unreleased]
 
+### Changed
+
+- **The sources in `src` are formatted with Prettier, and the `Lint` job checks the format.** Twelve of the
+  sixteen files did not match `.prettierrc.json`, and no job ran `format:check`. The files now match. The change
+  moves line breaks and nothing else: a bundle built from the formatted tree and the committed bundle have the
+  same tokens (the sha256 of each, with all whitespace removed, is equal). `tsc --noEmit` is clean and the 475 unit tests pass.
+  The committed `plugin/bundle/index.mjs` is not rebuilt, because the behaviour is the same. The job `Lint` has a
+  new step, `bun run format:check`. The new line breaks change the line count of the sources from 10857 to 10848,
+  so the generated reports in `docs/architecture` are regenerated with `repo-tools` 2.3.0 and `OVERVIEW.md` states 10848.
+
 ### Security
 
 - **The last five GitHub Actions references that used a tag are pinned to a commit.** The workflow `ci.yml` named

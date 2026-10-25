@@ -4,7 +4,7 @@
 
 # @danielsimonjr/math-mcp - Dependency Graph
 
-**Version**: 4.3.0
+**Version**: 4.3.1
 
 This document provides a comprehensive dependency graph of all files, components, imports, functions, and variables in the codebase.
 
@@ -394,7 +394,7 @@ graph TD
 |----------|-------|
 | Total Source Files | 39 |
 | Subsystems | 4 |
-| Total Lines of Code | 10857 |
+| Total Lines of Code | 10848 |
 | Total Exports | 89 |
 | Total Re-exports | 4 |
 | Total Classes | 9 |
@@ -410,4 +410,4 @@ graph TD
 
 ---
 
-*Version*: 4.3.0
+*Version*: 4.3.1

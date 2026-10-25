@@ -201,10 +201,7 @@ export function recordOperation(
 ): void {
   const durationSeconds = durationMs / 1000;
 
-  operationDuration.observe(
-    { operation, tier, status },
-    durationSeconds
-  );
+  operationDuration.observe({ operation, tier, status }, durationSeconds);
 
   operationCount.inc({ operation, tier, status });
 
@@ -250,11 +247,7 @@ export function recordError(errorType: string, operation: string): void {
  * recordCacheOperation('expression', cached !== null, expressionCache.size);
  * ```
  */
-export function recordCacheOperation(
-  type: string,
-  hit: boolean,
-  size?: number
-): void {
+export function recordCacheOperation(type: string, hit: boolean, size?: number): void {
   const result = hit ? 'hit' : 'miss';
   cacheOperations.inc({ type, result });
 
@@ -315,7 +308,9 @@ export async function getMetrics(): Promise<string> {
  *
  * @returns Metrics as JSON array
  */
-export async function getMetricsJSON(): Promise<promClient.MetricObjectWithValues<promClient.MetricValue<string>>[]> {
+export async function getMetricsJSON(): Promise<
+  promClient.MetricObjectWithValues<promClient.MetricValue<string>>[]
+> {
   return register.getMetricsAsJSON();
 }
 

@@ -54,21 +54,21 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 206
+      "loc": 205
     },
     {
       "file": "src/expression-cache.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 224
+      "loc": 221
     },
     {
       "file": "src/handler-utils.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 84
+      "loc": 89
     },
     {
       "file": "src/health.ts",
@@ -96,21 +96,21 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 352
+      "loc": 346
     },
     {
       "file": "src/register-tools.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 154
+      "loc": 152
     },
     {
       "file": "src/shared/constants.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 42
+      "loc": 39
     },
     {
       "file": "src/shared/logger.ts",
@@ -124,21 +124,21 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 332
+      "loc": 327
     },
     {
       "file": "src/telemetry/server.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 334
+      "loc": 315
     },
     {
       "file": "src/tool-handlers.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 477
+      "loc": 510
     },
     {
       "file": "src/types.ts",
@@ -152,14 +152,14 @@
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 293
+      "loc": 290
     },
     {
       "file": "src/validation.ts",
       "package": "@danielsimonjr/math-mcp",
       "area": "src",
       "disposition": "reachable",
-      "loc": 588
+      "loc": 583
     },
     {
       "file": "test/correctness-tests.js",

@@ -27,7 +27,7 @@ export class MathMCPError extends Error {
    * The name of the error type
    * @type {string}
    */
-  override name = "MathMCPError";
+  override name = 'MathMCPError';
 
   /**
    * Creates a new MathMCPError instance
@@ -58,7 +58,7 @@ export class ValidationError extends MathMCPError {
    * The name of the error type
    * @type {string}
    */
-  override name = "ValidationError";
+  override name = 'ValidationError';
 
   /**
    * Creates a new ValidationError instance
@@ -89,7 +89,7 @@ export class TimeoutError extends MathMCPError {
    * The name of the error type
    * @type {string}
    */
-  override name = "TimeoutError";
+  override name = 'TimeoutError';
 
   /**
    * Creates a new TimeoutError instance
@@ -120,7 +120,7 @@ export class SizeLimitError extends ValidationError {
    * The name of the error type
    * @type {string}
    */
-  override name = "SizeLimitError";
+  override name = 'SizeLimitError';
 
   /**
    * Creates a new SizeLimitError instance
@@ -151,7 +151,7 @@ export class ComplexityError extends ValidationError {
    * The name of the error type
    * @type {string}
    */
-  override name = "ComplexityError";
+  override name = 'ComplexityError';
 
   /**
    * Creates a new ComplexityError instance
@@ -182,7 +182,7 @@ export class RateLimitError extends MathMCPError {
    * The name of the error type
    * @type {string}
    */
-  override name = "RateLimitError";
+  override name = 'RateLimitError';
 
   /**
    * Rate limiter statistics at time of error
@@ -203,4 +203,3 @@ export class RateLimitError extends MathMCPError {
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
-

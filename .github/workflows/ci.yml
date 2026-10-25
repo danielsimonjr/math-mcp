@@ -97,6 +97,9 @@ jobs:
       - name: Check TypeScript
         run: bun run type-check
 
+      - name: Check formatting
+        run: bun run format:check
+
   # Non-required on purpose. No other job reads the architecture documents, so a claim that drifts
   # from the source turns no check red. This job reads the committed documents against the committed
   # source and writes nothing. It needs no Bun and no `bun install`: the command runs on a bare

@@ -24,11 +24,11 @@
  * @since 2.0.0
  */
 
-import { McpServer } from "@modelcontextprotocol/server";
-import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { startTelemetryServer, stopTelemetryServer } from "./telemetry/server.js";
-import { registerMathTools } from "./register-tools.js";
-import { logger, getPackageVersion, perfTracker } from "./utils.js";
+import { McpServer } from '@modelcontextprotocol/server';
+import { serveStdio } from '@modelcontextprotocol/server/stdio';
+import { startTelemetryServer, stopTelemetryServer } from './telemetry/server.js';
+import { registerMathTools } from './register-tools.js';
+import { logger, getPackageVersion, perfTracker } from './utils.js';
 
 const TOOL_COUNT = 7;
 
@@ -45,7 +45,7 @@ const TOOLS_LIST_CACHE_TTL_MS = 5 * 60 * 1000;
 function createMathMcpServer(version: string): McpServer {
   const server = new McpServer(
     {
-      name: "math-mcp",
+      name: 'math-mcp',
       version,
     },
     {
@@ -53,8 +53,8 @@ function createMathMcpServer(version: string): McpServer {
         tools: {},
       },
       cacheHints: {
-        "tools/list": { ttlMs: TOOLS_LIST_CACHE_TTL_MS, cacheScope: "private" },
-        "server/discover": { ttlMs: TOOLS_LIST_CACHE_TTL_MS, cacheScope: "private" },
+        'tools/list': { ttlMs: TOOLS_LIST_CACHE_TTL_MS, cacheScope: 'private' },
+        'server/discover': { ttlMs: TOOLS_LIST_CACHE_TTL_MS, cacheScope: 'private' },
       },
     }
   );
@@ -70,14 +70,14 @@ function createMathMcpServer(version: string): McpServer {
 function logPerformanceStats(): void {
   const toolStats = perfTracker.getAllStats();
 
-  logger.info("Performance stats", {
+  logger.info('Performance stats', {
     topOperations: Array.from(toolStats.entries())
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 5)
       .map(([op, stats]) => ({
         operation: op,
         count: stats.count,
-        avgTime: stats.avgTime.toFixed(3) + "ms",
+        avgTime: stats.avgTime.toFixed(3) + 'ms',
       })),
   });
 }
@@ -100,21 +100,21 @@ async function main(): Promise<void> {
       await handle.close();
       process.exit(0);
     };
-    process.once("SIGINT", shutdown);
-    process.once("SIGTERM", shutdown);
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
 
-    logger.info("MathTS MCP Server running", {
+    logger.info('MathTS MCP Server running', {
       version,
-      transport: "stdio",
-      protocol: "2026-07-28 (MCP 2.0) with 2025-era stdio fallback",
+      transport: 'stdio',
+      protocol: '2026-07-28 (MCP 2.0) with 2025-era stdio fallback',
       tools: TOOL_COUNT,
     });
 
-    if (process.env.ENABLE_PERF_LOGGING === "true") {
+    if (process.env.ENABLE_PERF_LOGGING === 'true') {
       setInterval(logPerformanceStats, 5 * 60 * 1000);
     }
   } catch (error) {
-    logger.error("Failed to start server", {
+    logger.error('Failed to start server', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
@@ -123,7 +123,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  logger.error("Fatal error in main()", {
+  logger.error('Fatal error in main()', {
     error: error instanceof Error ? error.message : String(error),
     stack: error instanceof Error ? error.stack : undefined,
   });
