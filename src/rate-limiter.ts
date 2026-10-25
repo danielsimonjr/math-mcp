@@ -44,10 +44,10 @@ export interface RateLimiterConfig {
  * Conservative limits to prevent DoS while allowing legitimate use
  */
 const DEFAULT_CONFIG: RateLimiterConfig = {
-  maxRequestsPerWindow: 100,    // 100 requests
-  windowMs: 60000,               // per 60 seconds
-  maxConcurrent: 10,             // max 10 concurrent requests
-  maxQueueSize: 50,              // max 50 queued requests
+  maxRequestsPerWindow: 100, // 100 requests
+  windowMs: 60000, // per 60 seconds
+  maxConcurrent: 10, // max 10 concurrent requests
+  maxQueueSize: 50, // max 50 queued requests
 };
 
 /**
@@ -315,17 +315,11 @@ export class RateLimiter {
  * });
  * ```
  */
-export async function withRateLimit<T>(
-  limiter: RateLimiter,
-  fn: () => Promise<T>
-): Promise<T> {
+export async function withRateLimit<T>(limiter: RateLimiter, fn: () => Promise<T>): Promise<T> {
   // Check if request is allowed
   if (!limiter.allowRequest()) {
     const stats = limiter.getStats();
-    throw new RateLimitError(
-      'Rate limit exceeded. Please try again later.',
-      stats
-    );
+    throw new RateLimitError('Rate limit exceeded. Please try again later.', stats);
   }
 
   // Mark request as started

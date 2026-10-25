@@ -138,10 +138,7 @@ class PerformanceTracker {
    */
   recordOperation(operation: string, durationMs: number): void {
     this.operationCounts.set(operation, (this.operationCounts.get(operation) || 0) + 1);
-    this.operationTimes.set(
-      operation,
-      (this.operationTimes.get(operation) || 0) + durationMs
-    );
+    this.operationTimes.set(operation, (this.operationTimes.get(operation) || 0) + durationMs);
   }
 
   /**

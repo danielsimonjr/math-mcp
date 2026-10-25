@@ -151,10 +151,7 @@ export const expressionCache = new LRUCache<any>(
  * @param {Record<string, number>} [scope] - Optional scope variables
  * @returns {string} Cache key
  */
-export function generateCacheKey(
-  expression: string,
-  scope?: Record<string, number>
-): string {
+export function generateCacheKey(expression: string, scope?: Record<string, number>): string {
   if (scope && Object.keys(scope).length > 0) {
     // Include scope keys (not values) in cache key
     // Different scopes with same keys can share compiled expression

@@ -490,9 +490,7 @@ export function validateVariableName(variableName: string, context: string): str
 
   // Must contain only alphanumeric characters and underscores
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmed)) {
-    throw new ValidationError(
-      `${context} can only contain letters, numbers, and underscores`
-    );
+    throw new ValidationError(`${context} can only contain letters, numbers, and underscores`);
   }
 
   return trimmed;
@@ -515,10 +513,7 @@ export function validateVariableName(variableName: string, context: string): str
  * // Throws: ValidationError("scope variable 'x' must be a number...")
  * ```
  */
-export function validateScope(
-  scope: unknown,
-  context: string
-): Record<string, number> {
+export function validateScope(scope: unknown, context: string): Record<string, number> {
   if (typeof scope !== 'object' || scope === null || Array.isArray(scope)) {
     throw new ValidationError(`${context} must be an object`);
   }

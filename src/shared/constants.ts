@@ -18,10 +18,7 @@
  * @constant
  * @type {number}
  */
-export const DEFAULT_OPERATION_TIMEOUT = parseInt(
-  process.env.OPERATION_TIMEOUT || '30000',
-  10
-);
+export const DEFAULT_OPERATION_TIMEOUT = parseInt(process.env.OPERATION_TIMEOUT || '30000', 10);
 
 /**
  * Performance tracking configuration.

@@ -17,11 +17,7 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { logger } from '../utils.js';
 import { getMetrics } from './metrics.js';
-import {
-  getHealthStatus,
-  getLiveness,
-  getReadiness,
-} from '../health.js';
+import { getHealthStatus, getLiveness, getReadiness } from '../health.js';
 
 /**
  * Telemetry server configuration.
@@ -112,10 +108,7 @@ export class TelemetryServer {
   /**
    * Handle incoming HTTP requests.
    */
-  private async handleRequest(
-    req: IncomingMessage,
-    res: ServerResponse
-  ): Promise<void> {
+  private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = req.url || '/';
 
     // Add CORS headers if enabled
@@ -163,10 +156,7 @@ export class TelemetryServer {
   /**
    * Handle GET /metrics
    */
-  private async handleMetrics(
-    req: IncomingMessage,
-    res: ServerResponse
-  ): Promise<void> {
+  private async handleMetrics(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const metrics = await getMetrics();
 
     res.setHeader('Content-Type', 'text/plain; version=0.0.4');
@@ -179,10 +169,7 @@ export class TelemetryServer {
   /**
    * Handle GET /health
    */
-  private async handleHealth(
-    req: IncomingMessage,
-    res: ServerResponse
-  ): Promise<void> {
+  private async handleHealth(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const health = await getHealthStatus();
 
     const statusCode = health.status === 'unhealthy' ? 503 : 200;
@@ -197,10 +184,7 @@ export class TelemetryServer {
   /**
    * Handle GET /health/live
    */
-  private async handleLiveness(
-    req: IncomingMessage,
-    res: ServerResponse
-  ): Promise<void> {
+  private async handleLiveness(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const live = getLiveness();
 
     res.setHeader('Content-Type', 'application/json');
@@ -213,10 +197,7 @@ export class TelemetryServer {
   /**
    * Handle GET /health/ready
    */
-  private async handleReadiness(
-    req: IncomingMessage,
-    res: ServerResponse
-  ): Promise<void> {
+  private async handleReadiness(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const ready = await getReadiness();
 
     const statusCode = ready ? 200 : 503;

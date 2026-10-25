@@ -6,7 +6,7 @@
  * @since 3.3.0
  */
 
-import type { CallToolResult } from "@modelcontextprotocol/server";
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import { logger, perfTracker } from './utils.js';
 import { MathMCPError } from './errors.js';
 
@@ -30,7 +30,12 @@ export function errorResponse(error: unknown): ToolResponse {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorName = error instanceof MathMCPError ? error.name : 'Error';
   return {
-    content: [{ type: 'text', text: JSON.stringify({ error: errorMessage, errorType: errorName }, null, 2) }],
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({ error: errorMessage, errorType: errorName }, null, 2),
+      },
+    ],
     isError: true,
   };
 }

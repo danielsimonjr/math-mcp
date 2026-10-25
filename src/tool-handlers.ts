@@ -26,11 +26,7 @@ import {
 import { ValidationError } from './errors.js';
 import { withTimeout, DEFAULT_OPERATION_TIMEOUT } from './utils.js';
 import { getCachedExpression } from './expression-cache.js';
-import {
-  executeHandler,
-  successResponse,
-  type ToolResponse,
-} from './handler-utils.js';
+import { executeHandler, successResponse, type ToolResponse } from './handler-utils.js';
 
 // Re-export for backward compatibility
 export { ToolResponse, withErrorHandling } from './handler-utils.js';
@@ -40,12 +36,24 @@ export { ToolResponse, withErrorHandling } from './handler-utils.js';
 // ============================================================================
 
 const ALLOWED_NODE_TYPES = new Set([
-  'ConstantNode', 'SymbolNode', 'OperatorNode', 'ParenthesisNode',
-  'FunctionNode', 'ArrayNode', 'AccessorNode', 'IndexNode', 'RangeNode',
+  'ConstantNode',
+  'SymbolNode',
+  'OperatorNode',
+  'ParenthesisNode',
+  'FunctionNode',
+  'ArrayNode',
+  'AccessorNode',
+  'IndexNode',
+  'RangeNode',
 ]);
 
 const FORBIDDEN_FUNCTIONS = new Set([
-  'import', 'createUnit', 'evaluate', 'parse', 'compile', 'help',
+  'import',
+  'createUnit',
+  'evaluate',
+  'parse',
+  'compile',
+  'help',
 ]);
 
 function validateNode(n: any): void {
@@ -94,13 +102,17 @@ export async function handleEvaluate(args: {
   scope?: object;
 }): Promise<ToolResponse> {
   return executeHandler(
-    { operationName: 'evaluate', logContext: { expression: args.expression, hasScope: !!args.scope } },
+    {
+      operationName: 'evaluate',
+      logContext: { expression: args.expression, hasScope: !!args.scope },
+    },
     async () => {
       const expr = validateExpression(args.expression, 'expression');
       const scope = args.scope ? validateScope(args.scope, 'scope') : {};
       const result = await withTimeout(
         Promise.resolve(safeEvaluate(expr, scope)),
-        DEFAULT_OPERATION_TIMEOUT, 'evaluate'
+        DEFAULT_OPERATION_TIMEOUT,
+        'evaluate'
       );
       return successResponse(math.format(result));
     }
@@ -118,7 +130,8 @@ export async function handleSimplify(args: {
       const expr = validateExpression(args.expression, 'expression');
       const simplified = await withTimeout(
         Promise.resolve(args.rules ? math.simplify(expr, args.rules) : math.simplify(expr)),
-        DEFAULT_OPERATION_TIMEOUT, 'simplify'
+        DEFAULT_OPERATION_TIMEOUT,
+        'simplify'
       );
       return successResponse(simplified.toString());
     }
@@ -131,13 +144,17 @@ export async function handleDerivative(args: {
   variable: string;
 }): Promise<ToolResponse> {
   return executeHandler(
-    { operationName: 'derivative', logContext: { expression: args.expression, variable: args.variable } },
+    {
+      operationName: 'derivative',
+      logContext: { expression: args.expression, variable: args.variable },
+    },
     async () => {
       const expr = validateExpression(args.expression, 'expression');
       const varName = validateVariableName(args.variable, 'variable');
       const result = await withTimeout(
         Promise.resolve(math.derivative(expr, varName)),
-        DEFAULT_OPERATION_TIMEOUT, 'derivative'
+        DEFAULT_OPERATION_TIMEOUT,
+        'derivative'
       );
       return successResponse(result.toString());
     }
@@ -191,7 +208,10 @@ function fmtRoot(r: number | ComplexRoot): string {
  * used ONLY to choose the "exact" vs "numeric (bounded)" label honestly. It
  * never computes roots — solving is delegated entirely to math.solve.
  */
-function isLowDegreePolynomial(node: { evaluate: (s: Record<string, number>) => unknown }, varName: string): boolean {
+function isLowDegreePolynomial(
+  node: { evaluate: (s: Record<string, number>) => unknown },
+  varName: string
+): boolean {
   const at = (x: number): number => {
     try {
       const v = node.evaluate({ [varName]: x });
@@ -315,7 +335,8 @@ export async function handleSolve(args: {
 // Matrix Operations
 // ============================================================================
 
-type MatrixOp = 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
+type MatrixOp =
+  'multiply' | 'inverse' | 'determinant' | 'transpose' | 'eigenvalues' | 'add' | 'subtract';
 
 // Matrix operations call MathTS directly; MathTS performs its own internal
 // tier dispatch (WASM → ComputePool → JS) per operation/size, so math-mcp no
@@ -352,9 +373,11 @@ const matrixOps: Record<MatrixOp, (a: number[][], b: number[][] | undefined) => 
 };
 
 /** Performs matrix operations */
-export async function handleMatrixOperations(
-  args: { operation: string; matrix_a: string; matrix_b?: string }
-): Promise<ToolResponse> {
+export async function handleMatrixOperations(args: {
+  operation: string;
+  matrix_a: string;
+  matrix_b?: string;
+}): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(matrixOps) as MatrixOp[], 'operation');
 
   return executeHandler(
@@ -365,7 +388,10 @@ export async function handleMatrixOperations(
         'matrix_a'
       );
       const matrixB = args.matrix_b
-        ? validateMatrixSize(validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'), 'matrix_b')
+        ? validateMatrixSize(
+            validateMatrix(safeJsonParse(args.matrix_b, 'matrix_b'), 'matrix_b'),
+            'matrix_b'
+          )
         : undefined;
 
       const result = matrixOps[op](matrixA, matrixB);
@@ -396,9 +422,10 @@ const statsOps: Record<StatsOp, (data: number[]) => unknown> = {
 };
 
 /** Performs statistical calculations */
-export async function handleStatistics(
-  args: { operation: string; data: string }
-): Promise<ToolResponse> {
+export async function handleStatistics(args: {
+  operation: string;
+  data: string;
+}): Promise<ToolResponse> {
   const op = validateEnum(args.operation, Object.keys(statsOps) as StatsOp[], 'operation');
 
   return executeHandler(
@@ -430,7 +457,10 @@ export async function handleUnitConversion(args: {
   target_unit: string;
 }): Promise<ToolResponse> {
   return executeHandler(
-    { operationName: 'unit_conversion', logContext: { value: args.value, targetUnit: args.target_unit } },
+    {
+      operationName: 'unit_conversion',
+      logContext: { value: args.value, targetUnit: args.target_unit },
+    },
     async () => {
       // Validate inputs
       if (typeof args.value !== 'string' || !args.value.trim()) {
@@ -463,12 +493,15 @@ export async function handleUnitConversion(args: {
         throw new ValidationError('value has mismatched parentheses');
       }
       if (openParens > UNIT_LIMITS.parens) {
-        throw new ValidationError(`value has too many nested expressions (max ${UNIT_LIMITS.parens})`);
+        throw new ValidationError(
+          `value has too many nested expressions (max ${UNIT_LIMITS.parens})`
+        );
       }
 
       const result = await withTimeout(
         Promise.resolve(math.unit(args.value).to(args.target_unit)),
-        DEFAULT_OPERATION_TIMEOUT, 'unit_conversion'
+        DEFAULT_OPERATION_TIMEOUT,
+        'unit_conversion'
       );
 
       return successResponse(result.toString());
